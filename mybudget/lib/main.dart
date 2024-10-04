@@ -44,8 +44,23 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
     'Others',
   ];
 
+  DateTime? selectedDate;
+  TimeOfDay? selectedTime;
+  double? screenWidth;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    DateTime selectedDate = DateTime.now(); //get current date
+    var formatter = DateFormat('dd-MM-yyyy hh:mm a'); //date format
+    String formattedDate = formatter.format(selectedDate); //format date
+    itemDateController.text = formattedDate.toString();
+  }
+
   @override
   Widget build(BuildContext context) {
+    screenWidth = MediaQuery.of(context).size.width; //get screen width
     return Scaffold(
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -56,32 +71,36 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
             margin: const EdgeInsets.all(20),
             child: Column(
               children: [
-                // TextField(
-                //   decoration: const InputDecoration(
-                //       border: OutlineInputBorder(),
-                //       hintText: "Enter Item Name"),
-                //   keyboardType: TextInputType.name,
-                //   controller: itemNameController,
-                // ),
-                DropdownButton(
-                  itemHeight: 80,
-                  isExpanded: true,
-                  value: dropdownvalue,
-                  icon: const Icon(Icons.keyboard_arrow_down),
-                  items: items.map((String items) {
-                    return DropdownMenuItem(
-                      value: items,
-                      child: Text(items),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      dropdownvalue = newValue!;
-                    });
-                  },
+                Row(
+                  children: [
+                    const Icon(Icons.abc),
+                    const SizedBox(
+                      width: 15,
+                    ),
+                    Expanded(
+                      child: DropdownButton(
+                        itemHeight: 80,
+                        isExpanded: true,
+                        value: dropdownvalue,
+                        icon: const Icon(Icons.keyboard_arrow_down),
+                        items: items.map((String items) {
+                          return DropdownMenuItem(
+                            value: items,
+                            child: Text(items),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            dropdownvalue = newValue!;
+                          });
+                        },
+                      ),
+                    )
+                  ],
                 ),
+
                 const SizedBox(
-                  height: 20,
+                  height: 10,
                 ),
 
                 TextField(
@@ -93,9 +112,39 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
                   controller: itemPriceController,
                 ),
                 const SizedBox(
-                  height: 20,
+                  height: 10,
                 ),
                 TextField(
+                  onTap: () {
+                    showDatePicker(
+                            context: context,
+                            initialDate: DateTime.now(),
+                            firstDate: DateTime(2024),
+                            lastDate: DateTime(2030))
+                        .then((selectedDate) {
+                      if (selectedDate != null) {
+                        showTimePicker(
+                                context: context, initialTime: TimeOfDay.now())
+                            .then((selectTime) {
+                          if (selectTime != null) {
+                            DateTime selectedDateTime = DateTime(
+                              selectedDate.year,
+                              selectedDate.month,
+                              selectedDate.day,
+                              selectTime.hour,
+                              selectTime.minute,
+                            );
+                            // print(selectedDateTime);
+                            var formatter = DateFormat('dd-MM-yyyy hh:mm a');
+                            String formattedDate =
+                                formatter.format(selectedDateTime);
+                            itemDateController.text = formattedDate.toString();
+                            setState(() {}); //refresh screen with new data
+                          }
+                        });
+                      }
+                    });
+                  },
                   decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       icon: Icon(Icons.calendar_today),
@@ -104,11 +153,11 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
                   keyboardType: TextInputType.datetime,
                 ),
                 const SizedBox(
-                  height: 20,
+                  height: 15,
                 ),
 
                 MaterialButton(
-                    minWidth: 300,
+                    minWidth: screenWidth,
                     color: Colors.yellow,
                     onPressed: insertData,
                     child: const Text("Insert")),
@@ -123,11 +172,6 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
     const snackBar = SnackBar(
       content: Text('Please enter price'),
     ); //snackbar object
-
-    DateTime selectedDate = DateTime.now(); //get current date
-    var formatter = DateFormat('dd-MM-yyyy hh:mm a'); //date format
-    String formattedDate = formatter.format(selectedDate); //format date
-
     String itemName = dropdownvalue; //get item name
 
     if (itemPriceController.text.isEmpty) {
@@ -136,11 +180,11 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
       return;
     }
     double itemPrice = double.parse(itemPriceController.text); //get item price
-    itemDateController.text = formattedDate.toString(); //get item date
+    String itemDate = itemDateController.text; //get item date
 
     setState(() {}); //update the state
     print("Item Name: $itemName");
     print("Item Price: $itemPrice");
-    print("Item Date: $formattedDate");
+    print("Item Date: $itemDate");
   }
 }
