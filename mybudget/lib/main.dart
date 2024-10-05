@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/services.dart';
+import 'dart:convert';
 import 'package:intl/intl.dart';
+import 'package:flutter/services.dart';
 
 void main() {
   runApp(const MyApp());
@@ -43,10 +45,11 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
     'Groceries',
     'Others',
   ];
+  List _items = [];
 
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
-  double? screenWidth;
+  double? screenWidth, screenHeigth;
 
   @override
   void initState() {
@@ -58,9 +61,27 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
     itemDateController.text = formattedDate.toString();
   }
 
+  Future<void> readJson() async {
+    final String response = await rootBundle.loadString('assets/data.json');
+    final List<dynamic> data = await json.decode(response);
+
+    // Parse and sort the data by date in descending order
+    final DateFormat formatter = DateFormat('dd-MM-yyyy hh:mm a');
+    data.sort((a, b) {
+      DateTime dateA = formatter.parse(a['itemDate']);
+      DateTime dateB = formatter.parse(b['itemDate']);
+      return dateB.compareTo(dateA);
+    });
+
+    setState(() {
+      _items = data;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     screenWidth = MediaQuery.of(context).size.width; //get screen width
+    screenHeigth = MediaQuery.of(context).size.height / 1.5;
     return Scaffold(
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -161,6 +182,31 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
                     color: Colors.yellow,
                     onPressed: insertData,
                     child: const Text("Insert")),
+
+                ElevatedButton(
+                  onPressed: readJson,
+                  child: const Text('Load Data'),
+                ),
+                _items.isNotEmpty
+                    ? SizedBox(
+                        height: screenHeigth,
+                        child: ListView.builder(
+                          itemCount: _items.length,
+                          itemBuilder: (context, index) {
+                            return Card(
+                              key: ValueKey(_items[index]["id"].toString()),
+                              margin: const EdgeInsets.all(10),
+                              child: ListTile(
+                                leading: Text((index + 1).toString()),
+                                title: Text(_items[index]["itemName"]),
+                                subtitle: Text(
+                                    'Price: \RM ${_items[index]["itemPrice"]}\nDate: ${_items[index]["itemDate"]}'),
+                              ),
+                            );
+                          },
+                        ),
+                      )
+                    : Container(),
                 // ElevatedButton(onPressed: insertData, child: const Text("Insert"))
               ],
             ),
