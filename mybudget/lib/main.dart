@@ -1,8 +1,11 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
-import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const MyApp());
@@ -37,6 +40,8 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
   TextEditingController itemNameController = TextEditingController();
   TextEditingController itemPriceController = TextEditingController();
   TextEditingController itemDateController = TextEditingController();
+  TextEditingController itemDescController = TextEditingController();
+
   String dropdownvalue = 'Breakfast';
   var items = [
     'Breakfast',
@@ -45,7 +50,6 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
     'Groceries',
     'Others',
   ];
-  List _items = [];
 
   DateTime? selectedDate;
   TimeOfDay? selectedTime;
@@ -61,160 +65,134 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
     itemDateController.text = formattedDate.toString();
   }
 
-  Future<void> readJson() async {
-    final String response = await rootBundle.loadString('assets/data.json');
-    final List<dynamic> data = await json.decode(response);
-
-    // Parse and sort the data by date in descending order
-    final DateFormat formatter = DateFormat('dd-MM-yyyy hh:mm a');
-    data.sort((a, b) {
-      DateTime dateA = formatter.parse(a['itemDate']);
-      DateTime dateB = formatter.parse(b['itemDate']);
-      return dateB.compareTo(dateA);
-    });
-
-    setState(() {
-      _items = data;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     screenWidth = MediaQuery.of(context).size.width; //get screen width
     screenHeigth = MediaQuery.of(context).size.height / 1.5;
+    if (screenWidth! > 600) {
+      screenWidth = 600;
+    }
     return Scaffold(
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
           title: Text(widget.title),
         ),
         body: SingleChildScrollView(
-          child: Container(
-            margin: const EdgeInsets.all(20),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.abc),
-                    const SizedBox(
-                      width: 15,
-                    ),
-                    Expanded(
-                      child: DropdownButton(
-                        itemHeight: 80,
-                        isExpanded: true,
-                        value: dropdownvalue,
-                        icon: const Icon(Icons.keyboard_arrow_down),
-                        items: items.map((String items) {
-                          return DropdownMenuItem(
-                            value: items,
-                            child: Text(items),
-                          );
-                        }).toList(),
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            dropdownvalue = newValue!;
-                          });
-                        },
+          child: Center(
+            child: Container(
+              width: screenWidth,
+              margin: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.abc),
+                      const SizedBox(
+                        width: 15,
                       ),
-                    )
-                  ],
-                ),
-
-                const SizedBox(
-                  height: 10,
-                ),
-
-                TextField(
-                  decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      icon: Icon(Icons.attach_money),
-                      hintText: "Enter Item Price"),
-                  keyboardType: TextInputType.number,
-                  controller: itemPriceController,
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                TextField(
-                  onTap: () {
-                    showDatePicker(
-                            context: context,
-                            initialDate: DateTime.now(),
-                            firstDate: DateTime(2024),
-                            lastDate: DateTime(2030))
-                        .then((selectedDate) {
-                      if (selectedDate != null) {
-                        showTimePicker(
-                                context: context, initialTime: TimeOfDay.now())
-                            .then((selectTime) {
-                          if (selectTime != null) {
-                            DateTime selectedDateTime = DateTime(
-                              selectedDate.year,
-                              selectedDate.month,
-                              selectedDate.day,
-                              selectTime.hour,
-                              selectTime.minute,
+                      Expanded(
+                        child: DropdownButton(
+                          itemHeight: 80,
+                          isExpanded: true,
+                          value: dropdownvalue,
+                          icon: const Icon(Icons.keyboard_arrow_down),
+                          items: items.map((String items) {
+                            return DropdownMenuItem(
+                              value: items,
+                              child: Text(items),
                             );
-                            // print(selectedDateTime);
-                            var formatter = DateFormat('dd-MM-yyyy hh:mm a');
-                            String formattedDate =
-                                formatter.format(selectedDateTime);
-                            itemDateController.text = formattedDate.toString();
-                            setState(() {}); //refresh screen with new data
-                          }
-                        });
-                      }
-                    });
-                  },
-                  decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      icon: Icon(Icons.calendar_today),
-                      hintText: "Enter Item Date"),
-                  controller: itemDateController,
-                  keyboardType: TextInputType.datetime,
-                ),
-                const SizedBox(
-                  height: 15,
-                ),
-
-                MaterialButton(
-                    minWidth: screenWidth,
-                    color: Colors.yellow,
-                    onPressed: insertData,
-                    child: const Text("Insert")),
-
-                ElevatedButton(
-                  onPressed: readJson,
-                  child: const Text('Load Data'),
-                ),
-                _items.isNotEmpty
-                    ? SizedBox(
-                        height: screenHeigth,
-                        child: ListView.builder(
-                          itemCount: _items.length,
-                          itemBuilder: (context, index) {
-                            return Card(
-                              key: ValueKey(_items[index]["id"].toString()),
-                              margin: const EdgeInsets.all(10),
-                              child: ListTile(
-                                leading: Text((index + 1).toString()),
-                                title: Text(_items[index]["itemName"]),
-                                subtitle: Text(
-                                    'Price: \RM ${_items[index]["itemPrice"]}\nDate: ${_items[index]["itemDate"]}'),
-                              ),
-                            );
+                          }).toList(),
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              dropdownvalue = newValue!;
+                            });
                           },
                         ),
                       )
-                    : Container(),
-                // ElevatedButton(onPressed: insertData, child: const Text("Insert"))
-              ],
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  TextField(
+                    decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        icon: Icon(Icons.attach_money),
+                        hintText: "Enter Item Price"),
+                    keyboardType: TextInputType.number,
+                    controller: itemPriceController,
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  TextField(
+                    onTap: () {
+                      showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime(2024),
+                              lastDate: DateTime(2030))
+                          .then((selectedDate) {
+                        if (selectedDate != null) {
+                          showTimePicker(
+                                  context: context,
+                                  initialTime: TimeOfDay.now())
+                              .then((selectTime) {
+                            if (selectTime != null) {
+                              DateTime selectedDateTime = DateTime(
+                                selectedDate.year,
+                                selectedDate.month,
+                                selectedDate.day,
+                                selectTime.hour,
+                                selectTime.minute,
+                              );
+                              // print(selectedDateTime);
+                              var formatter = DateFormat('dd-MM-yyyy hh:mm a');
+                              String formattedDate =
+                                  formatter.format(selectedDateTime);
+                              itemDateController.text =
+                                  formattedDate.toString();
+                              setState(() {}); //refresh screen with new data
+                            }
+                          });
+                        }
+                      });
+                    },
+                    decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        icon: Icon(Icons.calendar_today),
+                        hintText: "Enter Item Date"),
+                    controller: itemDateController,
+                    keyboardType: TextInputType.datetime,
+                  ),
+                  const SizedBox(
+                    height: 15,
+                  ),
+                  TextField(
+                    decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        icon: Icon(Icons.info),
+                        hintText: "Enter Item Description"),
+                    controller: itemDescController,
+                    maxLines: 5,
+                  ),
+                  const SizedBox(
+                    height: 15,
+                  ),
+                  MaterialButton(
+                      minWidth: screenWidth,
+                      height: 50,
+                      color: Colors.yellow,
+                      onPressed: insertData,
+                      child: const Text("Insert")),
+                ],
+              ),
             ),
           ),
         ));
   }
 
-  void insertData() {
+  Future<void> insertData() async {
     const snackBar = SnackBar(
       content: Text('Please enter price'),
     ); //snackbar object
@@ -227,10 +205,46 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
     }
     double itemPrice = double.parse(itemPriceController.text); //get item price
     String itemDate = itemDateController.text; //get item date
+    String itemDesc = itemDescController.text; //get item description
 
-    setState(() {}); //update the state
-    print("Item Name: $itemName");
-    print("Item Price: $itemPrice");
-    print("Item Date: $itemDate");
+    Map<String, String> data = {
+      'item_name': itemName,
+      'item_price': itemPrice.toString(),
+      'item_date': itemDate,
+      'item_desc': itemDesc
+    };
+
+    String url = 'https://slumberjer.com/mybudget/insert.php';
+    //String url = 'http://localhost/mybudget/insert.php';
+    try {
+      // Send the POST request with the data
+      final response = await http.post(
+        Uri.parse(url),
+        body: data,
+      );
+      print(response.body);
+
+      if (response.statusCode == 200) {
+        var jsonResponse = json.decode(response.body);
+        if (jsonResponse['success']) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Data inserted successfully')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to insert data')),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Server error')),
+        );
+      }
+    } catch (e) {
+      print(e.toString());
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error occurred')),
+      );
+    }
   }
 }
