@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
@@ -54,8 +55,71 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
     }
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: Theme.of(context).colorScheme.primary,
         title: Text(widget.title),
+
+        // Add actions for dropdown menu
+        actions: [
+          PopupMenuButton<String>(
+            onSelected: (String value) {
+              if (value == 'report') {
+                // Navigate to the report screen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ReportScreen(
+                      userId: widget.userId,
+                    ),
+                  ),
+                );
+              } else if (value == 'exit') {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text('Confirm Exit'),
+                      content:
+                          const Text('Are you sure you want to exit the app?'),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop(); // Close the dialog
+                          },
+                          child: const Text('Cancel'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            // Pop all routes to exit the app (or handle your custom exit logic)
+                            SystemNavigator.pop();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red, // Red button for exit
+                          ),
+                          child: const Text(
+                            'Exit',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              }
+            },
+            itemBuilder: (BuildContext context) {
+              return [
+                const PopupMenuItem<String>(
+                  value: 'report',
+                  child: Text('Report'),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'exit',
+                  child: Text('Exit'),
+                ),
+              ];
+            },
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Center(
@@ -77,13 +141,13 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
                     fillColor: Colors.grey.shade100,
                     prefixIcon: const Icon(
                       Icons.category, // Icon before the dropdown
-                      color: Colors.blueAccent,
                     ),
                   ),
                   isExpanded: true,
                   value: dropdownvalue,
-                  icon: const Icon(Icons.keyboard_arrow_down,
-                      color: Colors.blueAccent),
+                  icon: const Icon(
+                    Icons.keyboard_arrow_down,
+                  ),
                   items: items.map((String items) {
                     return DropdownMenuItem(
                       value: items,
@@ -103,9 +167,10 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
                 TextField(
                   decoration: InputDecoration(
                     labelText: "Enter Item Price",
-                    labelStyle: const TextStyle(color: Colors.blueAccent),
-                    prefixIcon: const Icon(Icons.attach_money,
-                        color: Colors.blueAccent),
+                    labelStyle: const TextStyle(),
+                    prefixIcon: const Icon(
+                      Icons.attach_money,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -151,9 +216,10 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
                   },
                   decoration: InputDecoration(
                     labelText: "Enter Item Date",
-                    labelStyle: const TextStyle(color: Colors.blueAccent),
-                    prefixIcon: const Icon(Icons.calendar_today,
-                        color: Colors.blueAccent),
+                    labelStyle: const TextStyle(),
+                    prefixIcon: const Icon(
+                      Icons.calendar_today,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -169,9 +235,10 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
                 TextField(
                   decoration: InputDecoration(
                     labelText: "Enter Item Description",
-                    labelStyle: const TextStyle(color: Colors.blueAccent),
-                    prefixIcon:
-                        const Icon(Icons.description, color: Colors.blueAccent),
+                    labelStyle: const TextStyle(),
+                    prefixIcon: const Icon(
+                      Icons.description,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -193,7 +260,7 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      backgroundColor: Colors.blueAccent, // Modern color
+                      // Modern color
                     ),
                     child: const Text(
                       "Insert",
@@ -217,7 +284,7 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
             ),
           );
         },
-        child: const Icon(Icons.report),
+        child: const Icon(Icons.list),
       ),
     );
   }
@@ -261,7 +328,10 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
               onPressed: () {
                 Navigator.of(context).pop(true); // User confirmed
               },
-              child: const Text("Confirm"),
+              child: const Text(
+                "Confirm",
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         );
@@ -299,7 +369,7 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
           );
           setState(() {
             itemPriceController.text = "";
-            itemDateController.text = "";
+            // itemDateController.text = "";
             itemDescController.text = "";
           });
         } else {

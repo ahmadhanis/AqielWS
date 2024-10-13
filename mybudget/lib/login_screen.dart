@@ -3,7 +3,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mybudget/budget_screen.dart';
 import 'package:mybudget/register_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -51,16 +50,16 @@ class LoginScreenState extends State<LoginScreen> {
       await prefs.setString('email', _emailController.text);
       await prefs.setString('password', _passwordController.text);
       await prefs.setBool('remember_me', _rememberMe);
-       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Preferences Saved')),
-        );
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Preferences Saved')),
+      );
     } else {
       await prefs.remove('email');
       await prefs.remove('password');
       await prefs.setBool('remember_me', false);
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Preferences Removed')),
-        );
+        const SnackBar(content: Text('Preferences Removed')),
+      );
     }
   }
 
@@ -170,24 +169,20 @@ class LoginScreenState extends State<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 50),
-                    Text(
+                    const Text(
                       'Welcome Back!',
-                      style: GoogleFonts.poppins(
-                        textStyle: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
                       ),
                     ),
                     const SizedBox(height: 10),
                     Text(
                       'Login to your account',
-                      style: GoogleFonts.poppins(
-                        textStyle: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey.shade600,
-                        ),
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey.shade600,
                       ),
                     ),
                     const SizedBox(height: 30),
@@ -202,9 +197,6 @@ class LoginScreenState extends State<LoginScreen> {
                             keyboardType: TextInputType.emailAddress,
                             decoration: InputDecoration(
                               labelText: 'Email Address',
-                              labelStyle: GoogleFonts.poppins(
-                                textStyle: const TextStyle(color: Colors.grey),
-                              ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide:
@@ -232,9 +224,6 @@ class LoginScreenState extends State<LoginScreen> {
                             obscureText: true,
                             decoration: InputDecoration(
                               labelText: 'Password',
-                              labelStyle: GoogleFonts.poppins(
-                                textStyle: const TextStyle(color: Colors.grey),
-                              ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide:
@@ -266,13 +255,8 @@ class LoginScreenState extends State<LoginScreen> {
                                   });
                                 },
                               ),
-                              Text(
+                              const Text(
                                 'Remember Me',
-                                style: GoogleFonts.poppins(
-                                  textStyle: TextStyle(
-                                    color: Colors.grey.shade600,
-                                  ),
-                                ),
                               ),
                             ],
                           ),
@@ -291,16 +275,13 @@ class LoginScreenState extends State<LoginScreen> {
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
                                       ),
-                                      backgroundColor: Colors.blueAccent,
                                     ),
-                                    child: Text(
+                                    child: const Text(
                                       'Login',
-                                      style: GoogleFonts.poppins(
-                                        textStyle: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                        ),
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
                                       ),
                                     ),
                                   ),
@@ -318,14 +299,11 @@ class LoginScreenState extends State<LoginScreen> {
                                   builder: (context) =>
                                       const RegisterScreen()));
                         },
-                        child: Text(
+                        child: const Text(
                           'New Account? Sign Up?',
-                          style: GoogleFonts.poppins(
-                            textStyle: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blueAccent,
-                            ),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
@@ -336,14 +314,11 @@ class LoginScreenState extends State<LoginScreen> {
                         onTap: () {
                           _showForgotPasswordDialog(context);
                         },
-                        child: Text(
+                        child: const Text(
                           'Forgot Password?',
-                          style: GoogleFonts.poppins(
-                            textStyle: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blueAccent,
-                            ),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
@@ -393,24 +368,71 @@ class LoginScreenState extends State<LoginScreen> {
               child: const Text('Cancel'),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 String email = _forgotPasswordEmailController.text;
+
                 if (email.isNotEmpty) {
-                  // Handle forgot password logic here
-                  print("Reset password link sent to: $email");
+                  // Prepare the URL to send the forgot password request
+                  String url = 'https://slumberjer.com/mybudget/forgot.php';
 
-                  // Close the dialog
-                  Navigator.of(context).pop();
+                  try {
+                    // Send the HTTP POST request to the backend
+                    final response = await http.post(
+                      Uri.parse(url),
+                      body: {
+                        'email': email, // Send the email in the POST body
+                      },
+                    );
 
-                  // You can show a confirmation message
+                    if (response.statusCode == 200) {
+                      // Decode the JSON response
+                      var jsonResponse = json.decode(response.body);
+
+                      if (jsonResponse['success']) {
+                        // Show success message if the backend returns success
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content:
+                                  Text('Password reset link sent to $email')),
+                        );
+                      } else {
+                        // Show error message if the backend returns an error
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content:
+                                  Text('Error: ${jsonResponse['message']}')),
+                        );
+                      }
+
+                      // Close the dialog after sending the request
+                      Navigator.of(context).pop();
+                    } else {
+                      // Handle error response from the server
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content:
+                                Text('Server error. Please try again later.')),
+                      );
+                    }
+                  } catch (e) {
+                    // Handle any exceptions, such as network errors
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error occurred: $e')),
+                    );
+                  }
+                } else {
+                  // If the email field is empty, show an error message
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text('Password reset link sent to $email')),
+                    const SnackBar(
+                        content: Text('Please enter an email address')),
                   );
                 }
               },
-              child: const Text('Submit'),
-            ),
+              child: const Text(
+                'Send Reset Link',
+                style: TextStyle(color: Colors.white),
+              ),
+            )
           ],
         );
       },

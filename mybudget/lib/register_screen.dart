@@ -18,6 +18,7 @@ class RegisterScreenState extends State<RegisterScreen> {
       TextEditingController();
   bool _isLoading = false;
   double? screenWidth, screenHeigth;
+  bool _obscurePassword = true;
 
   // Function to register a new user
   Future<void> _register(BuildContext context) async {
@@ -106,24 +107,20 @@ class RegisterScreenState extends State<RegisterScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 50),
-                        Text(
+                        const Text(
                           'Create an Account',
-                          style: GoogleFonts.poppins(
-                            textStyle: const TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                            ),
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
                           ),
                         ),
                         const SizedBox(height: 10),
                         Text(
                           'Sign up to get started',
-                          style: GoogleFonts.poppins(
-                            textStyle: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey.shade600,
-                            ),
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey.shade600,
                           ),
                         ),
                         const SizedBox(height: 30),
@@ -133,9 +130,6 @@ class RegisterScreenState extends State<RegisterScreen> {
                           keyboardType: TextInputType.emailAddress,
                           decoration: InputDecoration(
                             labelText: 'Email Address',
-                            labelStyle: GoogleFonts.poppins(
-                              textStyle: const TextStyle(color: Colors.grey),
-                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: const BorderSide(color: Colors.grey),
@@ -159,19 +153,29 @@ class RegisterScreenState extends State<RegisterScreen> {
                         // Password Field
                         TextFormField(
                           controller: _passwordController,
-                          obscureText: true,
+                          obscureText: _obscurePassword,
                           decoration: InputDecoration(
-                            labelText: 'Password',
-                            labelStyle: GoogleFonts.poppins(
-                              textStyle: const TextStyle(color: Colors.grey),
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Colors.grey),
-                            ),
-                            filled: true,
-                            fillColor: Colors.grey.shade200,
-                          ),
+                              labelText: 'Password',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:
+                                    const BorderSide(color: Colors.grey),
+                              ),
+                              filled: true,
+                              fillColor: Colors.grey.shade200,
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_off
+                                      : Icons
+                                          .visibility, // Change icon based on state
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscurePassword = !_obscurePassword;
+                                  });
+                                },
+                              )),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter a password';
@@ -186,19 +190,29 @@ class RegisterScreenState extends State<RegisterScreen> {
                         // Confirm Password Field
                         TextFormField(
                           controller: _confirmPasswordController,
-                          obscureText: true,
+                          obscureText: _obscurePassword,
                           decoration: InputDecoration(
-                            labelText: 'Confirm Password',
-                            labelStyle: GoogleFonts.poppins(
-                              textStyle: const TextStyle(color: Colors.grey),
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(color: Colors.grey),
-                            ),
-                            filled: true,
-                            fillColor: Colors.grey.shade200,
-                          ),
+                              labelText: 'Confirm Password',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:
+                                    const BorderSide(color: Colors.grey),
+                              ),
+                              filled: true,
+                              fillColor: Colors.grey.shade200,
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_off
+                                      : Icons
+                                          .visibility, // Change icon based on state
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscurePassword = !_obscurePassword;
+                                  });
+                                },
+                              )),
                           validator: (value) {
                             if (value != _passwordController.text) {
                               return 'Passwords do not match';
@@ -221,7 +235,6 @@ class RegisterScreenState extends State<RegisterScreen> {
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12),
                                     ),
-                                    backgroundColor: Colors.blueAccent,
                                   ),
                                   child: Text(
                                     'Register',

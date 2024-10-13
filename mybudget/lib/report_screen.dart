@@ -1,7 +1,9 @@
 // ignore_for_file: deprecated_member_use
 
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:mybudget/report_screen_year.dart';
 import 'dart:convert';
 
 import 'package:url_launcher/url_launcher.dart';
@@ -92,15 +94,41 @@ class ReportScreenState extends State<ReportScreen> {
     }
   }
 
-  Future<void> shareBudgetItemsViaWhatsApp(String month, String year) async {
+  String getMonthName(int monthNumber) {
+    List<String> months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
+    ];
+    return months[monthNumber - 1]; // Month number is 1-based
+  }
+
+  Future<void> shareBudgetItemsViaWhatsApp(
+      BuildContext context, String month, String year) async {
     // Fetch the budget items first
     List<BudgetItem> items = await fetchBudgetItems(month, year);
 
     if (items.isEmpty) {
       print('No budget items to share.');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No budget items to share.')),
+      );
       return;
     }
 
+    /// If WhatsApp cannot be launched, a SnackBar will be shown with a message
+    /// indicating that WhatsApp could not be launched.
+    ///
+    /// The [BuildContext] is used to show the confirmation dialog and SnackBars.
     // Prepare the message
     StringBuffer message = StringBuffer();
     message.writeln('My Budget for $month-$year:');
@@ -125,12 +153,44 @@ class ReportScreenState extends State<ReportScreen> {
     // WhatsApp sharing URL
     String whatsappUrl = "https://wa.me/?text=$encodedMessage";
 
-    // Check if WhatsApp can be opened
-    if (await canLaunch(whatsappUrl)) {
-      await launch(whatsappUrl);
-    } else {
-      throw 'Could not launch WhatsApp';
-    }
+    // Show a confirmation dialog asking if the user wants to share via WhatsApp
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Share via WhatsApp'),
+          content: const Text(
+              'Are you sure you want to share your budget via WhatsApp?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog if cancelled
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.of(context).pop(); // Close the dialog before sharing
+
+                // Check if WhatsApp can be opened
+                if (await canLaunch(whatsappUrl)) {
+                  await launch(whatsappUrl);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Could not launch WhatsApp')),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(),
+              child: const Text(
+                'Share',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   String truncateString(String str, int length) {
@@ -139,6 +199,161 @@ class ReportScreenState extends State<ReportScreen> {
       return "$str...";
     } else {
       return str;
+    }
+  }
+
+  Future<void> showPieChartForMonth(
+      BuildContext context, List<BudgetItem> budgetItems, String month) {
+    // Calculate total price for each item category
+    Map<String, double> categoryTotals = {
+      'Breakfast': 0.0,
+      'Lunch': 0.0,
+      'Dinner': 0.0,
+      'Groceries': 0.0,
+      'Others': 0.0,
+    };
+
+    for (var item in budgetItems) {
+      if (categoryTotals.containsKey(item.itemName)) {
+        // Ensure that categoryTotals[item.itemName] is not null before adding
+        categoryTotals[item.itemName] = (categoryTotals[item.itemName] ?? 0.0) +
+            (double.tryParse(item.itemPrice) ?? 0.0);
+      } else {
+        // Add to 'Others' category and ensure that value is not null
+        categoryTotals['Others'] = (categoryTotals['Others'] ?? 0.0) +
+            (double.tryParse(item.itemPrice) ?? 0.0);
+      }
+    }
+
+    // Prepare data for pie chart
+    List<PieChartSectionData> pieChartSections = [];
+    categoryTotals.forEach((category, total) {
+      pieChartSections.add(
+        PieChartSectionData(
+          value: total,
+          title: '$category\nRM ${total.toStringAsFixed(2)}',
+          color: getColorForCategory(
+              category), // Optional: Use custom colors for each category
+          radius: 80,
+        ),
+      );
+    });
+
+    // Show the pie chart in a dialog
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Spending Breakdown for $month'),
+          content: SizedBox(
+            height: 300,
+            child: PieChart(
+              PieChartData(
+                sections: pieChartSections,
+                sectionsSpace: 2,
+                centerSpaceRadius: 40,
+                borderData: FlBorderData(show: false),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+// Helper method to get custom colors for each category
+  Color getColorForCategory(String category) {
+    switch (category) {
+      case 'Breakfast':
+        return Colors.blue;
+      case 'Lunch':
+        return Colors.green;
+      case 'Dinner':
+        return Colors.orange;
+      case 'Groceries':
+        return Colors.purple;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  Future<void> deleteBudgetDialog(
+      BuildContext context, String itemId, String itemName) async {
+    bool isDeleted = false; // Track whether the deletion was successful
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Deletion'),
+          content: Text('Are you sure you want to delete "$itemName"?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the confirmation dialog
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                // Close the confirmation dialog before starting async operation
+
+                // Call the delete API
+                String url = 'https://slumberjer.com/mybudget/delete.php';
+                try {
+                  final response = await http.post(
+                    Uri.parse(url),
+                    body: {
+                      'item_id': itemId, // Pass the item ID to the backend
+                    },
+                  );
+
+                  if (response.statusCode == 200) {
+                    isDeleted =
+                        true; // Set flag to true if deletion was successful
+                  } else {
+                    isDeleted = false; // Deletion failed
+                  }
+                } catch (e) {
+                  isDeleted = false; // Network or other error
+                }
+
+                // After async operation, show the result using the mounted context
+                if (isDeleted) {
+                  showSnackBar(context, 'Item deleted successfully');
+                } else {
+                  showSnackBar(context, 'Failed to delete the item');
+                }
+                Navigator.of(context).pop();
+                futureBudgetItems = fetchBudgetItems(currentMonth, currentYear);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red, // Red color for delete
+              ),
+              child: const Text(
+                'Delete',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void showSnackBar(BuildContext context, String message) {
+    // Ensure this is called only while the widget is still active
+    if (context.mounted) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(message)));
     }
   }
 
@@ -151,11 +366,42 @@ class ReportScreenState extends State<ReportScreen> {
     }
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Report'),
+        title: const Text('Montly Report'),
         actions: [
           IconButton(
               onPressed: () {
-                shareBudgetItemsViaWhatsApp(currentMonth, currentYear);
+                fetchBudgetItems(
+                        selectedMonth.toString(), selectedYear.toString())
+                    .then((List<BudgetItem> items) {
+                  // Now you have a List<BudgetItem>
+                  if (items.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('No data available')),
+                    );
+                    return;
+                  }
+                  showPieChartForMonth(
+                      context, items, getMonthName(selectedMonth));
+                }).catchError((error) {
+                  // Handle any error that occurred while fetching the items
+                  print('Error: $error');
+                });
+              },
+              icon: const Icon(Icons.pie_chart)),
+          IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          ReportScreenYear(userId: widget.userId)),
+                );
+              },
+              icon: const Icon(Icons.calendar_month)),
+          IconButton(
+              onPressed: () {
+                shareBudgetItemsViaWhatsApp(
+                    context, selectedMonth.toString(), selectedYear.toString());
               },
               icon: const Icon(Icons.share))
         ],
@@ -164,7 +410,7 @@ class ReportScreenState extends State<ReportScreen> {
           child: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
+            padding: const EdgeInsets.all(8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -174,7 +420,7 @@ class ReportScreenState extends State<ReportScreen> {
                   child: DropdownButtonFormField<int>(
                     decoration: InputDecoration(
                       labelText: 'Month',
-                      labelStyle: const TextStyle(color: Colors.blueAccent),
+                      labelStyle: const TextStyle(),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -198,13 +444,13 @@ class ReportScreenState extends State<ReportScreen> {
                   ),
                 ),
                 const SizedBox(width: 5), // Spacing between dropdowns
-            
+
                 // Dropdown for year
                 Expanded(
                   child: DropdownButtonFormField<int>(
                     decoration: InputDecoration(
                       labelText: 'Year',
-                      labelStyle: const TextStyle(color: Colors.blueAccent),
+                      labelStyle: const TextStyle(),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -227,7 +473,7 @@ class ReportScreenState extends State<ReportScreen> {
                   ),
                 ),
                 const SizedBox(width: 5), // Spacing before the search button
-            
+
                 // Search button
                 ElevatedButton(
                   onPressed: () {
@@ -240,7 +486,7 @@ class ReportScreenState extends State<ReportScreen> {
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 15, vertical: 15),
-                    backgroundColor: Colors.blueAccent, // Modern button color
+                    // Modern button color
                     shape: RoundedRectangleBorder(
                       borderRadius:
                           BorderRadius.circular(10), // Rounded corners
@@ -273,6 +519,10 @@ class ReportScreenState extends State<ReportScreen> {
                       final item = snapshot.data![index];
 
                       return GestureDetector(
+                        onLongPress: () {
+                          deleteBudgetDialog(
+                              context, item.budgetId.toString(), item.itemName);
+                        },
                         onTap: () {
                           // Show dialog window with item details
                           showDialog(
@@ -353,8 +603,6 @@ class ReportScreenState extends State<ReportScreen> {
                                               horizontal: 24.0,
                                               vertical: 12.0,
                                             ),
-                                            backgroundColor: Colors
-                                                .blueAccent, // Modern button color
                                           ),
                                           child: const Text(
                                             'Close',
@@ -444,7 +692,7 @@ class ReportScreenState extends State<ReportScreen> {
                         const Icon(
                           Icons.info_outline,
                           size: 50,
-                          color: Colors.blueAccent, // Modern color for the icon
+                          // Modern color for the icon
                         ),
                         const SizedBox(
                             height: 20), // Spacing between icon and text
@@ -467,10 +715,10 @@ class ReportScreenState extends State<ReportScreen> {
           ),
           Container(
             padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-            margin: const EdgeInsets.only(
-                bottom: 8.0), // Adds spacing from other elements
+            margin: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.blueAccent, // Background color for modern feel
+              color: Theme.of(context).colorScheme.primary,
+              // Background color for modern feel
               borderRadius: BorderRadius.circular(12.0), // Rounded corners
               boxShadow: [
                 BoxShadow(

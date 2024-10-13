@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mybudget/login_screen.dart';
 
 void main() {
@@ -15,8 +16,35 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'MyBudget',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
         useMaterial3: true,
+        textTheme: GoogleFonts.quicksandTextTheme(
+          Theme.of(context).textTheme, // Merge with existing theme styles
+        ),
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.red, // Set app bar background color
+          titleTextStyle: GoogleFonts.poppins(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white, // App bar title color
+          ),
+          iconTheme:
+              const IconThemeData(color: Colors.white), // Icon color in AppBar
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            textStyle: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12), // Rounded button corners
+            ),
+            backgroundColor: Colors.red, // Button background color
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+          ),
+        ),
       ),
       home: const SplashScreen(),
     );
@@ -46,19 +74,24 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       body: Center(
           child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
+          Image.asset(
+            'assets/mybudget.png',
+            height: 200,
+            width: 200,
+          ),
+          const Text(
             "MyBudget",
             style: TextStyle(fontSize: 30),
           ),
-          SizedBox(
+          const SizedBox(
             height: 20,
           ),
-          CircularProgressIndicator()
+          const CircularProgressIndicator()
         ],
       )),
     );
