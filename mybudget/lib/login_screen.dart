@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
@@ -49,10 +51,16 @@ class LoginScreenState extends State<LoginScreen> {
       await prefs.setString('email', _emailController.text);
       await prefs.setString('password', _passwordController.text);
       await prefs.setBool('remember_me', _rememberMe);
+       ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Preferences Saved')),
+        );
     } else {
       await prefs.remove('email');
       await prefs.remove('password');
       await prefs.setBool('remember_me', false);
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Preferences Removed')),
+        );
     }
   }
 
@@ -254,6 +262,7 @@ class LoginScreenState extends State<LoginScreen> {
                                 onChanged: (bool? value) {
                                   setState(() {
                                     _rememberMe = value ?? false;
+                                    _saveUserEmailPassword();
                                   });
                                 },
                               ),

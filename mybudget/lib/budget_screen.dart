@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
@@ -45,7 +47,7 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
 
   @override
   Widget build(BuildContext context) {
-    screenWidth = MediaQuery.of(context).size.width; //get screen width
+    screenWidth = MediaQuery.of(context).size.width; // get screen width
     screenHeigth = MediaQuery.of(context).size.height / 1.5;
     if (screenWidth! > 600) {
       screenWidth = 600;
@@ -61,60 +63,74 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
             width: screenWidth,
             margin: const EdgeInsets.all(20),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    const Icon(Icons.abc),
-                    const SizedBox(
-                      width: 15,
+                // Dropdown section
+                DropdownButtonFormField(
+                  decoration: InputDecoration(
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: 15, horizontal: 15),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    Expanded(
-                      child: DropdownButton(
-                        itemHeight: 80,
-                        isExpanded: true,
-                        value: dropdownvalue,
-                        icon: const Icon(Icons.keyboard_arrow_down),
-                        items: items.map((String items) {
-                          return DropdownMenuItem(
-                            value: items,
-                            child: Text(items),
-                          );
-                        }).toList(),
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            dropdownvalue = newValue!;
-                          });
-                        },
-                      ),
-                    )
-                  ],
+                    filled: true,
+                    fillColor: Colors.grey.shade100,
+                    prefixIcon: const Icon(
+                      Icons.category, // Icon before the dropdown
+                      color: Colors.blueAccent,
+                    ),
+                  ),
+                  isExpanded: true,
+                  value: dropdownvalue,
+                  icon: const Icon(Icons.keyboard_arrow_down,
+                      color: Colors.blueAccent),
+                  items: items.map((String items) {
+                    return DropdownMenuItem(
+                      value: items,
+                      child: Text(items),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      dropdownvalue = newValue!;
+                    });
+                  },
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
+
+                const SizedBox(height: 20),
+
+                // Item Price TextField
                 TextField(
-                  decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      icon: Icon(Icons.attach_money),
-                      hintText: "Enter Item Price"),
+                  decoration: InputDecoration(
+                    labelText: "Enter Item Price",
+                    labelStyle: const TextStyle(color: Colors.blueAccent),
+                    prefixIcon: const Icon(Icons.attach_money,
+                        color: Colors.blueAccent),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey.shade100,
+                  ),
                   keyboardType: TextInputType.number,
                   controller: itemPriceController,
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
+                const SizedBox(height: 20),
+
+                // Item Date TextField
                 TextField(
                   onTap: () {
                     showDatePicker(
-                            context: context,
-                            initialDate: DateTime.now(),
-                            firstDate: DateTime(2024),
-                            lastDate: DateTime(2030))
-                        .then((selectedDate) {
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(2024),
+                      lastDate: DateTime(2030),
+                    ).then((selectedDate) {
                       if (selectedDate != null) {
                         showTimePicker(
-                                context: context, initialTime: TimeOfDay.now())
-                            .then((selectTime) {
+                          context: context,
+                          initialTime: TimeOfDay.now(),
+                        ).then((selectTime) {
                           if (selectTime != null) {
                             DateTime selectedDateTime = DateTime(
                               selectedDate.year,
@@ -123,44 +139,68 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
                               selectTime.hour,
                               selectTime.minute,
                             );
-                            // print(selectedDateTime);
                             var formatter = DateFormat('dd-MM-yyyy hh:mm a');
                             String formattedDate =
                                 formatter.format(selectedDateTime);
                             itemDateController.text = formattedDate.toString();
-                            setState(() {}); //refresh screen with new data
+                            setState(() {}); // refresh screen with new data
                           }
                         });
                       }
                     });
                   },
-                  decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      icon: Icon(Icons.calendar_today),
-                      hintText: "Enter Item Date"),
+                  decoration: InputDecoration(
+                    labelText: "Enter Item Date",
+                    labelStyle: const TextStyle(color: Colors.blueAccent),
+                    prefixIcon: const Icon(Icons.calendar_today,
+                        color: Colors.blueAccent),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey.shade100,
+                  ),
                   controller: itemDateController,
                   keyboardType: TextInputType.datetime,
                 ),
-                const SizedBox(
-                  height: 15,
-                ),
+                const SizedBox(height: 20),
+
+                // Item Description TextField
                 TextField(
-                  decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      icon: Icon(Icons.info),
-                      hintText: "Enter Item Description"),
+                  decoration: InputDecoration(
+                    labelText: "Enter Item Description",
+                    labelStyle: const TextStyle(color: Colors.blueAccent),
+                    prefixIcon:
+                        const Icon(Icons.description, color: Colors.blueAccent),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey.shade100,
+                  ),
                   controller: itemDescController,
                   maxLines: 5,
                 ),
-                const SizedBox(
-                  height: 15,
-                ),
-                MaterialButton(
-                    minWidth: screenWidth,
-                    height: 50,
-                    color: Colors.yellow,
+                const SizedBox(height: 25),
+
+                // Insert Button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
                     onPressed: insertData,
-                    child: const Text("Insert")),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      backgroundColor: Colors.blueAccent, // Modern color
+                    ),
+                    child: const Text(
+                      "Insert",
+                      style: TextStyle(fontSize: 18, color: Colors.white),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
