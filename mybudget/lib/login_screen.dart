@@ -3,7 +3,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:mybudget/budget_screen.dart';
+import 'package:mybudget/daily_report_screen.dart';
 import 'package:mybudget/register_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

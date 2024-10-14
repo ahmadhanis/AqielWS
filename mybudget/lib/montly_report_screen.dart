@@ -3,7 +3,8 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:mybudget/report_screen_year.dart';
+import 'package:icons_plus/icons_plus.dart';
+import 'package:mybudget/yearly_report_screen.dart';
 import 'dart:convert';
 
 import 'package:url_launcher/url_launcher.dart';
@@ -210,6 +211,7 @@ class ReportScreenState extends State<ReportScreen> {
       'Lunch': 0.0,
       'Dinner': 0.0,
       'Groceries': 0.0,
+      'Travel': 0.0,
       'Others': 0.0,
     };
 
@@ -368,26 +370,27 @@ class ReportScreenState extends State<ReportScreen> {
       appBar: AppBar(
         title: const Text('Montly Report'),
         actions: [
-          IconButton(
-              onPressed: () {
-                fetchBudgetItems(
-                        selectedMonth.toString(), selectedYear.toString())
-                    .then((List<BudgetItem> items) {
-                  // Now you have a List<BudgetItem>
-                  if (items.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('No data available')),
-                    );
-                    return;
-                  }
-                  showPieChartForMonth(
-                      context, items, getMonthName(selectedMonth));
-                }).catchError((error) {
-                  // Handle any error that occurred while fetching the items
-                  print('Error: $error');
-                });
-              },
-              icon: const Icon(Icons.pie_chart)),
+          // IconButton(
+          //     onPressed: () {
+          //       fetchBudgetItems(
+          //               selectedMonth.toString(), selectedYear.toString())
+          //           .then((List<BudgetItem> items) {
+          //         // Now you have a List<BudgetItem>
+          //         if (items.isEmpty) {
+          //           ScaffoldMessenger.of(context).showSnackBar(
+          //             const SnackBar(content: Text('No data available')),
+          //           );
+          //           return;
+          //         }
+          //         showPieChartForMonth(
+          //             context, items, getMonthName(selectedMonth));
+          //       }).catchError((error) {
+          //         // Handle any error that occurred while fetching the items
+          //         print('Error: $error');
+          //       });
+          //     },
+          //     tooltip: "Monthly Report",
+          //     icon: const Icon(FontAwesome.chart_pie_solid)),
           IconButton(
               onPressed: () {
                 Navigator.push(
@@ -397,7 +400,7 @@ class ReportScreenState extends State<ReportScreen> {
                           ReportScreenYear(userId: widget.userId)),
                 );
               },
-              icon: const Icon(Icons.calendar_month)),
+              icon: const Icon(Bootstrap.calendar2)),
           IconButton(
               onPressed: () {
                 shareBudgetItemsViaWhatsApp(
@@ -752,6 +755,27 @@ class ReportScreenState extends State<ReportScreen> {
           )
         ],
       )),
+      floatingActionButton: FloatingActionButton(
+        child: const Icon(
+          FontAwesome.chart_pie_solid,
+        ),
+        onPressed: () {
+          fetchBudgetItems(selectedMonth.toString(), selectedYear.toString())
+              .then((List<BudgetItem> items) {
+            // Now you have a List<BudgetItem>
+            if (items.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('No data available')),
+              );
+              return;
+            }
+            showPieChartForMonth(context, items, getMonthName(selectedMonth));
+          }).catchError((error) {
+            // Handle any error that occurred while fetching the items
+            print('Error: $error');
+          });
+        },
+      ),
     );
   }
 }
