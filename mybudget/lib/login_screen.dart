@@ -51,7 +51,10 @@ class LoginScreenState extends State<LoginScreen> {
       await prefs.setString('password', _passwordController.text);
       await prefs.setBool('remember_me', _rememberMe);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Preferences Saved')),
+        const SnackBar(
+          content: Text('Preferences Saved'),
+          duration: Duration(seconds: 1),
+        ),
       );
     } else {
       await prefs.remove('email');
@@ -109,7 +112,10 @@ class LoginScreenState extends State<LoginScreen> {
 
             // Show login successful message
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Login Successful')),
+              const SnackBar(
+                content: Text('Login Successful'),
+                duration: Duration(seconds: 1),
+              ),
             );
 
             // Navigate to MyBudgetPage and pass the user ID

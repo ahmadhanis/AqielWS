@@ -110,7 +110,7 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
 
         // Update the state with the calculated total spending
         setState(() {
-          totalDaySpending = totalSpending;
+          //totalDaySpending = totalSpending;
         });
 
         return items;
@@ -270,8 +270,7 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () async {
-                        await insertData(); // Insert the data
-                        Navigator.of(context).pop(); // Close the dialog
+                        insertData(); // Insert the data
                       },
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -480,63 +479,10 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
                     selectedMonth.toString(), selectedYear.toString());
               },
               icon: const Icon(FontAwesome.whatsapp_brand)),
-          // PopupMenuButton<String>(
-          //   onSelected: (String value) {
-          //     if (value == 'exit') {
-          //       showDialog(
-          //         context: context,
-          //         builder: (BuildContext context) {
-          //           return AlertDialog(
-          //             title: const Text('Confirm Exit'),
-          //             content:
-          //                 const Text('Are you sure you want to exit the app?'),
-          //             actions: [
-          //               TextButton(
-          //                 onPressed: () {
-          //                   Navigator.of(context).pop(); // Close the dialog
-          //                 },
-          //                 child: const Text('Cancel'),
-          //               ),
-          //               ElevatedButton(
-          //                 onPressed: () {
-          //                   // Pop all routes to exit the app (or handle your custom exit logic)
-          //                   SystemNavigator.pop();
-          //                 },
-          //                 style: ElevatedButton.styleFrom(
-          //                   backgroundColor: Colors.red, // Red button for exit
-          //                 ),
-          //                 child: const Text(
-          //                   'Exit',
-          //                   style: TextStyle(color: Colors.white),
-          //                 ),
-          //               ),
-          //             ],
-          //           );
-          //         },
-          //       );
-          //     }
-          //   },
-          //   itemBuilder: (BuildContext context) {
-          //     return [
-          //       const PopupMenuItem<String>(
-          //         value: 'exit',
-          //         child: Text('Exit'),
-          //       ),
-          //     ];
-          //   },
-          // ),
         ],
       ),
       body: Center(
         child: Column(children: [
-          // Container(
-          //   margin: const EdgeInsets.only(top: 10),
-          //   child: Text(
-          //     "Daily Budget Report ($currentDay/$currentMonth/$currentYear)",
-          //     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          //   ),
-          // ),
-
           Padding(
             padding: const EdgeInsets.all(8),
             child: Row(
@@ -547,7 +493,7 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
                   child: DropdownButtonFormField<int>(
                     decoration: InputDecoration(
                       labelText: 'Day',
-                      labelStyle: const TextStyle(),
+                      labelStyle: const TextStyle(fontSize: 12),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -570,13 +516,13 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
                     hint: const Text('Day'),
                   ),
                 ),
-                const SizedBox(width: 5),
+                const SizedBox(width: 2),
                 // Dropdown for month
                 Expanded(
                   child: DropdownButtonFormField<int>(
                     decoration: InputDecoration(
                       labelText: 'Month',
-                      labelStyle: const TextStyle(),
+                      labelStyle: const TextStyle(fontSize: 12),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -599,14 +545,14 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
                     hint: const Text('Month'),
                   ),
                 ),
-                const SizedBox(width: 5), // Spacing between dropdowns
+                const SizedBox(width: 2), // Spacing between dropdowns
 
                 // Dropdown for year
                 Expanded(
                   child: DropdownButtonFormField<int>(
                     decoration: InputDecoration(
                       labelText: 'Year',
-                      labelStyle: const TextStyle(),
+                      labelStyle: const TextStyle(fontSize: 12),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -854,9 +800,9 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
                         const SizedBox(
                             height: 20), // Spacing between icon and text
                         Text(
-                          'No data found',
+                          'No data found.\nAdd new using the button below.',
                           style: TextStyle(
-                            fontSize: 22,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors
                                 .grey.shade600, // Softer color for modern look
@@ -870,6 +816,43 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
               },
             ),
           ),
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary,
+              // Background color for modern feel
+              borderRadius: BorderRadius.circular(12.0), // Rounded corners
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.5), // Soft shadow effect
+                  spreadRadius: 2,
+                  blurRadius: 5,
+                  offset: const Offset(0, 3), // Shadow position
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Text(
+                  'Total Spending for the Day', // Label text
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.white70, // Lighter color for label
+                  ),
+                ),
+                Text(
+                  'RM ${totalDaySpending.toStringAsFixed(2)}', // Displaying the total spending
+                  style: const TextStyle(
+                    fontSize: 24.0, // Bigger font for the total spending value
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white, // White text for modern contrast
+                  ),
+                ),
+              ],
+            ),
+          )
         ]),
       ),
       floatingActionButton: FloatingActionButton(
@@ -956,10 +939,12 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
       if (response.statusCode == 200) {
         var jsonResponse = json.decode(response.body);
         if (jsonResponse['success']) {
-          // Navigator.of(context).pop(true);
+          Navigator.of(context).pop(true);
+
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Data inserted successfully')),
           );
+
           futureBudgetItems =
               fetchBudgetItems(currentDay, currentMonth, currentYear);
           setState(() {
