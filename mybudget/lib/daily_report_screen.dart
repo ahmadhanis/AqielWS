@@ -1,7 +1,6 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, deprecated_member_use
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
@@ -94,7 +93,6 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
           'year': year.toString(), // Pass the current year
         },
       );
-      print(response.body);
       if (response.statusCode == 200) {
         List jsonResponse = json.decode(response.body);
 
@@ -120,7 +118,6 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
         throw Exception('Failed to load budgets');
       }
     } catch (e) {
-      print('Error occurred: $e');
       return [];
     }
   }
@@ -376,7 +373,6 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
     List<BudgetItem> items = await fetchBudgetItems(day, month, year);
 
     if (items.isEmpty) {
-      print('No budget items to share.');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('No budget items to share.')),
       );
@@ -389,7 +385,7 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
     /// The [BuildContext] is used to show the confirmation dialog and SnackBars.
     // Prepare the message
     StringBuffer message = StringBuffer();
-    message.writeln('My Budget for $month-$year:');
+    message.writeln('My Budget for $day-$month-$year:');
     message.writeln('--------------------------------');
 
     double totalSpending = 0.0;
@@ -483,7 +479,7 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
                 shareBudgetItemsViaWhatsApp(context, selectedDay.toString(),
                     selectedMonth.toString(), selectedYear.toString());
               },
-              icon: const Icon(Icons.share))
+              icon: const Icon(FontAwesome.whatsapp_brand)),
           // PopupMenuButton<String>(
           //   onSelected: (String value) {
           //     if (value == 'exit') {
@@ -982,7 +978,6 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
         );
       }
     } catch (e) {
-      print(e.toString());
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Error occurred')),
       );

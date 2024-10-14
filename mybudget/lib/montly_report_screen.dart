@@ -248,7 +248,8 @@ class ReportScreenState extends State<ReportScreen> {
         return AlertDialog(
           title: Text('Spending Breakdown for $month'),
           content: SizedBox(
-            height: 300,
+            height: screenHeigth!/2,
+            width: screenWidth,
             child: PieChart(
               PieChartData(
                 sections: pieChartSections,
@@ -282,6 +283,8 @@ class ReportScreenState extends State<ReportScreen> {
         return Colors.orange;
       case 'Groceries':
         return Colors.purple;
+      case 'Travel':
+        return Colors.red;
       default:
         return Colors.grey;
     }
@@ -406,7 +409,7 @@ class ReportScreenState extends State<ReportScreen> {
                 shareBudgetItemsViaWhatsApp(
                     context, selectedMonth.toString(), selectedYear.toString());
               },
-              icon: const Icon(Icons.share))
+              icon: const Icon(FontAwesome.whatsapp_brand))
         ],
       ),
       body: Center(
