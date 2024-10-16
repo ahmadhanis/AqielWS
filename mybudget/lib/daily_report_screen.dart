@@ -482,378 +482,391 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
         ],
       ),
       body: Center(
-        child: Column(children: [
-          Padding(
-            padding: const EdgeInsets.all(8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: DropdownButtonFormField<int>(
-                    decoration: InputDecoration(
-                      labelText: 'Day',
-                      labelStyle: const TextStyle(fontSize: 12),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
+        child: SizedBox(
+          width: screenWidth,
+          child: Column(children: [
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: DropdownButtonFormField<int>(
+                      decoration: InputDecoration(
+                        labelText: 'Day',
+                        labelStyle: const TextStyle(fontSize: 12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey.shade100,
                       ),
-                      filled: true,
-                      fillColor: Colors.grey.shade100,
+                      value: selectedDay, // Set default value to current month
+                      items: days.map((int day) {
+                        return DropdownMenuItem<int>(
+                          value: day,
+                          child:
+                              Text(day.toString()), // Display month as a number
+                        );
+                      }).toList(),
+                      onChanged: (int? newValue) {
+                        setState(() {
+                          selectedDay = newValue!;
+                        });
+                      },
+                      hint: const Text('Day'),
                     ),
-                    value: selectedDay, // Set default value to current month
-                    items: days.map((int day) {
-                      return DropdownMenuItem<int>(
-                        value: day,
-                        child:
-                            Text(day.toString()), // Display month as a number
-                      );
-                    }).toList(),
-                    onChanged: (int? newValue) {
-                      setState(() {
-                        selectedDay = newValue!;
-                      });
-                    },
-                    hint: const Text('Day'),
                   ),
-                ),
-                const SizedBox(width: 2),
-                // Dropdown for month
-                Expanded(
-                  child: DropdownButtonFormField<int>(
-                    decoration: InputDecoration(
-                      labelText: 'Month',
-                      labelStyle: const TextStyle(fontSize: 12),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
+                  const SizedBox(width: 2),
+                  // Dropdown for month
+                  Expanded(
+                    child: DropdownButtonFormField<int>(
+                      decoration: InputDecoration(
+                        labelText: 'Month',
+                        labelStyle: const TextStyle(fontSize: 12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey.shade100,
                       ),
-                      filled: true,
-                      fillColor: Colors.grey.shade100,
+                      value:
+                          selectedMonth, // Set default value to current month
+                      items: months.map((int month) {
+                        return DropdownMenuItem<int>(
+                          value: month,
+                          child: Text(
+                              month.toString()), // Display month as a number
+                        );
+                      }).toList(),
+                      onChanged: (int? newValue) {
+                        setState(() {
+                          selectedMonth = newValue!;
+                        });
+                      },
+                      hint: const Text('Month'),
                     ),
-                    value: selectedMonth, // Set default value to current month
-                    items: months.map((int month) {
-                      return DropdownMenuItem<int>(
-                        value: month,
-                        child:
-                            Text(month.toString()), // Display month as a number
-                      );
-                    }).toList(),
-                    onChanged: (int? newValue) {
-                      setState(() {
-                        selectedMonth = newValue!;
-                      });
-                    },
-                    hint: const Text('Month'),
                   ),
-                ),
-                const SizedBox(width: 2), // Spacing between dropdowns
+                  const SizedBox(width: 2), // Spacing between dropdowns
 
-                // Dropdown for year
-                Expanded(
-                  child: DropdownButtonFormField<int>(
-                    decoration: InputDecoration(
-                      labelText: 'Year',
-                      labelStyle: const TextStyle(fontSize: 12),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
+                  // Dropdown for year
+                  Expanded(
+                    child: DropdownButtonFormField<int>(
+                      decoration: InputDecoration(
+                        labelText: 'Year',
+                        labelStyle: const TextStyle(fontSize: 12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey.shade100,
                       ),
-                      filled: true,
-                      fillColor: Colors.grey.shade100,
+                      value: selectedYear, // Set default value to current year
+                      items: years.map((int year) {
+                        return DropdownMenuItem<int>(
+                          value: year,
+                          child: Text(year.toString()), // Display year
+                        );
+                      }).toList(),
+                      onChanged: (int? newValue) {
+                        setState(() {
+                          selectedYear = newValue!;
+                        });
+                      },
+                      hint: const Text('Year'),
                     ),
-                    value: selectedYear, // Set default value to current year
-                    items: years.map((int year) {
-                      return DropdownMenuItem<int>(
-                        value: year,
-                        child: Text(year.toString()), // Display year
-                      );
-                    }).toList(),
-                    onChanged: (int? newValue) {
-                      setState(() {
-                        selectedYear = newValue!;
-                      });
-                    },
-                    hint: const Text('Year'),
                   ),
-                ),
-                const SizedBox(width: 5), // Spacing before the search button
+                  const SizedBox(width: 5), // Spacing before the search button
 
-                // Search button
-                ElevatedButton(
-                  onPressed: () {
-                    futureBudgetItems = fetchBudgetItems(
-                      selectedDay.toString(),
-                      selectedMonth.toString(),
-                      selectedYear.toString(),
-                    );
-                    setState(() {});
-                  },
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 15, vertical: 15),
-                    // Modern button color
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(10), // Rounded corners
+                  // Search button
+                  ElevatedButton(
+                    onPressed: () {
+                      futureBudgetItems = fetchBudgetItems(
+                        selectedDay.toString(),
+                        selectedMonth.toString(),
+                        selectedYear.toString(),
+                      );
+                      setState(() {});
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 15, vertical: 15),
+                      // Modern button color
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(10), // Rounded corners
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.search,
+                      color: Colors.white,
                     ),
                   ),
-                  child: const Icon(
-                    Icons.search,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Expanded(
-            child: FutureBuilder<List<BudgetItem>>(
-              future: futureBudgetItems,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [CircularProgressIndicator()],
-                  );
-                } else if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                  return ListView.builder(
-                    padding: const EdgeInsets.all(8.0),
-                    itemCount: snapshot.data!.length,
-                    itemBuilder: (context, index) {
-                      final item = snapshot.data![index];
+            Expanded(
+              child: FutureBuilder<List<BudgetItem>>(
+                future: futureBudgetItems,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [CircularProgressIndicator()],
+                    );
+                  } else if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                    return ListView.builder(
+                      padding: const EdgeInsets.all(8.0),
+                      itemCount: snapshot.data!.length,
+                      itemBuilder: (context, index) {
+                        final item = snapshot.data![index];
 
-                      return GestureDetector(
-                        onLongPress: () {
-                          deleteBudgetDialog(
-                              context, item.budgetId.toString(), item.itemName);
-                        },
-                        onTap: () {
-                          // Show dialog window with item details
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return Dialog(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                      20.0), // Rounded corners
-                                ),
-                                elevation: 10,
-                                backgroundColor: Colors.white,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(
-                                      20.0), // Padding inside the dialog
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                        return GestureDetector(
+                          onLongPress: () {
+                            deleteBudgetDialog(context,
+                                item.budgetId.toString(), item.itemName);
+                          },
+                          onTap: () {
+                            // Show dialog window with item details
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return Dialog(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                        20.0), // Rounded corners
+                                  ),
+                                  elevation: 10,
+                                  backgroundColor: Colors.white,
+                                  child: ConstrainedBox(
+                                    constraints: const BoxConstraints(
+                                      maxWidth: 400, // Set maximum width here
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(
+                                          20.0), // Padding inside the dialog
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          // Title of the dialog
+                                          Text(
+                                            item.itemName,
+                                            style: const TextStyle(
+                                              fontSize:
+                                                  22.0, // Larger font for modern feel
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black87,
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                              height:
+                                                  15.0), // Space between title and content
+                                          // Description
+                                          Text(
+                                            'Description: ${item.itemDesc}',
+                                            style: const TextStyle(
+                                              fontSize: 16.0,
+                                              color: Colors.black54,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 10.0),
+                                          // Price
+                                          Text(
+                                            'Price: RM ${item.itemPrice}',
+                                            style: const TextStyle(
+                                              fontSize: 18.0,
+                                              color: Colors.black87,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 10.0),
+                                          // Date
+                                          Text(
+                                            'Date: ${item.itemDate}',
+                                            style: const TextStyle(
+                                              fontSize: 16.0,
+                                              color: Colors.black54,
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                              height:
+                                                  20.0), // Space before the actions
+                                          // Actions row
+                                          Align(
+                                            alignment: Alignment.bottomRight,
+                                            child: ElevatedButton(
+                                              onPressed: () {
+                                                Navigator.of(context)
+                                                    .pop(); // Close the dialog
+                                              },
+                                              style: ElevatedButton.styleFrom(
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          10.0), // Rounded button corners
+                                                ),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                  horizontal: 24.0,
+                                                  vertical: 12.0,
+                                                ),
+                                              ),
+                                              child: const Text(
+                                                'Close',
+                                                style: TextStyle(
+                                                  color: Colors
+                                                      .white, // Button text color
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                          child: Card(
+                            margin: const EdgeInsets.symmetric(vertical: 8.0),
+                            elevation: 4, // Adds shadow to the card
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                  15.0), // Rounded corners
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(
+                                  16.0), // Padding inside the card
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Item name (bold and larger font size)
+                                  Text(
+                                    item.itemName,
+                                    style: const TextStyle(
+                                      fontSize: 18.0,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                      height: 8.0), // Spacing between elements
+                                  // Item description
+                                  Text(
+                                    'Description: ${truncateString(item.itemDesc, 50)}',
+                                    style: const TextStyle(
+                                        fontSize: 14.0, color: Colors.grey),
+                                  ),
+                                  const SizedBox(height: 8.0),
+                                  // Price and Date in a row layout
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
-                                      // Title of the dialog
-                                      Text(
-                                        item.itemName,
-                                        style: const TextStyle(
-                                          fontSize:
-                                              22.0, // Larger font for modern feel
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black87,
-                                        ),
-                                      ),
-                                      const SizedBox(
-                                          height:
-                                              15.0), // Space between title and content
-                                      // Description
-                                      Text(
-                                        'Description: ${item.itemDesc}',
-                                        style: const TextStyle(
-                                          fontSize: 16.0,
-                                          color: Colors.black54,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10.0),
                                       // Price
                                       Text(
                                         'Price: RM ${item.itemPrice}',
                                         style: const TextStyle(
-                                          fontSize: 18.0,
-                                          color: Colors.black87,
+                                          fontSize: 16.0,
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
-                                      const SizedBox(height: 10.0),
                                       // Date
                                       Text(
-                                        'Date: ${item.itemDate}',
+                                        item.itemDate,
                                         style: const TextStyle(
-                                          fontSize: 16.0,
-                                          color: Colors.black54,
-                                        ),
-                                      ),
-                                      const SizedBox(
-                                          height:
-                                              20.0), // Space before the actions
-                                      // Actions row
-                                      Align(
-                                        alignment: Alignment.bottomRight,
-                                        child: ElevatedButton(
-                                          onPressed: () {
-                                            Navigator.of(context)
-                                                .pop(); // Close the dialog
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(
-                                                  10.0), // Rounded button corners
-                                            ),
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 24.0,
-                                              vertical: 12.0,
-                                            ),
-                                          ),
-                                          child: const Text(
-                                            'Close',
-                                            style: TextStyle(
-                                              color: Colors
-                                                  .white, // Button text color
-                                            ),
-                                          ),
+                                          fontSize: 14.0,
+                                          color: Colors.grey,
                                         ),
                                       ),
                                     ],
                                   ),
-                                ),
-                              );
-                            },
-                          );
-                        },
-                        child: Card(
-                          margin: const EdgeInsets.symmetric(vertical: 8.0),
-                          elevation: 4, // Adds shadow to the card
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(15.0), // Rounded corners
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(
-                                16.0), // Padding inside the card
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Item name (bold and larger font size)
-                                Text(
-                                  item.itemName,
-                                  style: const TextStyle(
-                                    fontSize: 18.0,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(
-                                    height: 8.0), // Spacing between elements
-                                // Item description
-                                Text(
-                                  'Description: ${truncateString(item.itemDesc, 50)}',
-                                  style: const TextStyle(
-                                      fontSize: 14.0, color: Colors.grey),
-                                ),
-                                const SizedBox(height: 8.0),
-                                // Price and Date in a row layout
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    // Price
-                                    Text(
-                                      'Price: RM ${item.itemPrice}',
-                                      style: const TextStyle(
-                                        fontSize: 16.0,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    // Date
-                                    Text(
-                                      item.itemDate,
-                                      style: const TextStyle(
-                                        fontSize: 14.0,
-                                        color: Colors.grey,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    },
-                  );
-                } else {
-                  return Container(
-                    padding: const EdgeInsets.all(
-                        20.0), // Padding inside the container
-                    alignment: Alignment.center,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.info_outline,
-                          size: 50,
-                          // Modern color for the icon
-                        ),
-                        const SizedBox(
-                            height: 20), // Spacing between icon and text
-                        Text(
-                          'No data found.\nAdd new using the button below.',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors
-                                .grey.shade600, // Softer color for modern look
+                        );
+                      },
+                    );
+                  } else {
+                    return Container(
+                      padding: const EdgeInsets.all(
+                          20.0), // Padding inside the container
+                      alignment: Alignment.center,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.info_outline,
+                            size: 50,
+                            // Modern color for the icon
                           ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
+                          const SizedBox(
+                              height: 20), // Spacing between icon and text
+                          Text(
+                            'No data found.\nAdd new using the button below.',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey
+                                  .shade600, // Softer color for modern look
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                },
+              ),
+            ),
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+              margin: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary,
+                // Background color for modern feel
+                borderRadius: BorderRadius.circular(12.0), // Rounded corners
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5), // Soft shadow effect
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: const Offset(0, 3), // Shadow position
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Text(
+                    'Total Spending for the Day', // Label text
+                    style: TextStyle(
+                      fontSize: 16.0,
+                      color: Colors.white70, // Lighter color for label
                     ),
-                  );
-                }
-              },
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-            margin: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary,
-              // Background color for modern feel
-              borderRadius: BorderRadius.circular(12.0), // Rounded corners
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.5), // Soft shadow effect
-                  spreadRadius: 2,
-                  blurRadius: 5,
-                  offset: const Offset(0, 3), // Shadow position
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Text(
-                  'Total Spending for the Day', // Label text
-                  style: TextStyle(
-                    fontSize: 16.0,
-                    color: Colors.white70, // Lighter color for label
                   ),
-                ),
-                Text(
-                  'RM ${totalDaySpending.toStringAsFixed(2)}', // Displaying the total spending
-                  style: const TextStyle(
-                    fontSize: 24.0, // Bigger font for the total spending value
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white, // White text for modern contrast
+                  Text(
+                    'RM ${totalDaySpending.toStringAsFixed(2)}', // Displaying the total spending
+                    style: const TextStyle(
+                      fontSize:
+                          24.0, // Bigger font for the total spending value
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white, // White text for modern contrast
+                    ),
                   ),
-                ),
-              ],
-            ),
-          )
-        ]),
+                ],
+              ),
+            )
+          ]),
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {

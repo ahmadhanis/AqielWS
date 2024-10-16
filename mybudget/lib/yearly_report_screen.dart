@@ -173,179 +173,182 @@ class ReportScreenYearState extends State<ReportScreenYear> {
         title: const Text('Yearly Report'),
       ),
       body: Center(
-          child: Column(children: [
-        Padding(
-          padding: const EdgeInsets.all(8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Dropdown for year
-              Expanded(
-                child: DropdownButtonFormField<int>(
-                  decoration: InputDecoration(
-                    labelText: 'Year',
-                    labelStyle: const TextStyle(),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey.shade100,
-                  ),
-                  value: selectedYear, // Set default value to current year
-                  items: years.map((int year) {
-                    return DropdownMenuItem<int>(
-                      value: year,
-                      child: Text(year.toString()), // Display year
-                    );
-                  }).toList(),
-                  onChanged: (int? newValue) {
-                    setState(() {
-                      selectedYear = newValue!;
-                    });
-                  },
-                  hint: const Text('Year'),
-                ),
-              ),
-              const SizedBox(width: 5), // Spacing before the search button
-
-              // Search button
-              ElevatedButton(
-                onPressed: () {
-                  futureYearlyReport = fetchYearlyReport(selectedYear);
-                },
-                style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-                  // Modern button color
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10), // Rounded corners
-                  ),
-                ),
-                child: const Icon(
-                  Icons.search,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ),
-        ),
-        Expanded(
-          child: FutureBuilder<List<dynamic>>(
-            future: futureYearlyReport, // Use the future stored in initState
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
-              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return Container(
-                  padding: const EdgeInsets.all(
-                      20.0), // Padding inside the container
-                  alignment: Alignment.center,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.info_outline,
-                        size: 50,
-                        // Modern color for the icon
-                      ),
-                      const SizedBox(
-                          height: 20), // Spacing between icon and text
-                      Text(
-                        'No data found',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors
-                              .grey.shade600, // Softer color for modern look
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                );
-              } else {
-                List<dynamic> reportData = snapshot.data!;
-
-                return ListView.builder(
-                  itemCount: reportData.length,
-                  itemBuilder: (context, index) {
-                    // Extract month, total spending, and item count from the data
-                    int month =
-                        int.parse(reportData[index]['month'].toString());
-                    double totalSpending = double.parse(
-                        reportData[index]['total_spending'].toString());
-                    int itemCount =
-                        int.parse(reportData[index]['item_count'].toString());
-
-                    // Format the month into readable string (e.g., "January")
-                    String monthName = getMonthName(month);
-
-                    return Card(
-                      elevation: 5,
-                      margin: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
-                      shape: RoundedRectangleBorder(
+          child: SizedBox(
+            width: screenWidth,
+            child: Column(children: [
+                    Padding(
+            padding: const EdgeInsets.all(8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Dropdown for year
+                Expanded(
+                  child: DropdownButtonFormField<int>(
+                    decoration: InputDecoration(
+                      labelText: 'Year',
+                      labelStyle: const TextStyle(),
+                      border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: ListTile(
-                        title: Text(monthName,
-                            style: const TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold)),
-                        subtitle: Text(
-                          'Total Spending: RM ${totalSpending.toStringAsFixed(2)}\n'
-                          'Total Items: $itemCount',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                      ),
-                    );
+                      filled: true,
+                      fillColor: Colors.grey.shade100,
+                    ),
+                    value: selectedYear, // Set default value to current year
+                    items: years.map((int year) {
+                      return DropdownMenuItem<int>(
+                        value: year,
+                        child: Text(year.toString()), // Display year
+                      );
+                    }).toList(),
+                    onChanged: (int? newValue) {
+                      setState(() {
+                        selectedYear = newValue!;
+                      });
+                    },
+                    hint: const Text('Year'),
+                  ),
+                ),
+                const SizedBox(width: 5), // Spacing before the search button
+            
+                // Search button
+                ElevatedButton(
+                  onPressed: () {
+                    futureYearlyReport = fetchYearlyReport(selectedYear);
                   },
-                );
-              }
-            },
-          ),
-        ),
-        Container(
-          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-          margin: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary,
-            // Background color for modern feel
-            borderRadius: BorderRadius.circular(12.0), // Rounded corners
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.5), // Soft shadow effect
-                spreadRadius: 2,
-                blurRadius: 5,
-                offset: const Offset(0, 3), // Shadow position
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Text(
-                'Total Yearly Spending', // Label text
-                style: TextStyle(
-                  fontSize: 16.0,
-                  color: Colors.white70, // Lighter color for label
+                  style: ElevatedButton.styleFrom(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                    // Modern button color
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10), // Rounded corners
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.search,
+                    color: Colors.white,
+                  ),
                 ),
-              ),
-              Text(
-                'RM ${totalYearSpending.toStringAsFixed(2)}', // Displaying the total spending
-                style: const TextStyle(
-                  fontSize: 24.0, // Bigger font for the total spending value
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white, // White text for modern contrast
+              ],
+            ),
+                    ),
+                    Expanded(
+            child: FutureBuilder<List<dynamic>>(
+              future: futureYearlyReport, // Use the future stored in initState
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Container(
+                    padding: const EdgeInsets.all(
+                        20.0), // Padding inside the container
+                    alignment: Alignment.center,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.info_outline,
+                          size: 50,
+                          // Modern color for the icon
+                        ),
+                        const SizedBox(
+                            height: 20), // Spacing between icon and text
+                        Text(
+                          'No data found',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors
+                                .grey.shade600, // Softer color for modern look
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  );
+                } else {
+                  List<dynamic> reportData = snapshot.data!;
+            
+                  return ListView.builder(
+                    itemCount: reportData.length,
+                    itemBuilder: (context, index) {
+                      // Extract month, total spending, and item count from the data
+                      int month =
+                          int.parse(reportData[index]['month'].toString());
+                      double totalSpending = double.parse(
+                          reportData[index]['total_spending'].toString());
+                      int itemCount =
+                          int.parse(reportData[index]['item_count'].toString());
+            
+                      // Format the month into readable string (e.g., "January")
+                      String monthName = getMonthName(month);
+            
+                      return Card(
+                        elevation: 5,
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: ListTile(
+                          title: Text(monthName,
+                              style: const TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold)),
+                          subtitle: Text(
+                            'Total Spending: RM ${totalSpending.toStringAsFixed(2)}\n'
+                            'Total Items: $itemCount',
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                }
+              },
+            ),
+                    ),
+                    Container(
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary,
+              // Background color for modern feel
+              borderRadius: BorderRadius.circular(12.0), // Rounded corners
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.5), // Soft shadow effect
+                  spreadRadius: 2,
+                  blurRadius: 5,
+                  offset: const Offset(0, 3), // Shadow position
                 ),
-              ),
-            ],
-          ),
-        )
-      ])),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Text(
+                  'Total Yearly Spending', // Label text
+                  style: TextStyle(
+                    fontSize: 16.0,
+                    color: Colors.white70, // Lighter color for label
+                  ),
+                ),
+                Text(
+                  'RM ${totalYearSpending.toStringAsFixed(2)}', // Displaying the total spending
+                  style: const TextStyle(
+                    fontSize: 24.0, // Bigger font for the total spending value
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white, // White text for modern contrast
+                  ),
+                ),
+              ],
+            ),
+                    )
+                  ]),
+          )),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           fetchYearlyReport(selectedYear).then((List<dynamic> items) {
