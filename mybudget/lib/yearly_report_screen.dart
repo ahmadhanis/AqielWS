@@ -54,7 +54,6 @@ class ReportScreenYearState extends State<ReportScreenYear> {
         'year': year.toString(),
       },
     );
-    print(response.body);
 
     if (response.statusCode == 200) {
       List<dynamic> jsonResponse = json.decode(response.body);
@@ -368,7 +367,6 @@ class ReportScreenYearState extends State<ReportScreenYear> {
             showBarChartForYear(context, parsedItems, selectedYear.toString());
           }).catchError((error) {
             // Handle any error that occurred while fetching the items
-            print('Error: $error');
           });
         },
         child: const Icon(Icons.bar_chart),
