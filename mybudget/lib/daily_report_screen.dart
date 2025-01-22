@@ -60,7 +60,6 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     DateTime selectedDate = DateTime.now(); //get current date
     var formatter = DateFormat('dd-MM-yyyy hh:mm a'); //date format
@@ -97,7 +96,6 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
         List jsonResponse = json.decode(response.body);
 
         // Calculate total monthly spending
-        double totalSpending = 0.0;
 
         List<BudgetItem> items = jsonResponse.map((data) {
           BudgetItem item = BudgetItem.fromJson(data);

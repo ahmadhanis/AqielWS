@@ -105,7 +105,6 @@ class LoginScreenState extends State<LoginScreen> {
         if (response.statusCode == 200) {
           // Decode the JSON response
           var jsonResponse = json.decode(response.body);
-          print(jsonResponse);
           if (jsonResponse['success'] == true) {
             // Login successful, retrieve the user ID
             int userId = jsonResponse['user_id'];
@@ -340,7 +339,7 @@ class LoginScreenState extends State<LoginScreen> {
   }
 
   void _showForgotPasswordDialog(BuildContext context) {
-    TextEditingController _forgotPasswordEmailController =
+    TextEditingController forgotPasswordEmailController =
         TextEditingController();
 
     showDialog(
@@ -355,7 +354,7 @@ class LoginScreenState extends State<LoginScreen> {
                   'Please enter your email address to reset your password:'),
               const SizedBox(height: 10),
               TextField(
-                controller: _forgotPasswordEmailController,
+                controller: forgotPasswordEmailController,
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   labelText: 'Email Address',
@@ -375,7 +374,7 @@ class LoginScreenState extends State<LoginScreen> {
             ),
             ElevatedButton(
               onPressed: () async {
-                String email = _forgotPasswordEmailController.text;
+                String email = forgotPasswordEmailController.text;
 
                 if (email.isNotEmpty) {
                   // Prepare the URL to send the forgot password request

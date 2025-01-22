@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use
+// ignore_for_file: deprecated_member_use, use_build_context_synchronously
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -64,7 +64,6 @@ class ReportScreenState extends State<ReportScreen> {
           'year': year.toString(), // Pass the current year
         },
       );
-      print(response.body);
       if (response.statusCode == 200) {
         List jsonResponse = json.decode(response.body);
 
@@ -90,7 +89,6 @@ class ReportScreenState extends State<ReportScreen> {
         throw Exception('Failed to load budgets');
       }
     } catch (e) {
-      print('Error occurred: $e');
       return [];
     }
   }
@@ -119,7 +117,6 @@ class ReportScreenState extends State<ReportScreen> {
     List<BudgetItem> items = await fetchBudgetItems(month, year);
 
     if (items.isEmpty) {
-      print('No budget items to share.');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('No budget items to share.')),
       );
@@ -785,7 +782,6 @@ class ReportScreenState extends State<ReportScreen> {
             showPieChartForMonth(context, items, getMonthName(selectedMonth));
           }).catchError((error) {
             // Handle any error that occurred while fetching the items
-            print('Error: $error');
           });
         },
       ),
