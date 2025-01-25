@@ -120,10 +120,53 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               Text(
                 "RESULT:" + result.toString(),
-                style: TextStyle(fontSize: 24),
+                style: const TextStyle(fontSize: 24),
+              ),
+              ListView(
+                children: [
+                  ListTile(
+                    title: const Text("Equation 1"),
+                    subtitle: const Text("Description about equation"),
+                    leading: const Icon(Icons.numbers),
+                    trailing: const Icon(Icons.arrow_forward),
+                    onTap: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const EquationScreen()),
+                      );
+                    },
+                  ),
+                  const ListTile(
+                    title: Text("Equation 3"),
+                    subtitle: Text("Subtitle 2"),
+                    leading: Icon(Icons.numbers),
+                    trailing: Icon(Icons.arrow_forward),
+                  ),
+                  const ListTile(
+                    title: Text("Equation 3"),
+                    subtitle: Text("Subtitle 3"),
+                    leading: Icon(Icons.numbers),
+                    trailing: Icon(Icons.arrow_forward),
+                  ),
+                ],
               )
             ],
           ),
         ));
+  }
+}
+
+class EquationScreen extends StatefulWidget {
+  const EquationScreen({super.key});
+
+  @override
+  State<EquationScreen> createState() => _EquationScreenState();
+}
+
+class _EquationScreenState extends State<EquationScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return const Placeholder();
   }
 }
