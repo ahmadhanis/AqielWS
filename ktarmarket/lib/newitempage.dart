@@ -1,7 +1,9 @@
+import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
 
 class NewItemPage extends StatefulWidget {
   const NewItemPage({super.key});
@@ -144,7 +146,68 @@ class _NewItemPageState extends State<NewItemPage> {
       );
       return;
     }
+    if (_image == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select an image'),
+        ),
+      );
+      return;
+    }
     // TODO: implement onSubmitItemDialog
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+              title: const Text('Submit Item'),
+              content: const Text('Are you sure you want to submit this item?'),
+              actions: [
+                TextButton(
+                  child: const Text('Cancel'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                TextButton(
+                    child: const Text('Submit'),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      insertItem();
+                    })
+              ]);
+        });
+  }
+
+  void insertItem() {
+    http.post(Uri.parse('http://ktarmarket.slumberjer.com/api/insertitem.php'),
+        body: {
+          'email': emailController.text,
+          'phone': phoneController.text,
+          'status': dropdownvalue,
+          'itemName': itemNameController.text,
+          'itemDescription': itemDescriptionController.text,
+          'price': priceController.text,
+          'image': base64Encode(_image!.readAsBytesSync()),
+        }).then((response) {
+      log(response.body);
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        if (data['status'] == 'success') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Item submitted successfully'),
+            ),
+          );
+          Navigator.pop(context);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to submit item'),
+            ),
+          );
+        }
+      }
+    });
   }
 
   void showImagePickerDialog() {
