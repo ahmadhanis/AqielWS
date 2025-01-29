@@ -22,6 +22,8 @@ class _MarketPageState extends State<MarketPage> {
   String status = "Loading...";
   late double screenHeight, screenWidth;
   final df = DateFormat('dd/MM/yyyy hh:mm a');
+  TextEditingController searchController = TextEditingController();
+  String searchString = "";
 
   @override
   void initState() {
@@ -33,9 +35,11 @@ class _MarketPageState extends State<MarketPage> {
   void loadItems() {
     // TODO: implement loadItems
     http
-        .get(Uri.parse('http://ktarmarket.slumberjer.com/api/loaditems.php'))
+        .get(Uri.parse(
+            'http://ktarmarket.slumberjer.com/api/loaditems.php?search=$searchString'))
         .then((response) {
       if (response.statusCode == 200) {
+        print(response.body);
         var data = jsonDecode(response.body);
         if (data['status'] == 'success') {
           itemList.clear();
@@ -70,6 +74,13 @@ class _MarketPageState extends State<MarketPage> {
         actions: [
           IconButton(
             onPressed: () {
+              onsearchDialog();
+            },
+            icon: const Icon(Icons.search),
+          ),
+          IconButton(
+            onPressed: () {
+              searchString = "";
               loadItems();
             },
             icon: const Icon(Icons.refresh),
@@ -92,7 +103,8 @@ class _MarketPageState extends State<MarketPage> {
                     subtitle: Text(itemList[index].itemStatus.toString()),
                     trailing: Text(
                         "RM ${double.parse(itemList[index].price.toString()).toStringAsFixed(2)}",
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16)),
                   ),
                 );
               },
@@ -181,7 +193,6 @@ class _MarketPageState extends State<MarketPage> {
                       Text(itemList[index].itemStatus.toString()),
                     ],
                   ),
-                  
                   const SizedBox(
                     height: 10,
                   ),
@@ -190,7 +201,8 @@ class _MarketPageState extends State<MarketPage> {
                     children: [
                       IconButton(
                           onPressed: () {
-                            launchUrlString('tel://${itemList[index].phone.toString()}');
+                            launchUrlString(
+                                'tel://${itemList[index].phone.toString()}');
                           },
                           icon: const Icon(
                             Icons.phone,
@@ -198,7 +210,8 @@ class _MarketPageState extends State<MarketPage> {
                           )),
                       IconButton(
                           onPressed: () {
-                            launchUrlString('https://wa.me/${itemList[index].phone.toString()}');
+                            launchUrlString(
+                                'https://wa.me/${itemList[index].phone.toString()}');
                           },
                           icon: const Icon(
                             Icons.wechat,
@@ -206,7 +219,8 @@ class _MarketPageState extends State<MarketPage> {
                           )),
                       IconButton(
                           onPressed: () {
-                            launchUrlString('mailto://${itemList[index].email.toString()}');
+                            launchUrlString(
+                                'mailto://${itemList[index].email.toString()}');
                           },
                           icon: const Icon(
                             Icons.email,
@@ -218,6 +232,40 @@ class _MarketPageState extends State<MarketPage> {
               ),
             ),
             actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Close'))
+            ],
+          );
+        });
+  }
+
+  void onsearchDialog() {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Search'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: searchController,
+                  decoration: const InputDecoration(
+                      labelText: 'Search', icon: Icon(Icons.search)),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    searchString = searchController.text;
+                    loadItems();
+                  },
+                  child: const Text('Search')),
               TextButton(
                   onPressed: () {
                     Navigator.pop(context);

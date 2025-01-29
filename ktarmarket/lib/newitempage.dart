@@ -193,12 +193,23 @@ class _NewItemPageState extends State<NewItemPage> {
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
         if (data['status'] == 'success') {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Item submitted successfully'),
-            ),
-          );
-          Navigator.pop(context);
+          showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                    title: const Text('Success'),
+                    content: const Text(
+                        'Please check your email for item verification'),
+                    actions: [
+                      TextButton(
+                        child: const Text('OK'),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.pop(context);
+                        },
+                      )
+                    ]);
+              });
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
