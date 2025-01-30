@@ -25,6 +25,10 @@ class _MarketPageState extends State<MarketPage> {
   TextEditingController searchController = TextEditingController();
   String searchString = "";
 
+  int numofpage = 1;
+  int curpage = 1;
+  int numofresult = 0;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -36,15 +40,15 @@ class _MarketPageState extends State<MarketPage> {
     // TODO: implement loadItems
     http
         .get(Uri.parse(
-            'http://ktarmarket.slumberjer.com/api/loaditems.php?search=$searchString'))
+            'http://ktarmarket.slumberjer.com/api/loaditems.php?search=$searchString&pageno=$curpage'))
         .then((response) {
       if (response.statusCode == 200) {
-        print(response.body);
+        //log(response.body);
         var data = jsonDecode(response.body);
         if (data['status'] == 'success') {
           itemList.clear();
           data['data']['items'].forEach((item) {
-            print(data['data']['items']);
+            // print(data['data']['items']);
             itemList.add(Item(
                 itemId: item['item_id'],
                 email: item['email'],
@@ -55,6 +59,11 @@ class _MarketPageState extends State<MarketPage> {
                 itemDate: item['item_date'],
                 price: item['price']));
           });
+
+          numofpage = int.parse(data['numofpage'].toString());
+          numofresult = int.parse(data['numberofresult'].toString());
+          print(numofpage);
+          print(numofresult);
           setState(() {
             status = "Loaded";
           });
