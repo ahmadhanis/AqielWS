@@ -98,25 +98,61 @@ class _MarketPageState extends State<MarketPage> {
       ),
       body: itemList.isEmpty
           ? const Center()
-          : ListView.builder(
-              itemCount: itemList.length,
-              itemBuilder: (context, index) {
-                return Card(
-                  child: ListTile(
-                    onTap: () {
-                      itemDetailsDialog(index);
-                    },
-                    leading: Image.network(
-                        "http://ktarmarket.slumberjer.com/images/${itemList[index].itemId}.png"),
-                    title: Text(itemList[index].itemName.toString()),
-                    subtitle: Text(itemList[index].itemStatus.toString()),
-                    trailing: Text(
-                        "RM ${double.parse(itemList[index].price.toString()).toStringAsFixed(2)}",
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16)),
+          : Column(
+              children: [
+                SizedBox(
+                  child: Text(
+                    "Total Items: $numofresult Page: $curpage/$numofpage",
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
                   ),
-                );
-              },
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: itemList.length,
+                    itemBuilder: (context, index) {
+                      return Card(
+                        child: ListTile(
+                          onTap: () {
+                            itemDetailsDialog(index);
+                          },
+                          leading: Image.network(
+                              "http://ktarmarket.slumberjer.com/images/${itemList[index].itemId}.png"),
+                          title: Text(itemList[index].itemName.toString()),
+                          subtitle: Text(itemList[index].itemStatus.toString()),
+                          trailing: Text(
+                              "RM ${double.parse(itemList[index].price.toString()).toStringAsFixed(2)}",
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 16)),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        if (curpage > 1) {
+                          curpage--;
+                          loadItems();
+                        }
+                      },
+                      icon: const Icon(Icons.arrow_back_ios),
+                    ),
+                    Text(curpage.toString()),
+                    IconButton(
+                      onPressed: () {
+                        if (curpage < numofpage) {
+                          curpage++;
+                          loadItems();
+                        }
+                      },
+                      icon: const Icon(Icons.arrow_forward_ios),
+                    ),
+                  ],
+                )
+              ],
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
