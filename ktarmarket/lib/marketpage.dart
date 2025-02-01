@@ -297,124 +297,163 @@ class _MarketPageState extends State<MarketPage> {
 
   void itemDetailsDialog(int index) {
     showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text(itemList[index].itemName.toString()),
-            content: SingleChildScrollView(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          elevation: 8,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: SingleChildScrollView(
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    height: screenHeight / 3,
-                    width: screenWidth,
-                    color: Colors.red,
+                  // 📌 Item Image
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
                     child: Image.network(
                       "http://ktarmarket.slumberjer.com/images/${itemList[index].itemId}.png",
+                      height: MediaQuery.of(context).size.height / 3,
+                      width: double.infinity,
                       fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                          Icons.image_not_supported,
+                          size: 100,
+                          color: Colors.grey),
                     ),
                   ),
-                  const SizedBox(
-                    height: 10,
+                  const SizedBox(height: 16),
+
+                  // 📌 Item Name
+                  Text(
+                    itemList[index].itemName.toString(),
+                    style: const TextStyle(
+                        fontSize: 22, fontWeight: FontWeight.bold),
                   ),
+                  const SizedBox(height: 10),
+
+                  // 📌 Description
                   Text(
                     itemList[index].itemDescription.toString(),
-                    softWrap: true,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 4,
+                    style: const TextStyle(fontSize: 16, color: Colors.black87),
                   ),
-                  const SizedBox(
-                    height: 10,
-                  ),
+                  const SizedBox(height: 16),
+
+                  // 💰 Price
                   Text(
                     "RM ${double.parse(itemList[index].price.toString()).toStringAsFixed(2)}",
                     style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 24),
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green),
                   ),
+                  const SizedBox(height: 16),
+
+                  // 📅 Date
                   Row(
                     children: [
-                      const Icon(Icons.calendar_today),
-                      const SizedBox(
-                        width: 10,
-                      ),
+                      const Icon(Icons.calendar_today, color: Colors.purple),
+                      const SizedBox(width: 10),
                       Text(df.format(
                           DateTime.parse(itemList[index].itemDate.toString()))),
                     ],
                   ),
+                  const SizedBox(height: 10),
+
+                  // 📧 Email
                   Row(
                     children: [
-                      const Icon(Icons.email),
-                      const SizedBox(
-                        width: 10,
-                      ),
-                      Text(itemList[index].email.toString()),
+                      const Icon(Icons.email, color: Colors.blue),
+                      const SizedBox(width: 10),
+                      Expanded(
+                          child: Text(itemList[index].email.toString(),
+                              overflow: TextOverflow.ellipsis)),
                     ],
                   ),
+                  const SizedBox(height: 10),
+
+                  // 📞 Phone
                   Row(
                     children: [
-                      const Icon(Icons.phone),
-                      const SizedBox(
-                        width: 10,
-                      ),
+                      const Icon(Icons.phone, color: Colors.teal),
+                      const SizedBox(width: 10),
                       Text(itemList[index].phone.toString()),
                     ],
                   ),
+                  const SizedBox(height: 10),
+
+                  // 🏷 Status
                   Row(
                     children: [
-                      const Icon(Icons.info),
-                      const SizedBox(
-                        width: 10,
-                      ),
+                      const Icon(Icons.info, color: Colors.orange),
+                      const SizedBox(width: 10),
                       Text(itemList[index].itemStatus.toString()),
                     ],
                   ),
-                  const SizedBox(
-                    height: 10,
-                  ),
+                  const SizedBox(height: 20),
+
+                  // 🔘 Contact Buttons (Call, WhatsApp, Email)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      IconButton(
-                          onPressed: () {
-                            launchUrlString(
-                                'tel://${itemList[index].phone.toString()}');
-                          },
-                          icon: const Icon(
-                            Icons.phone,
-                            size: 40,
-                          )),
-                      IconButton(
-                          onPressed: () {
-                            launchUrlString(
-                                'https://wa.me/${itemList[index].phone.toString()}');
-                          },
-                          icon: const Icon(
-                            Icons.wechat,
-                            size: 40,
-                          )),
-                      IconButton(
-                          onPressed: () {
-                            launchUrlString(
-                                'mailto://${itemList[index].email.toString()}');
-                          },
-                          icon: const Icon(
-                            Icons.email,
-                            size: 40,
-                          )),
+                      // 📞 Call Button
+                      ElevatedButton.icon(
+                        onPressed: () => launchUrlString(
+                            'tel://${itemList[index].phone.toString()}'),
+                        icon: const Icon(Icons.phone),
+                        label: const Text(""),
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.teal),
+                      ),
+
+                      // 🟢 WhatsApp Button
+                      ElevatedButton.icon(
+                        onPressed: () => launchUrlString(
+                            'https://wa.me/${itemList[index].phone.toString()}'),
+                        icon: const Icon(Icons.wechat),
+                        label: const Text(""),
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green),
+                      ),
+
+                      // 📧 Email Button
+                      ElevatedButton.icon(
+                        onPressed: () => launchUrlString(
+                            'mailto://${itemList[index].email.toString()}'),
+                        icon: const Icon(Icons.email),
+                        label: const Text(""),
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue),
+                      ),
                     ],
-                  )
+                  ),
+                  const SizedBox(height: 20),
+
+                  // ❌ Close Button
+                  Align(
+                    alignment: Alignment.center,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 40, vertical: 10),
+                      ),
+                      child: const Text('Close',
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                  ),
                 ],
               ),
             ),
-            actions: [
-              TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text('Close'))
-            ],
-          );
-        });
+          ),
+        );
+      },
+    );
   }
 
   void onsearchDialog() {
