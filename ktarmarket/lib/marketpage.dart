@@ -272,6 +272,8 @@ class _MarketPageState extends State<MarketPage> {
                           color: Colors.green),
                     ),
                     Text(itemList[index].itemStatus.toString()),
+                    Text(df.format(
+                        DateTime.parse(itemList[index].itemDate.toString()))),
                   ],
                 ),
               ),
