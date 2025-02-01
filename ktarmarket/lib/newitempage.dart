@@ -31,83 +31,194 @@ class _NewItemPageState extends State<NewItemPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add New Item'),
-        backgroundColor: Colors.purple,
-      ),
-      body: SingleChildScrollView(
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  showImagePickerDialog();
-                },
-                child: Container(
-                  height: 180,
-                  width: 180,
-                  decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black),
-                      image: DecorationImage(
-                        image: _image == null
-                            ? const AssetImage('assets/images/camera.png')
-                            : FileImage(_image!) as ImageProvider<Object>,
-                        fit: BoxFit.cover,
-                      )),
-                ),
-              ),
-              TextField(
-                controller: emailController,
-                decoration: const InputDecoration(labelText: 'Your Email'),
-                keyboardType: TextInputType.emailAddress,
-              ),
-              TextField(
-                controller: phoneController,
-                decoration: const InputDecoration(labelText: 'Phone Number'),
-                keyboardType: TextInputType.phone,
-              ),
-              DropdownButton(
-                value: dropdownvalue,
-                underline: const SizedBox(),
-                isExpanded: true,
-                icon: const Icon(Icons.keyboard_arrow_down),
-                items: status.map((String items) {
-                  return DropdownMenuItem(
-                    value: items,
-                    child: Text(items),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  dropdownvalue = newValue!;
-                  print(dropdownvalue);
-                  setState(() {});
-                },
-              ),
-              TextField(
-                // Add this TextField
-                controller: itemNameController,
-                decoration: const InputDecoration(labelText: 'Item Name'),
-              ),
-              TextField(
-                // Add this TextField
-                controller: itemDescriptionController,
-                decoration:
-                    const InputDecoration(labelText: 'Item Description'),
-                maxLines: 3,
-              ),
-              TextField(
-                controller: priceController,
-                decoration: const InputDecoration(labelText: 'Price'),
-                keyboardType: TextInputType.number,
-              ),
-              ElevatedButton(
-                  onPressed: () {
-                    onSubmitItemDialog();
-                  },
-                  child: const Text('Submit Item')),
-            ],
+        title: const Text(
+          'Add New Item',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
           ),
         ),
+        centerTitle: true, // Centers the title for a cleaner look
+        elevation: 4, // Adds a shadow effect
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.deepPurple,
+                Colors.purpleAccent
+              ], // Modern gradient colors
+            ),
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context); // Navigate back
+          },
+        ),
+      ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          double formWidth = constraints.maxWidth > 600
+              ? 500
+              : double.infinity; // Adjust form width for larger screens
+
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: formWidth),
+                child: ListView(
+                  shrinkWrap: true,
+                  children: [
+                    // 🖼️ Responsive Image Picker
+                    GestureDetector(
+                      onTap: showImagePickerDialog,
+                      child: Container(
+                        height: 180,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.black54, width: 2),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: _image == null
+                            ? const Center(
+                                child: Icon(Icons.camera_alt,
+                                    size: 80, color: Colors.black54),
+                              )
+                            : ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.file(
+                                  _image!,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // 📜 Email Input
+                    Card(
+                      elevation: 3,
+                      child: TextField(
+                        controller: emailController,
+                        decoration: const InputDecoration(
+                          labelText: 'Your Email',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.email),
+                        ),
+                        keyboardType: TextInputType.emailAddress,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // 📞 Phone Input
+                    Card(
+                      elevation: 3,
+                      child: TextField(
+                        controller: phoneController,
+                        decoration: const InputDecoration(
+                          labelText: 'Phone Number',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.phone),
+                        ),
+                        keyboardType: TextInputType.phone,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // 🔽 Status Dropdown
+                    Card(
+                      elevation: 3,
+                      child: DropdownButtonFormField<String>(
+                        value: dropdownvalue,
+                        decoration: const InputDecoration(
+                          labelText: 'Item Condition',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.info),
+                        ),
+                        items: status.map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            dropdownvalue = newValue!;
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // 📦 Item Name Input
+                    Card(
+                      elevation: 3,
+                      child: TextField(
+                        controller: itemNameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Item Name',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.shopping_bag),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // 📝 Item Description Input
+                    Card(
+                      elevation: 3,
+                      child: TextField(
+                        controller: itemDescriptionController,
+                        decoration: const InputDecoration(
+                          labelText: 'Item Description',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.description),
+                        ),
+                        maxLines: 3,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // 💰 Price Input
+                    Card(
+                      elevation: 3,
+                      child: TextField(
+                        controller: priceController,
+                        decoration: const InputDecoration(
+                          labelText: 'Price (RM)',
+                          border: OutlineInputBorder(),
+                          prefixIcon: Icon(Icons.money),
+                        ),
+                        keyboardType: TextInputType.number,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // 📤 Submit Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: onSubmitItemDialog,
+                        icon: const Icon(Icons.upload),
+                        label: const Text('Submit Item'),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
+                          textStyle: const TextStyle(fontSize: 18),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -124,6 +235,7 @@ class _NewItemPageState extends State<NewItemPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please fill in all required fields'),
+          backgroundColor: Colors.redAccent,
         ),
       );
       return;
@@ -133,6 +245,7 @@ class _NewItemPageState extends State<NewItemPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Invalid email address'),
+          backgroundColor: Colors.redAccent,
         ),
       );
       return;
@@ -142,6 +255,7 @@ class _NewItemPageState extends State<NewItemPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Invalid phone number'),
+          backgroundColor: Colors.redAccent,
         ),
       );
       return;
@@ -150,32 +264,81 @@ class _NewItemPageState extends State<NewItemPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please select an image'),
+          backgroundColor: Colors.redAccent,
         ),
       );
       return;
     }
     // TODO: implement onSubmitItemDialog
     showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-              title: const Text('Submit Item'),
-              content: const Text('Are you sure you want to submit this item?'),
-              actions: [
-                TextButton(
-                  child: const Text('Cancel'),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          elevation: 8,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 📌 Title
+                const Text(
+                  'Submit Item',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
-                TextButton(
-                    child: const Text('Submit'),
-                    onPressed: () {
-                      Navigator.pop(context);
-                      insertItem();
-                    })
-              ]);
-        });
+                const SizedBox(height: 15),
+
+                // 📝 Content
+                const Text(
+                  'Are you sure you want to submit this item?',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16, color: Colors.black87),
+                ),
+                const SizedBox(height: 20),
+
+                // 🔘 Action Buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    // ❌ Cancel Button
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey[400],
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 10),
+                      ),
+                      child: const Text('Cancel',
+                          style: TextStyle(color: Colors.white)),
+                    ),
+
+                    // ✅ Submit Button
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        insertItem();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.purple,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 10),
+                      ),
+                      child: const Text('Submit',
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void insertItem() {
@@ -214,6 +377,7 @@ class _NewItemPageState extends State<NewItemPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Failed to submit item'),
+              backgroundColor: Colors.redAccent,
             ),
           );
         }
@@ -222,23 +386,39 @@ class _NewItemPageState extends State<NewItemPage> {
   }
 
   void showImagePickerDialog() {
-    showDialog(
+    showModalBottomSheet(
       context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+      ),
+      backgroundColor: Colors.white,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Choose Image Source'),
-          content: Column(
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 10),
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // 📌 Title
+              const Text(
+                'Choose Image Source',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+
+              // 📸 Camera Option
               ListTile(
-                title: const Text('Camera'),
+                leading: const Icon(Icons.camera_alt, color: Colors.purple),
+                title: const Text('Take a Photo'),
                 onTap: () {
                   Navigator.pop(context);
                   _selectFromCamera();
                 },
               ),
+
+              // 🖼️ Gallery Option
               ListTile(
-                title: const Text('Gallery'),
+                leading: const Icon(Icons.photo_library, color: Colors.purple),
+                title: const Text('Choose from Gallery'),
                 onTap: () {
                   Navigator.pop(context);
                   _selectFromGallery();

@@ -76,93 +76,223 @@ class _MarketPageState extends State<MarketPage> {
   Widget build(BuildContext context) {
     screenHeight = MediaQuery.of(context).size.height;
     screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('KTAR Market'),
-        backgroundColor: Colors.purple,
+        title: const Text(
+          'KTAR Market',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+        elevation: 4,
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Colors.deepPurple, Colors.purpleAccent],
+            ),
+          ),
+        ),
         actions: [
           IconButton(
-            onPressed: () {
-              onsearchDialog();
-            },
-            icon: const Icon(Icons.search),
+            onPressed: onsearchDialog,
+            icon: const Icon(Icons.search, color: Colors.white),
           ),
           IconButton(
             onPressed: () {
               searchString = "";
               loadItems();
             },
-            icon: const Icon(Icons.refresh),
-          )
+            icon: const Icon(Icons.refresh, color: Colors.white),
+          ),
         ],
       ),
       body: itemList.isEmpty
-          ? const Center()
+          ? const Center(
+              child: Text("No items available", style: TextStyle(fontSize: 18)))
           : Column(
               children: [
-                SizedBox(
+                // 📊 Total Items & Pagination Info
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
                   child: Text(
-                    "Total Items: $numofresult Page: $curpage/$numofpage",
+                    "Total Items: $numofresult | Page: $curpage/$numofpage",
                     style: const TextStyle(
                         fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
+                // 🔀 Responsive Grid/List Layout
                 Expanded(
-                  child: ListView.builder(
-                    itemCount: itemList.length,
-                    itemBuilder: (context, index) {
-                      return Card(
-                        child: ListTile(
-                          onTap: () {
-                            itemDetailsDialog(index);
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      if (constraints.maxWidth > 600) {
+                        // Tablet & Desktop → Use GridView
+                        return GridView.builder(
+                          padding: const EdgeInsets.all(8),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2, // Adjust for desktop (can be 3)
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                            childAspectRatio: 2.8,
+                          ),
+                          itemCount: itemList.length,
+                          itemBuilder: (context, index) {
+                            return buildItemCard(index);
                           },
-                          leading: Image.network(
-                              "http://ktarmarket.slumberjer.com/images/${itemList[index].itemId}.png"),
-                          title: Text(itemList[index].itemName.toString()),
-                          subtitle: Text(itemList[index].itemStatus.toString()),
-                          trailing: Text(
-                              "RM ${double.parse(itemList[index].price.toString()).toStringAsFixed(2)}",
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 16)),
-                        ),
-                      );
+                        );
+                      } else {
+                        // Mobile → Use ListView
+                        return ListView.builder(
+                          itemCount: itemList.length,
+                          itemBuilder: (context, index) {
+                            return buildItemCard(index);
+                          },
+                        );
+                      }
                     },
                   ),
                 ),
-                Row(
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        if (curpage > 1) {
-                          curpage--;
-                          loadItems();
-                        }
-                      },
-                      icon: const Icon(Icons.arrow_back_ios),
-                    ),
-                    Text(curpage.toString()),
-                    IconButton(
-                      onPressed: () {
-                        if (curpage < numofpage) {
-                          curpage++;
-                          loadItems();
-                        }
-                      },
-                      icon: const Icon(Icons.arrow_forward_ios),
-                    ),
-                  ],
-                )
+                // 🔼 Pagination Controls
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          if (curpage > 1) {
+                            setState(() => curpage--);
+                            loadItems();
+                          }
+                        },
+                        icon: const Icon(Icons.arrow_back_ios),
+                      ),
+                      Text(
+                        "Page $curpage",
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          if (curpage < numofpage) {
+                            setState(() => curpage++);
+                            loadItems();
+                          }
+                        },
+                        icon: const Icon(Icons.arrow_forward_ios),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
+      // ➕ Floating Action Button
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          await Navigator.push(context,
-              MaterialPageRoute(builder: (context) => const NewItemPage()));
+          await Navigator.push(
+            context,
+            PageRouteBuilder(
+              transitionDuration:
+                  const Duration(milliseconds: 300), // Animation Speed
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  const NewItemPage(),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                const begin = Offset(1.0, 0.0); // Slide in from right
+                const end = Offset.zero;
+                const curve = Curves.easeInOut;
+
+                var tween = Tween(begin: begin, end: end)
+                    .chain(CurveTween(curve: curve));
+                var offsetAnimation = animation.drive(tween);
+
+                return SlideTransition(position: offsetAnimation, child: child);
+              },
+            ),
+          );
+
           loadItems();
         },
-        child: const Icon(Icons.add),
+        backgroundColor: Colors.deepPurple,
+        elevation: 6,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: const Icon(Icons.add, size: 28, color: Colors.white),
       ),
     );
+  }
+
+  // 🏷️ Item Card (Reusable for List & Grid)
+  Widget buildItemCard(int index) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      elevation: 3,
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      child: InkWell(
+        onTap: () => itemDetailsDialog(index),
+        borderRadius: BorderRadius.circular(10),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // 🖼 Item Image
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  "http://ktarmarket.slumberjer.com/images/${itemList[index].itemId}.png",
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => const Icon(
+                      Icons.image_not_supported,
+                      size: 80,
+                      color: Colors.grey),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // 📋 Item Details
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      truncateString(itemList[index].itemName.toString(), 20),
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                    Text(
+                      "RM ${double.parse(itemList[index].price.toString()).toStringAsFixed(2)}",
+                      style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green),
+                    ),
+                    Text(itemList[index].itemStatus.toString()),
+                  ],
+                ),
+              ),
+              // 📲 WhatsApp Icon
+              IconButton(
+                onPressed: () => launchUrlString(
+                    'https://wa.me/${itemList[index].phone.toString()}'),
+                icon: const Icon(Icons.wechat, color: Colors.green),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String truncateString(String itemTitle, int length) {
+    if (itemTitle.length > length) {
+      itemTitle = "${itemTitle.substring(0, length)}...";
+    }
+    return itemTitle;
   }
 
   void itemDetailsDialog(int index) {
@@ -289,35 +419,81 @@ class _MarketPageState extends State<MarketPage> {
 
   void onsearchDialog() {
     showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('Search'),
-            content: Column(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          elevation: 8,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // 📌 Title
+                const Text(
+                  'Search',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 15),
+
+                // 🔍 Search Input Field
                 TextField(
                   controller: searchController,
-                  decoration: const InputDecoration(
-                      labelText: 'Search', icon: Icon(Icons.search)),
+                  decoration: InputDecoration(
+                    labelText: 'Enter keyword...',
+                    prefixIcon: const Icon(Icons.search, color: Colors.purple),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 15),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // 🔘 Action Buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    // 🔎 Search Button
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        searchString = searchController.text;
+                        loadItems();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.purple,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 10),
+                      ),
+                      child: const Text('Search',
+                          style: TextStyle(color: Colors.white)),
+                    ),
+
+                    // ❌ Close Button
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey[400],
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 10),
+                      ),
+                      child: const Text('Close',
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                  ],
                 ),
               ],
             ),
-            actions: [
-              TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    searchString = searchController.text;
-                    loadItems();
-                  },
-                  child: const Text('Search')),
-              TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text('Close'))
-            ],
-          );
-        });
+          ),
+        );
+      },
+    );
   }
 }
