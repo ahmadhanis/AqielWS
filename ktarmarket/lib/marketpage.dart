@@ -126,16 +126,33 @@ class _MarketPageState extends State<MarketPage> {
                 Expanded(
                   child: LayoutBuilder(
                     builder: (context, constraints) {
-                      if (constraints.maxWidth > 600) {
-                        // Tablet & Desktop → Use GridView
+                      if (constraints.maxWidth > 1200) {
+                        // 🖥 Desktop → 3 Items Per Row
                         return GridView.builder(
                           padding: const EdgeInsets.all(8),
                           gridDelegate:
                               const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2, // Adjust for desktop (can be 3)
+                            crossAxisCount: 3, // 3 items per row on desktop
                             crossAxisSpacing: 12,
                             mainAxisSpacing: 12,
-                            childAspectRatio: 2.8,
+                            childAspectRatio:
+                                1.8, // Adjust aspect ratio for better fit
+                          ),
+                          itemCount: itemList.length,
+                          itemBuilder: (context, index) {
+                            return buildItemCard(index);
+                          },
+                        );
+                      } else if (constraints.maxWidth > 600) {
+                        // 📱 Tablet → 2 Items Per Row
+                        return GridView.builder(
+                          padding: const EdgeInsets.all(8),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2, // 2 items per row on tablet
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                            childAspectRatio: 2.2,
                           ),
                           itemCount: itemList.length,
                           itemBuilder: (context, index) {
@@ -143,7 +160,7 @@ class _MarketPageState extends State<MarketPage> {
                           },
                         );
                       } else {
-                        // Mobile → Use ListView
+                        // 📱 Mobile → ListView (1 Item Per Row)
                         return ListView.builder(
                           itemCount: itemList.length,
                           itemBuilder: (context, index) {
@@ -225,68 +242,95 @@ class _MarketPageState extends State<MarketPage> {
 
   // 🏷️ Item Card (Reusable for List & Grid)
   Widget buildItemCard(int index) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      elevation: 3,
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      child: InkWell(
-        onTap: () => itemDetailsDialog(index),
-        borderRadius: BorderRadius.circular(10),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // 🖼 Item Image
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  "http://ktarmarket.slumberjer.com/images/${itemList[index].itemId}.png",
-                  width: 80,
-                  height: 80,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => const Icon(
-                      Icons.image_not_supported,
-                      size: 80,
-                      color: Colors.grey),
-                ),
-              ),
-              const SizedBox(width: 12),
-              // 📋 Item Details
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      truncateString(itemList[index].itemName.toString(), 20),
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
+    String url =
+        "https://ktarmarket.slumberjer.com/images/${itemList[index].itemId}.png";
+    print(url);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        double cardWidth = constraints.maxWidth;
+        double imageSize = cardWidth / 3; // Image width = 1/3 of card width
+
+        return Card(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          elevation: 3,
+          margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          child: InkWell(
+            onTap: () => itemDetailsDialog(index),
+            borderRadius: BorderRadius.circular(10),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // 🖼 Responsive Item Image (1/3 of card width)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      url,
+                      width: imageSize,
+                      height: imageSize, // Maintain square ratio
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Icon(
+                          Icons.image_not_supported,
+                          size: imageSize,
+                          color: Colors.grey),
                     ),
-                    Text(
-                      "RM ${double.parse(itemList[index].price.toString()).toStringAsFixed(2)}",
-                      style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green),
+                  ),
+                  const SizedBox(width: 12),
+
+                  // 📋 Centered Item Details (Takes Remaining 2/3 Space)
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment
+                          .center, // Centers text horizontally
+                      mainAxisAlignment:
+                          MainAxisAlignment.center, // Centers text vertically
+                      children: [
+                        Text(
+                          truncateString(
+                              itemList[index].itemName.toString(), 20),
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                          textAlign:
+                              TextAlign.center, // Centers text horizontally
+                        ),
+                        Text(
+                          "RM ${double.parse(itemList[index].price.toString()).toStringAsFixed(2)}",
+                          style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green),
+                          textAlign: TextAlign.center,
+                        ),
+                        Text(
+                          itemList[index].itemStatus.toString(),
+                          textAlign: TextAlign.center,
+                        ),
+                        Text(
+                          df.format(DateTime.parse(
+                              itemList[index].itemDate.toString())),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
                     ),
-                    Text(itemList[index].itemStatus.toString()),
-                    Text(df.format(
-                        DateTime.parse(itemList[index].itemDate.toString()))),
-                  ],
-                ),
+                  ),
+
+                  // 📲 WhatsApp Icon
+                  IconButton(
+                    onPressed: () => launchUrlString(
+                        'https://wa.me/${itemList[index].phone.toString()}'),
+                    icon: const Icon(Icons.wechat, color: Colors.green),
+                  ),
+                ],
               ),
-              // 📲 WhatsApp Icon
-              IconButton(
-                onPressed: () => launchUrlString(
-                    'https://wa.me/${itemList[index].phone.toString()}'),
-                icon: const Icon(Icons.wechat, color: Colors.green),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -305,153 +349,160 @@ class _MarketPageState extends State<MarketPage> {
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           elevation: 8,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 📌 Item Image
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.network(
-                      "http://ktarmarket.slumberjer.com/images/${itemList[index].itemId}.png",
-                      height: MediaQuery.of(context).size.height / 3,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => const Icon(
-                          Icons.image_not_supported,
-                          size: 100,
-                          color: Colors.grey),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              double dialogWidth = constraints.maxWidth < 600
+                  ? MediaQuery.of(context).size.width *
+                      0.9 // Mobile (90% width)
+                  : MediaQuery.of(context).size.width *
+                      0.5; // Tablet/Desktop (50% width)
 
-                  // 📌 Item Name
-                  Text(
-                    itemList[index].itemName.toString(),
-                    style: const TextStyle(
-                        fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 10),
-
-                  // 📌 Description
-                  Text(
-                    itemList[index].itemDescription.toString(),
-                    style: const TextStyle(fontSize: 16, color: Colors.black87),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // 💰 Price
-                  Text(
-                    "RM ${double.parse(itemList[index].price.toString()).toStringAsFixed(2)}",
-                    style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // 📅 Date
-                  Row(
+              return Container(
+                width: dialogWidth,
+                padding: const EdgeInsets.all(16),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.calendar_today, color: Colors.purple),
-                      const SizedBox(width: 10),
-                      Text(df.format(
-                          DateTime.parse(itemList[index].itemDate.toString()))),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-
-                  // 📧 Email
-                  Row(
-                    children: [
-                      const Icon(Icons.email, color: Colors.blue),
-                      const SizedBox(width: 10),
-                      Expanded(
-                          child: Text(itemList[index].email.toString(),
-                              overflow: TextOverflow.ellipsis)),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-
-                  // 📞 Phone
-                  Row(
-                    children: [
-                      const Icon(Icons.phone, color: Colors.teal),
-                      const SizedBox(width: 10),
-                      Text(itemList[index].phone.toString()),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-
-                  // 🏷 Status
-                  Row(
-                    children: [
-                      const Icon(Icons.info, color: Colors.orange),
-                      const SizedBox(width: 10),
-                      Text(itemList[index].itemStatus.toString()),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  // 🔘 Contact Buttons (Call, WhatsApp, Email)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      // 📞 Call Button
-                      ElevatedButton.icon(
-                        onPressed: () => launchUrlString(
-                            'tel://${itemList[index].phone.toString()}'),
-                        icon: const Icon(Icons.phone),
-                        label: const Text(""),
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.teal),
+                      // 📌 Item Image
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.network(
+                          "https://ktarmarket.slumberjer.com/images/${itemList[index].itemId}.png",
+                          height: MediaQuery.of(context).size.height / 3,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(Icons.image_not_supported,
+                                  size: 100, color: Colors.grey),
+                        ),
                       ),
+                      const SizedBox(height: 16),
 
-                      // 🟢 WhatsApp Button
-                      ElevatedButton.icon(
-                        onPressed: () => launchUrlString(
-                            'https://wa.me/${itemList[index].phone.toString()}'),
-                        icon: const Icon(Icons.wechat),
-                        label: const Text(""),
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green),
+                      // 📌 Item Name
+                      Text(
+                        itemList[index].itemName.toString(),
+                        style: const TextStyle(
+                            fontSize: 22, fontWeight: FontWeight.bold),
                       ),
+                      const SizedBox(height: 10),
 
-                      // 📧 Email Button
-                      ElevatedButton.icon(
-                        onPressed: () => launchUrlString(
-                            'mailto://${itemList[index].email.toString()}'),
-                        icon: const Icon(Icons.email),
-                        label: const Text(""),
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue),
+                      // 📌 Description
+                      Text(
+                        itemList[index].itemDescription.toString(),
+                        style: const TextStyle(
+                            fontSize: 16, color: Colors.black87),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // 💰 Price
+                      Text(
+                        "RM ${double.parse(itemList[index].price.toString()).toStringAsFixed(2)}",
+                        style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // 📅 Date
+                      Row(
+                        children: [
+                          const Icon(Icons.calendar_today,
+                              color: Colors.purple),
+                          const SizedBox(width: 10),
+                          Text(df.format(DateTime.parse(
+                              itemList[index].itemDate.toString()))),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+
+                      // 📧 Email
+                      Row(
+                        children: [
+                          const Icon(Icons.email, color: Colors.blue),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(itemList[index].email.toString(),
+                                overflow: TextOverflow.ellipsis),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+
+                      // 📞 Phone
+                      Row(
+                        children: [
+                          const Icon(Icons.phone, color: Colors.teal),
+                          const SizedBox(width: 10),
+                          Text(itemList[index].phone.toString()),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+
+                      // 🏷 Status
+                      Row(
+                        children: [
+                          const Icon(Icons.info, color: Colors.orange),
+                          const SizedBox(width: 10),
+                          Text(itemList[index].itemStatus.toString()),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+
+                      // 🔘 Contact Buttons (Call, WhatsApp, Email)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          // 📞 Call Button
+                          IconButton(
+                            onPressed: () => launchUrlString(
+                                'tel://${itemList[index].phone.toString()}'),
+                            icon: const Icon(Icons.phone,
+                                size: 40, color: Colors.teal),
+                          ),
+
+                          // 🟢 WhatsApp Button
+                          IconButton(
+                            onPressed: () => launchUrlString(
+                                'https://wa.me/${itemList[index].phone.toString()}'),
+                            icon: const Icon(Icons.wechat,
+                                size: 40, color: Colors.green),
+                          ),
+
+                          // 📧 Email Button
+                          IconButton(
+                            onPressed: () => launchUrlString(
+                                'mailto://${itemList[index].email.toString()}'),
+                            icon: const Icon(Icons.email,
+                                size: 40, color: Colors.blue),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+
+                      // ❌ Close Button
+                      Align(
+                        alignment: Alignment.center,
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 40, vertical: 10),
+                          ),
+                          child: const Text('Close',
+                              style: TextStyle(color: Colors.white)),
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
-
-                  // ❌ Close Button
-                  Align(
-                    alignment: Alignment.center,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 40, vertical: 10),
-                      ),
-                      child: const Text('Close',
-                          style: TextStyle(color: Colors.white)),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           ),
         );
       },
@@ -462,77 +513,93 @@ class _MarketPageState extends State<MarketPage> {
     showDialog(
       context: context,
       builder: (context) {
-        return Dialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          elevation: 8,
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // 📌 Title
-                const Text(
-                  'Search',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 15),
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            double dialogWidth = constraints.maxWidth > 1200
+                ? MediaQuery.of(context).size.width *
+                    0.4 // Desktop: 40% of screen width
+                : constraints.maxWidth > 600
+                    ? MediaQuery.of(context).size.width *
+                        0.6 // Tablet: 60% of screen width
+                    : MediaQuery.of(context).size.width *
+                        0.9; // Mobile: 90% of screen width
 
-                // 🔍 Search Input Field
-                TextField(
-                  controller: searchController,
-                  decoration: InputDecoration(
-                    labelText: 'Enter keyword...',
-                    prefixIcon: const Icon(Icons.search, color: Colors.purple),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 15),
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // 🔘 Action Buttons
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15)),
+              elevation: 8,
+              child: Container(
+                width: dialogWidth,
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    // 🔎 Search Button
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        searchString = searchController.text;
-                        loadItems();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.purple,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 10),
-                      ),
-                      child: const Text('Search',
-                          style: TextStyle(color: Colors.white)),
+                    // 📌 Title
+                    const Text(
+                      'Search',
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
+                    const SizedBox(height: 15),
 
-                    // ❌ Close Button
-                    ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey[400],
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 10),
+                    // 🔍 Search Input Field
+                    TextField(
+                      controller: searchController,
+                      decoration: InputDecoration(
+                        labelText: 'Enter keyword...',
+                        prefixIcon:
+                            const Icon(Icons.search, color: Colors.purple),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 15),
                       ),
-                      child: const Text('Close',
-                          style: TextStyle(color: Colors.white)),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // 🔘 Action Buttons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        // 🔎 Search Button
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            searchString = searchController.text;
+                            loadItems();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.purple,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 10),
+                          ),
+                          child: const Text('Search',
+                              style: TextStyle(color: Colors.white)),
+                        ),
+
+                        // ❌ Close Button
+                        ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey[400],
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 10),
+                          ),
+                          child: const Text('Close',
+                              style: TextStyle(color: Colors.white)),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );
