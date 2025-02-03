@@ -1,6 +1,10 @@
+// ignore_for_file: unused_local_variable
+
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
@@ -18,7 +22,7 @@ class _NewItemPageState extends State<NewItemPage> {
   TextEditingController itemNameController = TextEditingController();
   TextEditingController itemDescriptionController = TextEditingController();
   TextEditingController priceController = TextEditingController();
-
+  Uint8List? _webImage; // Store image for Web
   var status = [
     'New',
     'Used',
@@ -74,29 +78,53 @@ class _NewItemPageState extends State<NewItemPage> {
                   shrinkWrap: true,
                   children: [
                     // 🖼️ Responsive Image Picker
+
                     GestureDetector(
                       onTap: showImagePickerDialog,
-                      child: Container(
-                        height: 180,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.black54, width: 2),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: _image == null
-                            ? const Center(
-                                child: Icon(Icons.camera_alt,
-                                    size: 80, color: Colors.black54),
-                              )
-                            : ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.file(
-                                  _image!,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          // Adaptive height based on screen size
+                          double containerHeight = constraints.maxWidth > 1200
+                              ? 500 // Desktop: Larger image container
+                              : constraints.maxWidth > 600
+                                  ? 350 // Tablet: Medium image container
+                                  : 250; // Mobile: Smaller image container
+
+                          return Container(
+                            height: containerHeight,
+                            width: constraints.maxWidth *
+                                0.9, // 90% width for responsiveness
+                            decoration: BoxDecoration(
+                              border:
+                                  Border.all(color: Colors.black54, width: 2),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: _image == null && _webImage == null
+                                ? const Center(
+                                    child: Icon(Icons.camera_alt,
+                                        size: 80, color: Colors.black54),
+                                  )
+                                : ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: kIsWeb
+                                        ? Image.memory(
+                                            _webImage!, // Display web image
+                                            fit: BoxFit.cover,
+                                            width: double.infinity,
+                                            height: double.infinity,
+                                          )
+                                        : Image.file(
+                                            _image!, // Display mobile/desktop image
+                                            fit: BoxFit.cover,
+                                            width: double.infinity,
+                                            height: double.infinity,
+                                          ),
+                                  ),
+                          );
+                        },
                       ),
                     ),
+
                     const SizedBox(height: 16),
 
                     // 📜 Email Input
@@ -388,7 +416,7 @@ class _NewItemPageState extends State<NewItemPage> {
   void showImagePickerDialog() {
     showModalBottomSheet(
       context: context,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
       ),
       backgroundColor: Colors.white,
@@ -433,29 +461,64 @@ class _NewItemPageState extends State<NewItemPage> {
 
   Future<void> _selectFromCamera() async {
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(
-      source: ImageSource.camera,
-      maxHeight: 800,
-      maxWidth: 800,
-    );
 
-    if (pickedFile != null) {
-      _image = File(pickedFile.path);
+    if (kIsWeb) {
+      // 🌍 Web: Open File Picker Instead of Camera
+      final XFile? pickedFile = await picker.pickImage(
+        source:
+            ImageSource.gallery, // Web does not support direct camera access
+        maxHeight: 800,
+        maxWidth: 800,
+      );
+
+      if (pickedFile != null) {
+        _webImage =
+            await pickedFile.readAsBytes(); // Convert to Uint8List for Web
+        setState(() {}); // Refresh UI
+      }
+    } else {
+      // 📱 Mobile & Desktop: Use Camera
+      final XFile? pickedFile = await picker.pickImage(
+        source: ImageSource.camera,
+        maxHeight: 800,
+        maxWidth: 800,
+      );
+
+      if (pickedFile != null) {
+        _image = File(pickedFile.path);
+        setState(() {}); // Refresh UI
+      }
     }
-    setState(() {});
   }
 
   Future<void> _selectFromGallery() async {
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(
-      source: ImageSource.gallery,
-      maxHeight: 800,
-      maxWidth: 800,
-    );
 
-    if (pickedFile != null) {
-      _image = File(pickedFile.path);
+    if (kIsWeb) {
+      // 🌍 Web: Use `image_picker_for_web` to select an image
+      final XFile? pickedFile = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxHeight: 800,
+        maxWidth: 800,
+      );
+
+      if (pickedFile != null) {
+        _webImage =
+            await pickedFile.readAsBytes(); // Convert web image to Uint8List
+        setState(() {}); // Refresh UI
+      }
+    } else {
+      // 📱 Mobile & Desktop: Select from Gallery
+      final XFile? pickedFile = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxHeight: 800,
+        maxWidth: 800,
+      );
+
+      if (pickedFile != null) {
+        _image = File(pickedFile.path);
+        setState(() {}); // Refresh UI
+      }
     }
-    setState(() {});
   }
 }

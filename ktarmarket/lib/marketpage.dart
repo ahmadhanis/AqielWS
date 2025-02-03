@@ -109,8 +109,46 @@ class _MarketPageState extends State<MarketPage> {
         ],
       ),
       body: itemList.isEmpty
-          ? const Center(
-              child: Text("No items available", style: TextStyle(fontSize: 18)))
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // 🚫 No Items Icon
+                    const Icon(Icons.search_off, size: 80, color: Colors.grey),
+                    const SizedBox(height: 16),
+
+                    // 📢 Status Message
+                    Text(
+                      status.isNotEmpty ? status : "No items available.",
+                      style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black54),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+
+                    // 🔄 Retry Button
+                    ElevatedButton.icon(
+                      onPressed: () => loadItems(), // Reload Function
+                      icon: const Icon(Icons.refresh, color: Colors.white),
+                      label: const Text("Retry"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.purple,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
           : Column(
               children: [
                 // 📊 Total Items & Pagination Info
