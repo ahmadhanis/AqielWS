@@ -11,6 +11,8 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'KTAR Market',
       home: SplashScreen(),
     );
   }
@@ -70,7 +72,8 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.purple.shade700, // Brand color for background
+      backgroundColor: const Color.fromARGB(
+          255, 219, 192, 230), // Brand color for background
       body: Center(
         child: FadeTransition(
           opacity: _fadeAnimation,
@@ -80,7 +83,7 @@ class _SplashScreenState extends State<SplashScreen>
               // 🎨 Animated Logo
               Image.asset(
                 'assets/images/ipgktar.png', // Replace with your logo
-                height: 200,
+                height: 400,
               ),
               const SizedBox(height: 20),
 

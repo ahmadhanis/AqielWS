@@ -342,7 +342,7 @@ class _NewItemPageState extends State<NewItemPage> {
   }
 
   void insertItem() {
-    http.post(Uri.parse('http://ktarmarket.slumberjer.com/api/insertitem.php'),
+    http.post(Uri.parse('https://ktarmarket.slumberjer.com/api/insertitem.php'),
         body: {
           'email': emailController.text,
           'phone': phoneController.text,
