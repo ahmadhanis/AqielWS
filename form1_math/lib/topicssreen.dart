@@ -14,19 +14,31 @@ class _TopicsScreenState extends State<TopicsScreen> {
   final List<Map<String, String>> topics = [
     {
       'title': 'Topic 1',
-      'subtitle': 'Introduction to Math',
+      'subtitle': 'Fractions',
     },
     {
       'title': 'Topic 2',
-      'subtitle': 'Factors, Prime Factors, GCD, LCM',
+      'subtitle': 'Factors and Multiples',
     },
     {
       'title': 'Topic 3',
-      'subtitle': 'Power and Roots',
+      'subtitle': 'Square and Roots',
     },
     {
       'title': 'Topic 4',
-      'subtitle': 'Geometry Basics',
+      'subtitle': 'Algebra',
+    },
+        {
+      'title': 'Topic 5',
+      'subtitle': 'Linear',
+    },
+        {
+      'title': 'Topic 6',
+      'subtitle': 'Perimeter and Area',
+    },
+        {
+      'title': 'Topic 7',
+      'subtitle': 'Pythagoras Theorem',
     },
   ];
 
@@ -36,6 +48,10 @@ class _TopicsScreenState extends State<TopicsScreen> {
     Icons.calculate,
     Icons.looks_3,
     Icons.looks_4,
+    Icons.looks_5,
+    Icons.looks_6,
+    Icons.numbers,
+
   ];
 
   @override

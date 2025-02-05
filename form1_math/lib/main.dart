@@ -19,7 +19,7 @@ class MainApp extends StatelessWidget {
 }
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({Key? key}) : super(key: key);
+  const SplashScreen({super.key});
 
   @override
   _SplashScreenState createState() => _SplashScreenState();
@@ -89,7 +89,7 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
                 SizedBox(height: 20),
                 Text(
-                  'Math App: Form 1',
+                  'Math App',
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,

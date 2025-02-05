@@ -122,7 +122,7 @@ class _CommonFactorScreenState extends State<CommonFactorScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Common Factors'),
+        title: const Text('Common Factors Calculator'),
       ),
       body: SingleChildScrollView(
         child: Center(
@@ -133,6 +133,20 @@ class _CommonFactorScreenState extends State<CommonFactorScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // Input field for comma-separated numbers.
+                Container(
+                  margin: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(20.0),
+                  decoration: BoxDecoration(
+                    color: Colors.orangeAccent.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12.0),
+                    border: Border.all(color: Colors.orange, width: 2),
+                  ),
+                  child: const Text(
+                    "Common factors are numbers that evenly divide each of the given numbers. For example, the common factors of 12, 18, and 24 are 1, 2, 3, and 6.",
+                    style: TextStyle(fontSize: 18, color: Colors.black87),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
                 TextField(
                   controller: _controller,
                   keyboardType: TextInputType.text,
@@ -149,22 +163,6 @@ class _CommonFactorScreenState extends State<CommonFactorScreen> {
                   child: const Text('Calculate Common Factor'),
                 ),
                 const SizedBox(height: 16.0),
-                // Display the selected common factor.
-                // if (_selectedCommonFactor != null)
-                //   Container(
-                //     padding: const EdgeInsets.all(16.0),
-                //     decoration: BoxDecoration(
-                //       color: Colors.blue.shade50,
-                //       border: Border.all(color: Colors.blueAccent),
-                //       borderRadius: BorderRadius.circular(8.0),
-                //     ),
-                //     child: Text(
-                //       'Selected Common Factor: $_selectedCommonFactor',
-                //       style: const TextStyle(fontSize: 18),
-                //       textAlign: TextAlign.center,
-                //     ),
-                //   ),
-                const SizedBox(height: 16.0),
                 // Display all common factors.
                 if (_allCommonFactors.isNotEmpty)
                   Container(
@@ -175,22 +173,53 @@ class _CommonFactorScreenState extends State<CommonFactorScreen> {
                       borderRadius: BorderRadius.circular(8.0),
                     ),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text(
-                          'All Common Factors: ${_allCommonFactors.join(', ')}',
-                          style: const TextStyle(fontSize: 16),
+                        const Text(
+                          'All Common Factors',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 8.0),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 4,
+                          alignment: WrapAlignment.center,
+                          children: _allCommonFactors.map((factor) {
+                            return Chip(
+                              label: Text(
+                                factor.toString(),
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                              backgroundColor: Colors.green.shade200,
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 12.0),
                         if (lowestCommon != null && highestCommon != null)
-                          Text(
-                            'Highest Common Factor: $highestCommon',
-                            style: const TextStyle(fontSize: 16),
-                            textAlign: TextAlign.center,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Lowest: $lowestCommon',
+                                style: const TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.w500),
+                              ),
+                              const SizedBox(width: 16),
+                              Text(
+                                'Highest: $highestCommon',
+                                style: const TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.w500),
+                              ),
+                            ],
                           ),
                       ],
                     ),
                   ),
+
                 const SizedBox(height: 16.0),
                 // Display individual factors for each number.
                 if (_factorsForEach.isNotEmpty)
@@ -205,15 +234,37 @@ class _CommonFactorScreenState extends State<CommonFactorScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: _factorsForEach.entries.map((entry) {
                         return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4.0),
-                          child: Text(
-                            'Factors for ${entry.key}: ${entry.value.join(', ')}',
-                            style: const TextStyle(fontSize: 16),
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Factors for ${entry.key}:',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 4,
+                                children: entry.value.map<Widget>((factor) {
+                                  return Chip(
+                                    label: Text(
+                                      factor.toString(),
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                    backgroundColor: Colors.orange.shade200,
+                                  );
+                                }).toList(),
+                              ),
+                            ],
                           ),
                         );
                       }).toList(),
                     ),
-                  ),
+                  )
               ],
             ),
           ),

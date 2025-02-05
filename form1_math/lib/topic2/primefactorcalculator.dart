@@ -97,7 +97,25 @@ class _PrimeFactorCalculatorState extends State<PrimeFactorCalculator> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              const SizedBox(height: 16.0),
+              Container(
+                margin: const EdgeInsets.all(8.00),
+                padding: const EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                  color: Colors.greenAccent.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12.0),
+                  border: Border.all(color: Colors.green, width: 2),
+                ),
+                child: const Text(
+                  "A prime factor is a prime number that divides another number exactly.\n\n"
+                  "Example: The prime factors of 18 are 2 and 3, because 18 = 2 × 3 × 3.",
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 8.0),
               // Input field for the number.
               TextField(
                 controller: _controller,
@@ -116,13 +134,36 @@ class _PrimeFactorCalculatorState extends State<PrimeFactorCalculator> {
               ),
               const SizedBox(height: 16.0),
               // Display the calculated prime factors if available.
+
               if (_primeFactors.isNotEmpty)
-                Text(
-                  'Prime Factors: ${_primeFactors.join(', ')}',
-                  style: const TextStyle(fontSize: 18),
+                const Text(
+                  'Prime Factors:',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children: _primeFactors
+                    .map((factor) => Chip(
+                          label: Text(
+                            factor.toString(),
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          backgroundColor: Colors.blue.shade100,
+                        ))
+                    .toList(),
+              ),
+              const Divider(
+                color: Colors.blue,
+                thickness: 2,
+              ),
               const SizedBox(height: 16.0),
+              // const SizedBox(height: 16.0),
               // Display the prime numbers from 2 to 100.
+
               const Text(
                 'Prime Numbers from 2 to 100:',
                 style: TextStyle(

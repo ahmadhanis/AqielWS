@@ -128,6 +128,24 @@ class _MultipleScreenState extends State<MultipleScreen> {
           child: Column(
             children: [
               // Input for comma-separated numbers.
+              Container(
+                margin: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(20.0),
+                decoration: BoxDecoration(
+                  color: Colors.purpleAccent.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12.0),
+                  border: Border.all(color: Colors.purple, width: 2),
+                ),
+                child: const Text(
+                  "A common multiple is a number that is a multiple of every number in a set. \n\n"
+                  "Example: The common multiples of 4 and 6 include 12, 24, 36, etc., because each of these numbers is divisible by both 4 and 6.",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
               TextField(
                 controller: _numbersController,
                 keyboardType: TextInputType.text,
@@ -170,13 +188,30 @@ class _MultipleScreenState extends State<MultipleScreen> {
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text(
-                        'Common Multiples: ${_commonMultiples.join(', ')}',
-                        style: const TextStyle(fontSize: 18),
+                      const Text(
+                        'Common Multiples:',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 8.0),
+                      Wrap(
+                        spacing: 8.0,
+                        runSpacing: 4.0,
+                        alignment: WrapAlignment.center,
+                        children: _commonMultiples.map((multiple) {
+                          return Chip(
+                            label: Text(
+                              multiple.toString(),
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                            backgroundColor: Colors.blue.shade200,
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 12.0),
                       if (smallestCommonMultiple != null)
                         Text(
                           'Smallest Common Multiple: $smallestCommonMultiple',
@@ -188,35 +223,61 @@ class _MultipleScreenState extends State<MultipleScreen> {
                   ),
                 )
               else if (_errorMessage.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text(
-                    'No common multiples found in the given range.',
-                    style: TextStyle(fontSize: 16),
-                    textAlign: TextAlign.center,
+                Container(
+                  margin: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.all(20.0),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(12.0),
+                    border: Border.all(color: Colors.grey.shade400),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        color: Colors.grey.shade600,
+                        size: 40,
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'No common multiples found in the given range.',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
                   ),
                 ),
+
               const SizedBox(height: 16.0),
               // Display individual multiples for each number.
               if (_multiplesForEach.isNotEmpty)
                 Container(
                   padding: const EdgeInsets.all(16.0),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.shade50,
-                    border: Border.all(color: Colors.orange),
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: _multiplesForEach.entries.map((entry) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4.0),
-                        child: Text(
-                          'Multiples for ${entry.key}: ${entry.value.join(', ')}',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                      );
-                    }).toList(),
+                  // Instead of a decorative box, we simply apply padding and use a ConstrainedBox
+                  // to limit the maximum height to a percentage of the screen height.
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height *
+                          0.4, // Responsive max height
+                    ),
+                    child: ListView(
+                      // shrinkWrap ensures the ListView only takes the needed space (up to maxHeight)
+                      shrinkWrap: true,
+                      children: _multiplesForEach.entries.map((entry) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4.0),
+                          child: SelectableText(
+                            'Multiples for ${entry.key}: ${entry.value.join(', ')}',
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                        );
+                      }).toList(),
+                    ),
                   ),
                 ),
             ],

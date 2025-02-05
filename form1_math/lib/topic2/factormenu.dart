@@ -5,7 +5,7 @@ import 'package:form1_math/topic2/multiplescreen.dart';
 import 'package:form1_math/topic2/primefactorcalculator.dart';
 
 class FactorMenu extends StatefulWidget {
-  const FactorMenu({Key? key}) : super(key: key);
+  const FactorMenu({super.key});
 
   @override
   State<FactorMenu> createState() => _FactorMenuState();
@@ -16,7 +16,7 @@ class _FactorMenuState extends State<FactorMenu> {
   final List<Map<String, dynamic>> menuItems = [
     {
       'title': 'Factors',
-      'subtitle': 'Calculate factors of a number',
+      'subtitle': 'Factor of a number',
       'icon': Icons.functions,
       'screen': const FactorCalculator(),
     },
@@ -30,7 +30,7 @@ class _FactorMenuState extends State<FactorMenu> {
       'title': 'Common Factors',
       'subtitle': 'Determine common factors',
       'icon': Icons.all_inbox,
-      'screen': CommonFactorScreen(),
+      'screen': const CommonFactorScreen(),
     },
     {
       'title': 'Multiple',

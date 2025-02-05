@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:form1_math/topic3/powerrootscreen.dart';
+import 'package:form1_math/topic3/cuberootscreen.dart';
+import 'package:form1_math/topic3/squarerootscreen.dart';
 
 class PowerRootMenu extends StatefulWidget {
   const PowerRootMenu({Key? key}) : super(key: key);
@@ -13,15 +14,15 @@ class _PowerRootMenuState extends State<PowerRootMenu> {
   final List<Map<String, dynamic>> menuItems = [
     {
       "title": "Square and Root",
-      "subtitle": "Calculator",
+      "subtitle": "Square calculator",
       "icon": Icons.calculate,
-      "screen": const PowerRootScreen(),
+      "screen": const SquareRootScreen(),
     },
     {
-      "title": "Root Calculator",
-      "subtitle": "Perform root calculations",
+      "title": "Cube and Root",
+      "subtitle": "Cube calculator",
       "icon": Icons.functions,
-      "screen": null, // No screen provided.
+      "screen": const CubeRootScreen(), // No screen provided.
     },
   ];
 
