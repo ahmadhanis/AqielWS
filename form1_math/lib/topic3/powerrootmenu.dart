@@ -30,7 +30,7 @@ class _PowerRootMenuState extends State<PowerRootMenu> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Square and Root Menu'),
+        title: const Text('Square/Cube/Root Menu'),
         centerTitle: true,
         elevation: 0,
       ),
