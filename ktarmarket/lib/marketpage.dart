@@ -281,7 +281,7 @@ class _MarketPageState extends State<MarketPage> {
   // 🏷️ Item Card (Reusable for List & Grid)
   Widget buildItemCard(int index) {
     String url =
-        "https://ktarmarket.slumberjer.com/images/${itemList[index].itemId}.png";
+        "https://ktarmarket.slumberjer.com/images/market/${itemList[index].itemId}.png";
     print(url);
 
     return LayoutBuilder(
@@ -407,7 +407,7 @@ class _MarketPageState extends State<MarketPage> {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(10),
                         child: Image.network(
-                          "https://ktarmarket.slumberjer.com/images/${itemList[index].itemId}.png",
+                          "https://ktarmarket.slumberjer.com/images/market/${itemList[index].itemId}.png",
                           height: MediaQuery.of(context).size.height / 3,
                           width: double.infinity,
                           fit: BoxFit.cover,

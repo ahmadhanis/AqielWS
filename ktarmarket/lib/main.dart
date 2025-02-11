@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ktarmarket/mainmenuscreen.dart';
 import 'package:ktarmarket/marketpage.dart';
 
 void main() {
@@ -37,7 +38,7 @@ class _SplashScreenState extends State<SplashScreen>
     // 🎬 Animation Controller (Fade-in)
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 5),
     );
 
     _fadeAnimation = CurvedAnimation(
@@ -54,7 +55,7 @@ class _SplashScreenState extends State<SplashScreen>
         PageRouteBuilder(
           transitionDuration: const Duration(milliseconds: 500),
           pageBuilder: (context, animation, secondaryAnimation) =>
-              const MarketPage(),
+              const MainMenuScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },
