@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ktarmarket/mainmenuscreen.dart';
-import 'package:ktarmarket/marketpage.dart';
+import 'package:ktarmarket/market/marketpage.dart';
 
 void main() {
   runApp(const MainApp());

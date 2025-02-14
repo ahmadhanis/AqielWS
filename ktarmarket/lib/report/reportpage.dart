@@ -1,12 +1,10 @@
 import 'dart:convert';
 import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:ktarmarket/newreportpage.dart';
+import 'package:ktarmarket/report/newreportpage.dart';
 import 'package:http/http.dart' as http;
-import 'package:ktarmarket/report.dart';
-import 'package:url_launcher/url_launcher_string.dart';
+import 'package:ktarmarket/report/report.dart';
 
 class ReportPage extends StatefulWidget {
   const ReportPage({super.key});
@@ -51,6 +49,7 @@ class _ReportPageState extends State<ReportPage> {
                 reportTitle: item['report_title'],
                 reportDescription: item['report_description'],
                 reportBuilding: item['report_building'],
+                reportStatus: item['report_status'],
                 reportDate: item['report_date']));
           });
 
@@ -313,7 +312,8 @@ class _ReportPageState extends State<ReportPage> {
                               reportList[index].reportDate.toString())),
                           textAlign: TextAlign.center,
                         ),
-                        Text("Report Status: Submitted"),
+                        Text(
+                            "Report Status: ${reportList[index].reportStatus}"),
                       ],
                     ),
                   ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:ktarmarket/marketpage.dart';
-import 'package:ktarmarket/reportpage.dart';
+import 'package:ktarmarket/booking/bookingpage.dart';
+import 'package:ktarmarket/market/marketpage.dart';
+import 'package:ktarmarket/report/reportpage.dart';
 
 class MainMenuScreen extends StatefulWidget {
   const MainMenuScreen({super.key});
@@ -65,17 +66,33 @@ class _MainMenuScreenState extends State<MainMenuScreen> {
               ),
             ),
           ),
-          const Card(
-            child: Center(child: Text('Confession')),
-          ),
-          const Card(
-            child: Center(child: Text('Outing')),
+          Card(
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    transitionDuration: const Duration(milliseconds: 500),
+                    pageBuilder: (context, animation, secondaryAnimation) =>
+                        const BookingPage(),
+                    transitionsBuilder:
+                        (context, animation, secondaryAnimation, child) {
+                      return FadeTransition(opacity: animation, child: child);
+                    },
+                  ),
+                );
+              },
+              child: const Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [Icon(Icons.book, size: 50), Text('Booking')],
+              ),
+            ),
           ),
           const Card(
             child: Center(child: Text('Transportation')),
           ),
           const Card(
-            child: Center(child: Text('Booking')),
+            child: Center(child: Text('Outing')),
           ),
         ],
       ),

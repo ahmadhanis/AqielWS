@@ -7,6 +7,7 @@ class Report {
   String? reportDescription;
   String? reportBuilding;
   String? reportDate;
+  String? reportStatus;
 
   Report(
       {this.reportId,
@@ -16,7 +17,8 @@ class Report {
       this.reportTitle,
       this.reportDescription,
       this.reportBuilding,
-      this.reportDate});
+      this.reportDate,
+      this.reportStatus});
 
   Report.fromJson(Map<String, dynamic> json) {
     reportId = json['report_id'];
@@ -27,6 +29,7 @@ class Report {
     reportDescription = json['report_description'];
     reportBuilding = json['report_building'];
     reportDate = json['report_date'];
+    reportStatus = json['report_status'];
   }
 
   Map<String, dynamic> toJson() {
@@ -39,6 +42,7 @@ class Report {
     data['report_description'] = reportDescription;
     data['report_building'] = reportBuilding;
     data['report_date'] = reportDate;
+    data['report_status'] = reportStatus;
     return data;
   }
 }
