@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
+import 'package:ktarmarket/booking/facility.dart';
 
 class NewBooking extends StatefulWidget {
   const NewBooking({super.key});
@@ -22,8 +23,13 @@ class _NewBookingState extends State<NewBooking> {
   //var firstDate = DateTime.now();
   //var lastDate = DateTime.now().add(const Duration(days: 30));
   var formatter = DateFormat('dd-MM-yyyy');
+  var formatter2 = DateFormat('dd/MM/yyyy');
+
   var selectedDate = DateTime.now();
   List<String> facilities = [];
+  List<Facility> facilityList = <Facility>[];
+  Facility selectedFac = Facility();
+
   String dropdownvalue = "Dewan Asajaya";
   @override
   void initState() {
@@ -170,13 +176,40 @@ class _NewBookingState extends State<NewBooking> {
                                     onChanged: (String? newValue) {
                                       setState(() {
                                         dropdownvalue = newValue!;
+                                        if (facilityList.isNotEmpty) {
+                                          for (int i = 0;
+                                              i < facilityList.length;
+                                              i++) {
+                                            if (facilityList[i].facilityName ==
+                                                dropdownvalue) {
+                                              selectedFac = facilityList[i];
+                                              loadSlot(selectedFac.facilityId,
+                                                  selectedDate);
+                                            }
+                                          }
+                                        }
                                       });
                                     },
                                   ),
                                 ),
                               ),
                       ],
-                    )))
+                    ))),
+            selectedFac.facilityId == null
+                ? Card(
+                    child: Container(
+                        width: screenWidth,
+                        padding: const EdgeInsets.all(8),
+                        child: Text("Please select a facility")))
+                : Card(
+                    child: Container(
+                        width: screenWidth,
+                        padding: const EdgeInsets.all(8),
+                        child: Column(children: [
+                          Text(selectedFac.facilityName.toString()),
+                          Text(selectedFac.facilityPic.toString()),
+                          Text(selectedFac.facilityType.toString()),
+                        ])))
           ],
         ),
       ),
@@ -189,18 +222,37 @@ class _NewBookingState extends State<NewBooking> {
         .get(Uri.parse(
             'https://ktarmarket.slumberjer.com/api/loadfacilities.php'))
         .then((response) {
-      //log(response.body);
+      // log(response.body);
       if (response.statusCode == 200) {
         var data = jsonDecode(response.body);
+        // log(data);
         if (data['status'] == 'success') {
           // print(data['data']['facility'].length);
           for (int i = 0; i < data['data']['facility'].length; i++) {
             facilities.add(data['data']['facility'][i]['facility_name']);
           }
-          print(facilities);
+          facilityList.clear();
+          data['data']['facility'].forEach((fac) {
+            Facility t = Facility.fromJson(fac);
+            facilityList.add(t);
+            // print(t.facilityName);
+          });
+
+          //print(facilities);
           setState(() {});
         }
       }
+    });
+  }
+
+  void loadSlot(String? facilityId, DateTime selectedDate) {
+    String selectedDateStr = formatter2.format(selectedDate);
+    print(selectedDateStr);
+    http
+        .get(Uri.parse(
+            'https://ktarmarket.slumberjer.com/api/loadslots.php?facility_id=$facilityId&booking_date=$selectedDateStr'))
+        .then((response) {
+      print(response.body);
     });
   }
 }
