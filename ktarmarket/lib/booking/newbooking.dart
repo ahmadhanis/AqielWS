@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
+import 'package:ktarmarket/booking/bookingslot.dart';
 import 'package:ktarmarket/booking/facility.dart';
 
 class NewBooking extends StatefulWidget {
@@ -29,6 +30,8 @@ class _NewBookingState extends State<NewBooking> {
   List<String> facilities = [];
   List<Facility> facilityList = <Facility>[];
   Facility selectedFac = Facility();
+  List<BookingSlot> slotList = <BookingSlot>[];
+  List<int> TimeSlot = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 
   String dropdownvalue = "Dewan Asajaya";
   @override
@@ -209,7 +212,33 @@ class _NewBookingState extends State<NewBooking> {
                           Text(selectedFac.facilityName.toString()),
                           Text(selectedFac.facilityPic.toString()),
                           Text(selectedFac.facilityType.toString()),
-                        ])))
+                        ]))),
+            slotList.isEmpty
+                ? Card(
+                    child: Container(
+                        width: screenWidth,
+                        padding: const EdgeInsets.all(8),
+                        child: Text("No Time Slot available")))
+                : Card(
+                    child: Container(
+                        width: screenWidth,
+                        padding: const EdgeInsets.all(8),
+                        child: Column(children: [
+                          Text("Select Available Time Slot"),
+                          Column(
+                            children: [
+                              Text(TimeSlot[0].toString()),
+                              Text(TimeSlot[1].toString()),
+                              Text(TimeSlot[2].toString()),
+                              Text(TimeSlot[3].toString()),
+                              Text(TimeSlot[4].toString()),
+                              Text(TimeSlot[5].toString()),
+                              Text(TimeSlot[6].toString()),
+                              Text(TimeSlot[7].toString()),
+                              Text(TimeSlot[8].toString()),
+                            ],
+                          )
+                        ]))),
           ],
         ),
       ),
@@ -246,13 +275,56 @@ class _NewBookingState extends State<NewBooking> {
   }
 
   void loadSlot(String? facilityId, DateTime selectedDate) {
+    TimeSlot = [0, 0, 0, 0, 0, 0, 0, 0, 0];
     String selectedDateStr = formatter2.format(selectedDate);
-    print(selectedDateStr);
+    //print(selectedDateStr);
     http
         .get(Uri.parse(
             'https://ktarmarket.slumberjer.com/api/loadslots.php?facility_id=$facilityId&booking_date=$selectedDateStr'))
         .then((response) {
-      print(response.body);
+      //print(response.body);
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        if (data['status'] == 'success') {
+          slotList.clear();
+          data['data'].forEach((slot) {
+            BookingSlot t = BookingSlot.fromJson(slot);
+            slotList.add(t);
+            if (t.slot8 == "1" && TimeSlot[0] == 0) {
+              TimeSlot[0] = 1;
+            }
+            if (t.slot9 == "1" && TimeSlot[1] == 0) {
+              TimeSlot[1] = 1;
+            }
+            if (t.slot10 == "1" && TimeSlot[2] == 0) {
+              TimeSlot[2] = 1;
+            }
+            if (t.slot11 == "1" && TimeSlot[3] == 0) {
+              TimeSlot[3] = 1;
+            }
+            if (t.slot12 == "1" && TimeSlot[4] == 0) {
+              TimeSlot[4] = 1;
+            }
+            if (t.slot13 == "1" && TimeSlot[5] == 0) {
+              TimeSlot[5] = 1;
+            }
+            if (t.slot14 == "1" && TimeSlot[6] == 0) {
+              TimeSlot[6] = 1;
+            }
+            if (t.slot15 == "1" && TimeSlot[7] == 0) {
+              TimeSlot[7] = 1;
+            }
+            if (t.slot16 == "1" && TimeSlot[8] == 0) {
+              TimeSlot[8] = 1;
+            }
+            if (t.slot17 == "1" && TimeSlot[9] == 0) {
+              TimeSlot[9] = 1;
+            }
+          });
+          print(TimeSlot);
+          setState(() {});
+        }
+      }
     });
   }
 }
