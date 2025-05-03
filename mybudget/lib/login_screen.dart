@@ -63,6 +63,10 @@ class LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Preferences Removed')),
       );
+      _emailController.text = '';
+      _passwordController.text = '';
+      _rememberMe = false;
+      setState(() {});
     }
   }
 
@@ -297,12 +301,13 @@ class LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 20),
                     Center(
                       child: GestureDetector(
-                        onTap: () {
-                          Navigator.push(
+                        onTap: () async {
+                          await Navigator.push(
                               context,
                               MaterialPageRoute(
                                   builder: (context) =>
                                       const RegisterScreen()));
+                          _loadUserEmailPassword(); // Load saved email and password if available
                         },
                         child: const Text(
                           'New Account? Sign Up?',

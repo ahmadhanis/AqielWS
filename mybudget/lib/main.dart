@@ -78,8 +78,11 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       body: Center(
           child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          const SizedBox(
+            height: 20,
+          ),
           Image.asset(
             'assets/mybudget.png',
             height: 200,
@@ -92,7 +95,10 @@ class _SplashScreenState extends State<SplashScreen> {
           const SizedBox(
             height: 20,
           ),
-          const CircularProgressIndicator()
+          const CircularProgressIndicator(),
+          Text("Develop by Muhammad Aqiel Akhtar\nIPGKTAR",
+              textAlign: TextAlign.center, style: GoogleFonts.poppins()),
+          Text("Version 1.0.0", style: GoogleFonts.poppins()),
         ],
       )),
     );

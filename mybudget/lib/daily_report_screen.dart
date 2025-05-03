@@ -5,6 +5,7 @@ import 'package:icons_plus/icons_plus.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
+import 'package:mybudget/feedback_screen.dart';
 import 'package:mybudget/montly_report_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -80,6 +81,7 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
 
   Future<List<BudgetItem>> fetchBudgetItems(
       String day, String month, String year) async {
+    totalDaySpending = 0.0;
     String url =
         'https://slumberjer.com/mybudget/get_budgets_day.php'; // Replace with your endpoint
     try {
@@ -472,11 +474,73 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
               },
               icon: const Icon(Bootstrap.calendar2)),
           IconButton(
+              tooltip: "Share via WhatsApp",
               onPressed: () {
                 shareBudgetItemsViaWhatsApp(context, selectedDay.toString(),
                     selectedMonth.toString(), selectedYear.toString());
               },
               icon: const Icon(FontAwesome.whatsapp_brand)),
+          IconButton(
+              tooltip: "About App",
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text('About App'),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Image.asset('assets/aqiel.png',
+                              width: 200, height: 200),
+                          const SizedBox(height: 10),
+                          const Text(
+                            "M. Aqiel Akhtar, IPGKTAR",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 10),
+                          const Text(
+                            'This is a simple app to help you manage your budget. It allows you to add, view, edit and delete budget items. The app provide daily, montly and yearly report. You can also share your budget via WhatsApp.',
+                            textAlign: TextAlign.justify,
+                          ),
+                          const SizedBox(height: 20),
+                          const Text(
+                            'Version: 1.0.0',
+                            textAlign: TextAlign.justify,
+                          ),
+                          const SizedBox(height: 10),
+                          ElevatedButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => FeedBackScreen(
+                                      userId: widget
+                                          .userId, // Pass the userId to MyBudgetPage
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: const Text(
+                                'Feedback',
+                                style: TextStyle(color: Colors.white),
+                              ))
+                        ],
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text('Close'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              icon: const Icon(Bootstrap.info_circle)),
         ],
       ),
       body: Center(
@@ -808,7 +872,7 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
                           const SizedBox(
                               height: 20), // Spacing between icon and text
                           Text(
-                            'No data found.\nAdd new using the button below.',
+                            'No data found.\nAdd new entry using the floating button below.',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -877,13 +941,20 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
 
   Future<void> insertData() async {
     const snackBar = SnackBar(
-      content: Text('Please enter price'),
+      content: Text('Incorrect price input!'),
     ); //snackbar object
     String itemName = dropdownvalue; //get item name
 
     if (itemPriceController.text.isEmpty) {
       //check if price is empty
       ScaffoldMessenger.of(context).showSnackBar(snackBar); //show snackbar
+      return;
+    }
+    // Check if the price entered is a valid number
+    if (double.tryParse(itemPriceController.text) == null) {
+      itemPriceController.text = "";
+      setState(() {});
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
       return;
     }
 

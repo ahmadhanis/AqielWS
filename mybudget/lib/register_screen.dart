@@ -1,9 +1,15 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:async';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -21,7 +27,7 @@ class RegisterScreenState extends State<RegisterScreen> {
   bool _isLoading = false;
   double? screenWidth, screenHeigth;
   bool _obscurePassword = true;
-
+  bool _rememberMe = false; // Remember Me checkbox state
   // Function to register a new user
   Future<void> _register(BuildContext context) async {
     if (_formKey.currentState!.validate()) {
@@ -49,13 +55,15 @@ class RegisterScreenState extends State<RegisterScreen> {
           var jsonResponse = json.decode(response.body);
 
           if (jsonResponse['success'] == true) {
+            _saveUserEmailPassword(); // Save email and password if Remember Me is checked
             // Registration successful
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Registration Successful')),
             );
-
+            Timer(const Duration(seconds: 1), () {
+              Navigator.pop(context);
+            });
             // Optionally, navigate to another screen, e.g., the login screen
-            Navigator.pop(context);
           } else {
             // Registration failed, show the error message
             ScaffoldMessenger.of(context).showSnackBar(
@@ -92,7 +100,7 @@ class RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text("Register", style: GoogleFonts.poppins()),
+        title: Text("Register New Account", style: GoogleFonts.poppins()),
       ),
       body: SafeArea(
         child: Padding(
@@ -150,44 +158,47 @@ class RegisterScreenState extends State<RegisterScreen> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 10),
 
                         // Password Field
                         TextFormField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,
                           decoration: InputDecoration(
-                              labelText: 'Password',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide:
-                                    const BorderSide(color: Colors.grey),
+                            labelText: 'Password',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: const BorderSide(color: Colors.grey),
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey.shade200,
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
                               ),
-                              filled: true,
-                              fillColor: Colors.grey.shade200,
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _obscurePassword
-                                      ? Icons.visibility_off
-                                      : Icons
-                                          .visibility, // Change icon based on state
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    _obscurePassword = !_obscurePassword;
-                                  });
-                                },
-                              )),
+                              onPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
+                            ),
+                          ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Please enter a password';
-                            } else if (value.length < 6) {
-                              return 'Password must be at least 6 characters long';
+                            } else if (value.length < 7) {
+                              return 'Must be at least 7 characters long';
+                            } else if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d)')
+                                .hasMatch(value)) {
+                              return 'Must include at least one letter and one number';
                             }
                             return null;
                           },
                         ),
-                        const SizedBox(height: 20),
+
+                        const SizedBox(height: 10),
 
                         // Confirm Password Field
                         TextFormField(
@@ -222,7 +233,40 @@ class RegisterScreenState extends State<RegisterScreen> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 30),
+                        const SizedBox(height: 5),
+                        GestureDetector(
+                          onTap: () {
+                            generatePassword();
+                          },
+                          child: Text(
+                            "Min 7 characters long with at least one number. Or [Click here] to generate password.",
+                            style: TextStyle(color: Colors.grey.shade600),
+                            textAlign: TextAlign.justify,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        // const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Checkbox(
+                              value: _rememberMe,
+                              onChanged: (bool? value) {
+                                setState(() {
+                                  _rememberMe = value ?? false;
+                                  // _saveUserEmailPassword();
+                                });
+                              },
+                            ),
+                            const Text(
+                              'Remember Me',
+                            ),
+                          ],
+                        ),
+                        Text(
+                          "Please use valid email address for account registration. An email will be sent to you for successfull registration.",
+                          style: TextStyle(color: Colors.grey.shade600),
+                        ),
+                        const SizedBox(height: 20),
 
                         // Register Button
                         _isLoading
@@ -260,5 +304,32 @@ class RegisterScreenState extends State<RegisterScreen> {
         ),
       ),
     );
+  }
+
+  void _saveUserEmailPassword() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (_rememberMe) {
+      await prefs.setString('email', _emailController.text);
+      await prefs.setString('password', _passwordController.text);
+      await prefs.setBool('remember_me', _rememberMe);
+    } else {
+      await prefs.remove('email');
+      await prefs.remove('password');
+      await prefs.setBool('remember_me', false);
+    }
+  }
+
+  void generatePassword() {
+    String password = '';
+    final random = Random();
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    for (int i = 0; i < 6; i++) {
+      password += chars[random.nextInt(chars.length)];
+    }
+    password += random.nextInt(9).toString();
+    _obscurePassword = false;
+    _passwordController.text = password;
+    _confirmPasswordController.text = password;
+    setState(() {});
   }
 }
