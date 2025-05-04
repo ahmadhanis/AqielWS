@@ -248,9 +248,21 @@ class _FeedBackScreenState extends State<FeedBackScreen> {
         centerTitle: true,
       ),
       body: LayoutBuilder(
-        builder: (context, constraints) => SingleChildScrollView(
-          child: _buildFeedbackForm(constraints),
-        ),
+        builder: (context, constraints) {
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 700),
+              child: ListView(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  _buildFeedbackForm(constraints),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }

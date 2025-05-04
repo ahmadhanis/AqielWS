@@ -25,6 +25,7 @@ class LoginScreenState extends State<LoginScreen> {
   void initState() {
     super.initState();
     _loadUserEmailPassword(); // Load saved email and password if available
+    _checkAgreement();
   }
 
   // Load email and password from SharedPreferences
@@ -383,7 +384,8 @@ class LoginScreenState extends State<LoginScreen> {
 
                 if (email.isNotEmpty) {
                   // Prepare the URL to send the forgot password request
-                  String url = 'https://slumberjer.com/mybudget/forgot_password.php';
+                  String url =
+                      'https://slumberjer.com/mybudget/forgot_password.php';
 
                   try {
                     // Send the HTTP POST request to the backend
@@ -393,7 +395,7 @@ class LoginScreenState extends State<LoginScreen> {
                         'email': email, // Send the email in the POST body
                       },
                     );
-    
+
                     if (response.statusCode == 200) {
                       // Decode the JSON response
                       // print(response.body);
@@ -447,6 +449,149 @@ class LoginScreenState extends State<LoginScreen> {
           ],
         );
       },
+    );
+  }
+
+  Future<void> _checkAgreement() async {
+    final prefs = await SharedPreferences.getInstance();
+    final agreed = prefs.getBool('agreedToTerms') ?? false;
+
+    if (!agreed) {
+      await Future.delayed(Duration.zero);
+      _showTermsDialog();
+    }
+  }
+
+  void _showTermsDialog() {
+    bool isChecked = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        final maxWidth = MediaQuery.of(context).size.width;
+        return Dialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 600),
+            padding: const EdgeInsets.all(24),
+            child: StatefulBuilder(
+              builder: (context, setState) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.privacy_tip,
+                        size: 60, color: Colors.deepPurple),
+                    const SizedBox(height: 12),
+                    const Text(
+                      "Terms of Use",
+                      style:
+                          TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      "Please read and accept the terms to continue using MyBudget.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 14, color: Colors.black87),
+                    ),
+                    const SizedBox(height: 16),
+                    Flexible(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                            maxHeight: maxWidth < 600 ? 300 : 400),
+                        child: const Scrollbar(
+                          thumbVisibility: true,
+                          child: SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                TermItem(
+                                    "1. This app is under active development and may contain bugs."),
+                                TermItem(
+                                    "2. Your data is stored in an online database."),
+                                TermItem(
+                                    "3. You may be required to update the app periodically."),
+                                TermItem(
+                                    "4. Ads may be shown occasionally to support development."),
+                                TermItem(
+                                    "5. Anonymous usage data may be collected to improve performance."),
+                                TermItem(
+                                    "6. You're responsible for any data that you entered."),
+                                TermItem(
+                                    "7. The app is provided 'as is' with no warranties."),
+                                TermItem(
+                                    "8. Continued use of the app constitutes acceptance of these terms."),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: isChecked,
+                          onChanged: (val) =>
+                              setState(() => isChecked = val ?? false),
+                        ),
+                        const Expanded(
+                            child: Text("I agree to the terms of use")),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    ElevatedButton.icon(
+                      onPressed: isChecked
+                          ? () async {
+                              final prefs =
+                                  await SharedPreferences.getInstance();
+                              await prefs.setBool('agreedToTerms', true);
+                              Navigator.of(context).pop();
+                            }
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size.fromHeight(48),
+                        backgroundColor: Colors.deepPurple,
+                        disabledBackgroundColor: Colors.grey.shade400,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: const Icon(Icons.check, color: Colors.white),
+                      label: const Text("Accept and Continue",
+                          style: TextStyle(color: Colors.white)),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class TermItem extends StatelessWidget {
+  final String text;
+  const TermItem(this.text, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.check_circle_outline,
+              size: 20, color: Colors.deepPurple),
+          const SizedBox(width: 8),
+          Expanded(child: Text(text, style: const TextStyle(fontSize: 14))),
+        ],
+      ),
     );
   }
 }
