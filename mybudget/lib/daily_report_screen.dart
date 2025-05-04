@@ -486,56 +486,90 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
                 showDialog(
                   context: context,
                   builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: const Text('About App'),
-                      content: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Image.asset('assets/aqiel.png',
-                              width: 200, height: 200),
-                          const SizedBox(height: 10),
-                          const Text(
-                            "M. Aqiel Akhtar, IPGKTAR",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 10),
-                          const Text(
-                            'This is a simple app to help you manage your budget. It allows you to add, view, edit and delete budget items. The app provide daily, montly and yearly report. You can also share your budget via WhatsApp.',
-                            textAlign: TextAlign.justify,
-                          ),
-                          const SizedBox(height: 20),
-                          const Text(
-                            'Version: 1.0.0',
-                            textAlign: TextAlign.justify,
-                          ),
-                          const SizedBox(height: 10),
-                          ElevatedButton(
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => FeedBackScreen(
-                                      userId: widget
-                                          .userId, // Pass the userId to MyBudgetPage
-                                    ),
+                    return Dialog(
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20)),
+                      insetPadding: const EdgeInsets.all(16),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 600),
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.all(20),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(100),
+                                child: Image.asset(
+                                  'assets/aqiel.png',
+                                  width: 120,
+                                  height: 120,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              const Text(
+                                "M. Aqiel Akhtar",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const Text(
+                                "IPGKTAR",
+                                style:
+                                    TextStyle(fontSize: 14, color: Colors.grey),
+                                textAlign: TextAlign.center,
+                              ),
+                              const Divider(height: 30),
+                              const Text(
+                                'This is a modern budget management app that allows you to easily add, view, edit, and delete budget items. It includes daily, monthly, and yearly reports, and you can also share your budget via WhatsApp.',
+                                textAlign: TextAlign.justify,
+                                style: TextStyle(fontSize: 15),
+                              ),
+                              const SizedBox(height: 16),
+                              const Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  'Version: 1.0.0',
+                                  style: TextStyle(
+                                      fontSize: 13, color: Colors.grey),
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  OutlinedButton.icon(
+                                    icon: const Icon(Icons.close),
+                                    label: const Text('Close'),
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(),
                                   ),
-                                );
-                              },
-                              child: const Text(
-                                'Feedback',
-                                style: TextStyle(color: Colors.white),
-                              ))
-                        ],
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: const Text('Close'),
+                                  ElevatedButton.icon(
+                                    icon: const Icon(Icons.feedback,
+                                        color: Colors.white),
+                                    label: const Text('Feedback',
+                                        style: TextStyle(color: Colors.white)),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => FeedBackScreen(
+                                              userId: widget.userId),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ],
+                              )
+                            ],
+                          ),
                         ),
-                      ],
+                      ),
                     );
                   },
                 );

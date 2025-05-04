@@ -383,7 +383,7 @@ class LoginScreenState extends State<LoginScreen> {
 
                 if (email.isNotEmpty) {
                   // Prepare the URL to send the forgot password request
-                  String url = 'https://slumberjer.com/mybudget/forgot.php';
+                  String url = 'https://slumberjer.com/mybudget/forgot_password.php';
 
                   try {
                     // Send the HTTP POST request to the backend
@@ -393,9 +393,10 @@ class LoginScreenState extends State<LoginScreen> {
                         'email': email, // Send the email in the POST body
                       },
                     );
-
+    
                     if (response.statusCode == 200) {
                       // Decode the JSON response
+                      // print(response.body);
                       var jsonResponse = json.decode(response.body);
 
                       if (jsonResponse['success']) {
