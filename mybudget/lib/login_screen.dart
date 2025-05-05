@@ -32,7 +32,7 @@ class LoginScreenState extends State<LoginScreen> {
     _checkAgreement();
     _bannerAd = BannerAd(
       adUnitId:
-          'ca-app-pub-8395142902989782/3300133484', // Replace with your AdMob Banner ID
+          'ca-app-pub-8395142902989782/8916031052', // Replace with your AdMob Banner ID
       request: const AdRequest(),
       size: AdSize.banner,
       listener: BannerAdListener(

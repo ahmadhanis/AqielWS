@@ -10,6 +10,7 @@ import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:mybudget/feedback_screen.dart';
 import 'package:mybudget/montly_report_screen.dart';
+import 'package:mybudget/termitem.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class MyBudgetPage extends StatefulWidget {
@@ -85,7 +86,7 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
 
     futureBudgetItems = fetchBudgetItems(currentDay, currentMonth, currentYear);
     _bannerAd = BannerAd(
-      adUnitId: 'ca-app-pub-8395142902989782/3300133484',
+      adUnitId: 'ca-app-pub-8395142902989782/8916031052',
       size: AdSize.banner,
       request: const AdRequest(),
       listener: BannerAdListener(
@@ -560,22 +561,32 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
                                 style: TextStyle(fontSize: 15),
                               ),
                               const SizedBox(height: 16),
-                              const Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  'Version: 1.0.0',
-                                  style: TextStyle(
-                                      fontSize: 13, color: Colors.grey),
-                                ),
+                              Row(
+                                children: [
+                                  const Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      'Version: 1.0.0',
+                                      style: TextStyle(
+                                          fontSize: 13, color: Colors.grey),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    tooltip: 'About',
+                                    icon: const Icon(Icons.info),
+                                    onPressed: () {
+                                      _showTermsDialog();
+                                    },
+                                  ),
+                                ],
                               ),
                               const SizedBox(height: 24),
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceEvenly,
                                 children: [
-                                  OutlinedButton.icon(
-                                    icon: const Icon(Icons.close),
-                                    label: const Text('Close'),
+                                  TextButton(
+                                    child: const Text('Close'),
                                     onPressed: () =>
                                         Navigator.of(context).pop(),
                                   ),
@@ -1130,5 +1141,90 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
         const SnackBar(content: Text('Error occurred')),
       );
     }
+  }
+
+  void _showTermsDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        final maxWidth = MediaQuery.of(context).size.width;
+        return Dialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 600),
+            padding: const EdgeInsets.all(24),
+            child: StatefulBuilder(
+              builder: (context, setState) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.privacy_tip,
+                        size: 60, color: Colors.deepPurple),
+                    const SizedBox(height: 12),
+                    const Text(
+                      "Terms of Use",
+                      style:
+                          TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      "Please read and accept the terms to continue using MyBudget.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 14, color: Colors.black87),
+                    ),
+                    const SizedBox(height: 16),
+                    Flexible(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                            maxHeight: maxWidth < 600 ? 300 : 400),
+                        child: const Scrollbar(
+                          thumbVisibility: true,
+                          child: SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                TermItem(
+                                    "1. This app is under active development and may contain bugs."),
+                                TermItem(
+                                    "2. Your data is stored in an online database."),
+                                TermItem(
+                                    "3. You may be required to update the app periodically."),
+                                TermItem(
+                                    "4. Ads may be shown occasionally to support development."),
+                                TermItem(
+                                    "5. Anonymous usage data may be collected to improve performance."),
+                                TermItem(
+                                    "6. You're responsible for any data that you entered."),
+                                TermItem(
+                                    "7. The app is provided 'as is' with no warranties."),
+                                TermItem(
+                                    "8. Continued use of the app constitutes acceptance of these terms."),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text("Close",
+                            style: TextStyle(
+                              color: Colors.white,
+                            )))
+                  ],
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
   }
 }
