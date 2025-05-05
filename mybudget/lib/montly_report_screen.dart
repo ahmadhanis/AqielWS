@@ -1,7 +1,10 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously
 
+import 'dart:math';
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:http/http.dart' as http;
 import 'package:icons_plus/icons_plus.dart';
 import 'package:mybudget/yearly_report_screen.dart';
@@ -34,6 +37,8 @@ class ReportScreenState extends State<ReportScreen> {
   late int selectedMonth;
   late int selectedYear;
   double totalMonthSpending = 0.0;
+  late BannerAd _bannerAd;
+  bool _isBannerAdReady = false;
 
   double? screenWidth, screenHeigth;
   @override
@@ -49,6 +54,31 @@ class ReportScreenState extends State<ReportScreen> {
     selectedYear = int.parse(currentYear);
     // Pass the month and year to fetchBudgetItems
     futureBudgetItems = fetchBudgetItems(currentMonth, currentYear);
+    _bannerAd = BannerAd(
+      adUnitId:
+          'ca-app-pub-8395142902989782/3300133484', // Replace with your AdMob Banner ID
+      request: const AdRequest(),
+      size: AdSize.banner,
+      listener: BannerAdListener(
+        onAdLoaded: (Ad ad) {
+          setState(() {
+            _isBannerAdReady = true;
+          });
+        },
+        onAdFailedToLoad: (Ad ad, LoadAdError error) {
+          ad.dispose();
+          print('BannerAd failed to load: $error');
+        },
+      ),
+    );
+
+    _bannerAd.load();
+  }
+
+  @override
+  void dispose() {
+    _bannerAd.dispose();
+    super.dispose();
   }
 
   // Function to fetch data from the server (tbl_budgets)
@@ -413,356 +443,374 @@ class ReportScreenState extends State<ReportScreen> {
         child: SizedBox(
           width: screenWidth,
           child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Dropdown for month
-                  Expanded(
-                    child: DropdownButtonFormField<int>(
-                      decoration: InputDecoration(
-                        labelText: 'Month',
-                        labelStyle: const TextStyle(),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Dropdown for month
+                    Expanded(
+                      child: DropdownButtonFormField<int>(
+                        decoration: InputDecoration(
+                          labelText: 'Month',
+                          labelStyle: const TextStyle(),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey.shade100,
                         ),
-                        filled: true,
-                        fillColor: Colors.grey.shade100,
+                        value:
+                            selectedMonth, // Set default value to current month
+                        items: months.map((int month) {
+                          return DropdownMenuItem<int>(
+                            value: month,
+                            child: Text(
+                                month.toString()), // Display month as a number
+                          );
+                        }).toList(),
+                        onChanged: (int? newValue) {
+                          setState(() {
+                            selectedMonth = newValue!;
+                          });
+                        },
+                        hint: const Text('Month'),
                       ),
-                      value: selectedMonth, // Set default value to current month
-                      items: months.map((int month) {
-                        return DropdownMenuItem<int>(
-                          value: month,
-                          child:
-                              Text(month.toString()), // Display month as a number
-                        );
-                      }).toList(),
-                      onChanged: (int? newValue) {
-                        setState(() {
-                          selectedMonth = newValue!;
-                        });
-                      },
-                      hint: const Text('Month'),
                     ),
-                  ),
-                  const SizedBox(width: 5), // Spacing between dropdowns
-        
-                  // Dropdown for year
-                  Expanded(
-                    child: DropdownButtonFormField<int>(
-                      decoration: InputDecoration(
-                        labelText: 'Year',
-                        labelStyle: const TextStyle(),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
+                    const SizedBox(width: 5), // Spacing between dropdowns
+
+                    // Dropdown for year
+                    Expanded(
+                      child: DropdownButtonFormField<int>(
+                        decoration: InputDecoration(
+                          labelText: 'Year',
+                          labelStyle: const TextStyle(),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey.shade100,
                         ),
-                        filled: true,
-                        fillColor: Colors.grey.shade100,
+                        value:
+                            selectedYear, // Set default value to current year
+                        items: years.map((int year) {
+                          return DropdownMenuItem<int>(
+                            value: year,
+                            child: Text(year.toString()), // Display year
+                          );
+                        }).toList(),
+                        onChanged: (int? newValue) {
+                          setState(() {
+                            selectedYear = newValue!;
+                          });
+                        },
+                        hint: const Text('Year'),
                       ),
-                      value: selectedYear, // Set default value to current year
-                      items: years.map((int year) {
-                        return DropdownMenuItem<int>(
-                          value: year,
-                          child: Text(year.toString()), // Display year
+                    ),
+                    const SizedBox(
+                        width: 5), // Spacing before the search button
+
+                    // Search button
+                    ElevatedButton(
+                      onPressed: () {
+                        futureBudgetItems = fetchBudgetItems(
+                          selectedMonth.toString(),
+                          selectedYear.toString(),
                         );
-                      }).toList(),
-                      onChanged: (int? newValue) {
-                        setState(() {
-                          selectedYear = newValue!;
-                        });
+                        setState(() {});
                       },
-                      hint: const Text('Year'),
-                    ),
-                  ),
-                  const SizedBox(width: 5), // Spacing before the search button
-        
-                  // Search button
-                  ElevatedButton(
-                    onPressed: () {
-                      futureBudgetItems = fetchBudgetItems(
-                        selectedMonth.toString(),
-                        selectedYear.toString(),
-                      );
-                      setState(() {});
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 15, vertical: 15),
-                      // Modern button color
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(10), // Rounded corners
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 15, vertical: 15),
+                        // Modern button color
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(10), // Rounded corners
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.search,
+                        color: Colors.white,
                       ),
                     ),
-                    child: const Icon(
-                      Icons.search,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Expanded(
-              child: FutureBuilder<List<BudgetItem>>(
-                future: futureBudgetItems,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [CircularProgressIndicator()],
-                    );
-                  } else if (snapshot.hasError) {
-                    return Text('Error: ${snapshot.error}');
-                  } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                    return ListView.builder(
-                      padding: const EdgeInsets.all(8.0),
-                      itemCount: snapshot.data!.length,
-                      itemBuilder: (context, index) {
-                        final item = snapshot.data![index];
-        
-                        return GestureDetector(
-                          onLongPress: () {
-                            deleteBudgetDialog(
-                                context, item.budgetId.toString(), item.itemName);
-                          },
-                          onTap: () {
-                            // Show dialog window with item details
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return Dialog(
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        20.0), // Rounded corners
-                                  ),
-                                  elevation: 10,
-                                  backgroundColor: Colors.white,
-                                  child: ConstrainedBox(
-                                    constraints: const BoxConstraints(
-                                      maxWidth: 400, // Set maximum width here
+              Expanded(
+                child: FutureBuilder<List<BudgetItem>>(
+                  future: futureBudgetItems,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [CircularProgressIndicator()],
+                      );
+                    } else if (snapshot.hasError) {
+                      return Text('Error: ${snapshot.error}');
+                    } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                      return ListView.builder(
+                        padding: const EdgeInsets.all(8.0),
+                        itemCount: snapshot.data!.length,
+                        itemBuilder: (context, index) {
+                          final item = snapshot.data![index];
+                          int adsno =
+                              Random().nextInt(snapshot.data!.length - 1);
+
+                          return GestureDetector(
+                            onLongPress: () {
+                              deleteBudgetDialog(context,
+                                  item.budgetId.toString(), item.itemName);
+                            },
+                            onTap: () {
+                              // Show dialog window with item details
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return Dialog(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          20.0), // Rounded corners
                                     ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(
-                                          20.0), // Padding inside the dialog
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          // Title of the dialog
-                                          Text(
-                                            item.itemName,
-                                            style: const TextStyle(
-                                              fontSize:
-                                                  22.0, // Larger font for modern feel
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black87,
-                                            ),
-                                          ),
-                                          const SizedBox(
-                                              height:
-                                                  15.0), // Space between title and content
-                                          // Description
-                                          Text(
-                                            'Description: ${item.itemDesc}',
-                                            style: const TextStyle(
-                                              fontSize: 16.0,
-                                              color: Colors.black54,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 10.0),
-                                          // Price
-                                          Text(
-                                            'Price: RM ${item.itemPrice}',
-                                            style: const TextStyle(
-                                              fontSize: 18.0,
-                                              color: Colors.black87,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 10.0),
-                                          // Date
-                                          Text(
-                                            'Date: ${item.itemDate}',
-                                            style: const TextStyle(
-                                              fontSize: 16.0,
-                                              color: Colors.black54,
-                                            ),
-                                          ),
-                                          const SizedBox(
-                                              height:
-                                                  20.0), // Space before the actions
-                                          // Actions row
-                                          Align(
-                                            alignment: Alignment.bottomRight,
-                                            child: ElevatedButton(
-                                              onPressed: () {
-                                                Navigator.of(context)
-                                                    .pop(); // Close the dialog
-                                              },
-                                              style: ElevatedButton.styleFrom(
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.circular(
-                                                      10.0), // Rounded button corners
-                                                ),
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                  horizontal: 24.0,
-                                                  vertical: 12.0,
-                                                ),
-                                              ),
-                                              child: const Text(
-                                                'Close',
-                                                style: TextStyle(
-                                                  color: Colors
-                                                      .white, // Button text color
-                                                ),
+                                    elevation: 10,
+                                    backgroundColor: Colors.white,
+                                    child: ConstrainedBox(
+                                      constraints: const BoxConstraints(
+                                        maxWidth: 400, // Set maximum width here
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(
+                                            20.0), // Padding inside the dialog
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            // Title of the dialog
+                                            Text(
+                                              item.itemName,
+                                              style: const TextStyle(
+                                                fontSize:
+                                                    22.0, // Larger font for modern feel
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black87,
                                               ),
                                             ),
+                                            const SizedBox(
+                                                height:
+                                                    15.0), // Space between title and content
+                                            // Description
+                                            Text(
+                                              'Description: ${item.itemDesc}',
+                                              style: const TextStyle(
+                                                fontSize: 16.0,
+                                                color: Colors.black54,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 10.0),
+                                            // Price
+                                            Text(
+                                              'Price: RM ${item.itemPrice}',
+                                              style: const TextStyle(
+                                                fontSize: 18.0,
+                                                color: Colors.black87,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 10.0),
+                                            // Date
+                                            Text(
+                                              'Date: ${item.itemDate}',
+                                              style: const TextStyle(
+                                                fontSize: 16.0,
+                                                color: Colors.black54,
+                                              ),
+                                            ),
+                                            const SizedBox(
+                                                height:
+                                                    20.0), // Space before the actions
+                                            // Actions row
+                                            Align(
+                                              alignment: Alignment.bottomRight,
+                                              child: ElevatedButton(
+                                                onPressed: () {
+                                                  Navigator.of(context)
+                                                      .pop(); // Close the dialog
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            10.0), // Rounded button corners
+                                                  ),
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                    horizontal: 24.0,
+                                                    vertical: 12.0,
+                                                  ),
+                                                ),
+                                                child: const Text(
+                                                  'Close',
+                                                  style: TextStyle(
+                                                    color: Colors
+                                                        .white, // Button text color
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                            child: Card(
+                              margin: const EdgeInsets.symmetric(vertical: 8.0),
+                              elevation: 4, // Adds shadow to the card
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                    15.0), // Rounded corners
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(
+                                    16.0), // Padding inside the card
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Item name (bold and larger font size)
+                                    Text(
+                                      item.itemName,
+                                      style: const TextStyle(
+                                        fontSize: 18.0,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                        height:
+                                            8.0), // Spacing between elements
+                                    // Item description
+                                    Text(
+                                      'Description: ${truncateString(item.itemDesc, 50)}',
+                                      style: const TextStyle(
+                                          fontSize: 14.0, color: Colors.grey),
+                                    ),
+                                    const SizedBox(height: 8.0),
+                                    // Price and Date in a row layout
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        // Price
+                                        Text(
+                                          'Price: RM ${item.itemPrice}',
+                                          style: const TextStyle(
+                                            fontSize: 16.0,
+                                            fontWeight: FontWeight.w500,
                                           ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                          child: Card(
-                            margin: const EdgeInsets.symmetric(vertical: 8.0),
-                            elevation: 4, // Adds shadow to the card
-                            shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.circular(15.0), // Rounded corners
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(
-                                  16.0), // Padding inside the card
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Item name (bold and larger font size)
-                                  Text(
-                                    item.itemName,
-                                    style: const TextStyle(
-                                      fontSize: 18.0,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(
-                                      height: 8.0), // Spacing between elements
-                                  // Item description
-                                  Text(
-                                    'Description: ${truncateString(item.itemDesc, 50)}',
-                                    style: const TextStyle(
-                                        fontSize: 14.0, color: Colors.grey),
-                                  ),
-                                  const SizedBox(height: 8.0),
-                                  // Price and Date in a row layout
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      // Price
-                                      Text(
-                                        'Price: RM ${item.itemPrice}',
-                                        style: const TextStyle(
-                                          fontSize: 16.0,
-                                          fontWeight: FontWeight.w500,
                                         ),
-                                      ),
-                                      // Date
-                                      Text(
-                                        item.itemDate,
-                                        style: const TextStyle(
-                                          fontSize: 14.0,
-                                          color: Colors.grey,
+                                        // Date
+                                        Text(
+                                          item.itemDate,
+                                          style: const TextStyle(
+                                            fontSize: 14.0,
+                                            color: Colors.grey,
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8.0),
+                                    adsno == index
+                                        ? SizedBox(
+                                            height: _bannerAd.size.height
+                                                .toDouble(),
+                                            width: screenWidth,
+                                            child: AdWidget(ad: _bannerAd),
+                                          )
+                                        : Container(),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      },
-                    );
-                  } else {
-                    return Container(
-                      padding: const EdgeInsets.all(
-                          20.0), // Padding inside the container
-                      alignment: Alignment.center,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          const Icon(
-                            Icons.info_outline,
-                            size: 50,
-                            // Modern color for the icon
-                          ),
-                          const SizedBox(
-                              height: 20), // Spacing between icon and text
-                          Text(
-                            'No data found',
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Colors
-                                  .grey.shade600, // Softer color for modern look
+                          );
+                        },
+                      );
+                    } else {
+                      return Container(
+                        padding: const EdgeInsets.all(
+                            20.0), // Padding inside the container
+                        alignment: Alignment.center,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.info_outline,
+                              size: 50,
+                              // Modern color for the icon
                             ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
+                            const SizedBox(
+                                height: 20), // Spacing between icon and text
+                            Text(
+                              'No data found',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey
+                                    .shade600, // Softer color for modern look
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+                margin: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary,
+                  // Background color for modern feel
+                  borderRadius: BorderRadius.circular(12.0), // Rounded corners
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.5), // Soft shadow effect
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset: const Offset(0, 3), // Shadow position
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Total Spending for the Month', // Label text
+                      style: TextStyle(
+                        fontSize: 16.0,
+                        color: Colors.white70, // Lighter color for label
                       ),
-                    );
-                  }
-                },
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-              margin: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary,
-                // Background color for modern feel
-                borderRadius: BorderRadius.circular(12.0), // Rounded corners
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.5), // Soft shadow effect
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: const Offset(0, 3), // Shadow position
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Text(
-                    'Total Spending for the Month', // Label text
-                    style: TextStyle(
-                      fontSize: 16.0,
-                      color: Colors.white70, // Lighter color for label
                     ),
-                  ),
-                  Text(
-                    'RM ${totalMonthSpending.toStringAsFixed(2)}', // Displaying the total spending
-                    style: const TextStyle(
-                      fontSize: 24.0, // Bigger font for the total spending value
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white, // White text for modern contrast
+                    Text(
+                      'RM ${totalMonthSpending.toStringAsFixed(2)}', // Displaying the total spending
+                      style: const TextStyle(
+                        fontSize:
+                            24.0, // Bigger font for the total spending value
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white, // White text for modern contrast
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            )
-          ],
-        ),
+                  ],
+                ),
+              )
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(

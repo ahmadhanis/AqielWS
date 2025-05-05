@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:convert';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:mybudget/daily_report_screen.dart';
@@ -21,11 +22,39 @@ class LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
   bool _rememberMe = false; // Remember Me checkbox state
   double? screenWidth, screenHeigth;
+  late BannerAd _bannerAd;
+  bool _isBannerAdReady = false;
+
   @override
   void initState() {
     super.initState();
     _loadUserEmailPassword(); // Load saved email and password if available
     _checkAgreement();
+    _bannerAd = BannerAd(
+      adUnitId:
+          'ca-app-pub-8395142902989782/3300133484', // Replace with your AdMob Banner ID
+      request: const AdRequest(),
+      size: AdSize.banner,
+      listener: BannerAdListener(
+        onAdLoaded: (Ad ad) {
+          setState(() {
+            _isBannerAdReady = true;
+          });
+        },
+        onAdFailedToLoad: (Ad ad, LoadAdError error) {
+          ad.dispose();
+          print('BannerAd failed to load: $error');
+        },
+      ),
+    );
+
+    _bannerAd.load();
+  }
+
+  @override
+  void dispose() {
+    _bannerAd.dispose();
+    super.dispose();
   }
 
   // Load email and password from SharedPreferences
@@ -334,6 +363,14 @@ class LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
+                    const SizedBox(height: 20),
+                    if (_isBannerAdReady)
+                      Container(
+                        
+                        height: _bannerAd.size.height.toDouble(),
+                        width: screenWidth,
+                        child: AdWidget(ad: _bannerAd),
+                      ),
                   ],
                 ),
               ),
