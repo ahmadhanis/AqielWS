@@ -194,6 +194,7 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 
+  // ignore: unused_element
   static void _showInfoDialog(
       BuildContext context, String title, String message) {
     showDialog(

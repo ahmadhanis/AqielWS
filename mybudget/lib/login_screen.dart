@@ -43,7 +43,6 @@ class LoginScreenState extends State<LoginScreen> {
         },
         onAdFailedToLoad: (Ad ad, LoadAdError error) {
           ad.dispose();
-          print('BannerAd failed to load: $error');
         },
       ),
     );
@@ -365,8 +364,7 @@ class LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 20),
                     if (_isBannerAdReady)
-                      Container(
-                        
+                      SizedBox(
                         height: _bannerAd.size.height.toDouble(),
                         width: screenWidth,
                         child: AdWidget(ad: _bannerAd),

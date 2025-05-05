@@ -1,6 +1,9 @@
 // ignore_for_file: use_build_context_synchronously, deprecated_member_use
 
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:icons_plus/icons_plus.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
@@ -58,6 +61,10 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
     2029,
     2030
   ]; // [2024, 2025, ..., 2030]
+  late BannerAd _bannerAd;
+  bool _isBannerAdReady = false;
+  AdWidget? _adWidget;
+  int adsno = 0;
 
   @override
   void initState() {
@@ -77,6 +84,30 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
     itemDateController.text = formattedDate.toString();
 
     futureBudgetItems = fetchBudgetItems(currentDay, currentMonth, currentYear);
+    _bannerAd = BannerAd(
+      adUnitId: 'ca-app-pub-8395142902989782/3300133484',
+      size: AdSize.banner,
+      request: const AdRequest(),
+      listener: BannerAdListener(
+        onAdLoaded: (Ad ad) {
+          if (ad is BannerAd) {
+            setState(() {
+              _isBannerAdReady = true;
+              _adWidget = AdWidget(ad: ad);
+            });
+          }
+        },
+        onAdFailedToLoad: (ad, error) {
+          ad.dispose();
+        },
+      ),
+    )..load();
+  }
+
+  @override
+  void dispose() {
+    _bannerAd.dispose();
+    super.dispose();
   }
 
   Future<List<BudgetItem>> fetchBudgetItems(
@@ -96,23 +127,23 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
       );
       if (response.statusCode == 200) {
         List jsonResponse = json.decode(response.body);
-
+        // print("jsonResponse: $jsonResponse");
         // Calculate total monthly spending
 
         List<BudgetItem> items = jsonResponse.map((data) {
           BudgetItem item = BudgetItem.fromJson(data);
-
+          // print("Data item:" + item.itemName.toString());
           // Parse the price and add to totalSpending
           totalDaySpending += double.tryParse(item.itemPrice) ?? 0.0;
-
+          // print("Data totalSpending: $totalDaySpending");
           return item;
         }).toList();
-
+        // print("Data items Hello: $items");
+        adsno = Random().nextInt(items.length);
         // Update the state with the calculated total spending
         setState(() {
           //totalDaySpending = totalSpending;
         });
-
         return items;
       } else {
         throw Exception('Failed to load budgets');
@@ -882,6 +913,15 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
                                       ),
                                     ],
                                   ),
+                                  const SizedBox(height: 8.0),
+                                  if (adsno == index &&
+                                      _isBannerAdReady &&
+                                      _adWidget != null)
+                                    SizedBox(
+                                      height: _bannerAd.size.height.toDouble(),
+                                      width: screenWidth,
+                                      child: AdWidget(ad: _bannerAd),
+                                    )
                                 ],
                               ),
                             ),
@@ -915,6 +955,13 @@ class _MyBudgetPageState extends State<MyBudgetPage> {
                             ),
                             textAlign: TextAlign.center,
                           ),
+                          const SizedBox(height: 8.0),
+                          if (_isBannerAdReady)
+                            SizedBox(
+                              height: _bannerAd.size.height.toDouble(),
+                              width: screenWidth,
+                              child: AdWidget(ad: _bannerAd),
+                            )
                         ],
                       ),
                     );

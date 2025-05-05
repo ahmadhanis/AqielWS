@@ -39,8 +39,11 @@ class ReportScreenState extends State<ReportScreen> {
   double totalMonthSpending = 0.0;
   late BannerAd _bannerAd;
   bool _isBannerAdReady = false;
-
+  // ignore: unused_field
+  AdWidget? _adWidget;
+  int adsno = 0;
   double? screenWidth, screenHeigth;
+
   @override
   void initState() {
     super.initState();
@@ -55,24 +58,23 @@ class ReportScreenState extends State<ReportScreen> {
     // Pass the month and year to fetchBudgetItems
     futureBudgetItems = fetchBudgetItems(currentMonth, currentYear);
     _bannerAd = BannerAd(
-      adUnitId:
-          'ca-app-pub-8395142902989782/3300133484', // Replace with your AdMob Banner ID
-      request: const AdRequest(),
+      adUnitId: 'ca-app-pub-8395142902989782/3300133484',
       size: AdSize.banner,
+      request: const AdRequest(),
       listener: BannerAdListener(
         onAdLoaded: (Ad ad) {
-          setState(() {
-            _isBannerAdReady = true;
-          });
+          if (ad is BannerAd) {
+            setState(() {
+              _isBannerAdReady = true;
+              _adWidget = AdWidget(ad: ad);
+            });
+          }
         },
-        onAdFailedToLoad: (Ad ad, LoadAdError error) {
+        onAdFailedToLoad: (ad, error) {
           ad.dispose();
-          print('BannerAd failed to load: $error');
         },
       ),
-    );
-
-    _bannerAd.load();
+    )..load();
   }
 
   @override
@@ -108,7 +110,7 @@ class ReportScreenState extends State<ReportScreen> {
 
           return item;
         }).toList();
-
+        adsno = Random().nextInt(items.length);
         // Update the state with the calculated total spending
         setState(() {
           totalMonthSpending = totalSpending;
@@ -555,9 +557,6 @@ class ReportScreenState extends State<ReportScreen> {
                         itemCount: snapshot.data!.length,
                         itemBuilder: (context, index) {
                           final item = snapshot.data![index];
-                          int adsno =
-                              Random().nextInt(snapshot.data!.length - 1);
-
                           return GestureDetector(
                             onLongPress: () {
                               deleteBudgetDialog(context,
@@ -722,14 +721,13 @@ class ReportScreenState extends State<ReportScreen> {
                                       ],
                                     ),
                                     const SizedBox(height: 8.0),
-                                    adsno == index
-                                        ? SizedBox(
-                                            height: _bannerAd.size.height
-                                                .toDouble(),
-                                            width: screenWidth,
-                                            child: AdWidget(ad: _bannerAd),
-                                          )
-                                        : Container(),
+                                    if (adsno == index && _isBannerAdReady)
+                                      SizedBox(
+                                        height:
+                                            _bannerAd.size.height.toDouble(),
+                                        width: screenWidth,
+                                        child: AdWidget(ad: _bannerAd),
+                                      )
                                   ],
                                 ),
                               ),
@@ -754,7 +752,7 @@ class ReportScreenState extends State<ReportScreen> {
                             const SizedBox(
                                 height: 20), // Spacing between icon and text
                             Text(
-                              'No data found',
+                              'No budget data found',
                               style: TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
@@ -763,6 +761,13 @@ class ReportScreenState extends State<ReportScreen> {
                               ),
                               textAlign: TextAlign.center,
                             ),
+                            const SizedBox(height: 8.0),
+                            if (_isBannerAdReady)
+                              SizedBox(
+                                height: _bannerAd.size.height.toDouble(),
+                                width: screenWidth,
+                                child: AdWidget(ad: _bannerAd),
+                              )
                           ],
                         ),
                       );

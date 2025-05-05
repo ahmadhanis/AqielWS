@@ -2,6 +2,7 @@
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -30,7 +31,9 @@ class ReportScreenYearState extends State<ReportScreenYear> {
   ]; // [2024, 2025, ..., 2030]
   late int selectedYear;
   double totalYearSpending = 0.0;
-
+  late BannerAd _bannerAd;
+  bool _isBannerAdReady = false;
+  int adsno = 0;
   double? screenWidth, screenHeigth;
   @override
   void initState() {
@@ -42,6 +45,29 @@ class ReportScreenYearState extends State<ReportScreenYear> {
     selectedYear = currentYear;
     // Pass the month and year to fetchBudgetItems
     futureYearlyReport = fetchYearlyReport(selectedYear);
+    _bannerAd = BannerAd(
+      adUnitId: 'ca-app-pub-8395142902989782/3300133484',
+      size: AdSize.banner,
+      request: const AdRequest(),
+      listener: BannerAdListener(
+        onAdLoaded: (Ad ad) {
+          if (ad is BannerAd) {
+            setState(() {
+              _isBannerAdReady = true;
+            });
+          }
+        },
+        onAdFailedToLoad: (ad, error) {
+          ad.dispose();
+        },
+      ),
+    )..load();
+  }
+
+  @override
+  void dispose() {
+    _bannerAd.dispose();
+    super.dispose();
   }
 
   Future<List<dynamic>> fetchYearlyReport(int year) async {
@@ -173,9 +199,9 @@ class ReportScreenYearState extends State<ReportScreenYear> {
       ),
       body: Center(
           child: SizedBox(
-            width: screenWidth,
-            child: Column(children: [
-                    Padding(
+        width: screenWidth,
+        child: Column(children: [
+          Padding(
             padding: const EdgeInsets.all(8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -209,18 +235,19 @@ class ReportScreenYearState extends State<ReportScreenYear> {
                   ),
                 ),
                 const SizedBox(width: 5), // Spacing before the search button
-            
+
                 // Search button
                 ElevatedButton(
                   onPressed: () {
                     futureYearlyReport = fetchYearlyReport(selectedYear);
                   },
                   style: ElevatedButton.styleFrom(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 15, vertical: 15),
                     // Modern button color
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10), // Rounded corners
+                      borderRadius:
+                          BorderRadius.circular(10), // Rounded corners
                     ),
                   ),
                   child: const Icon(
@@ -230,8 +257,8 @@ class ReportScreenYearState extends State<ReportScreenYear> {
                 ),
               ],
             ),
-                    ),
-                    Expanded(
+          ),
+          Expanded(
             child: FutureBuilder<List<dynamic>>(
               future: futureYearlyReport, // Use the future stored in initState
               builder: (context, snapshot) {
@@ -265,12 +292,19 @@ class ReportScreenYearState extends State<ReportScreenYear> {
                           ),
                           textAlign: TextAlign.center,
                         ),
+                        const SizedBox(height: 8.0),
+                        if (_isBannerAdReady)
+                          SizedBox(
+                            height: _bannerAd.size.height.toDouble(),
+                            width: screenWidth,
+                            child: AdWidget(ad: _bannerAd),
+                          )
                       ],
                     ),
                   );
                 } else {
                   List<dynamic> reportData = snapshot.data!;
-            
+
                   return ListView.builder(
                     itemCount: reportData.length,
                     itemBuilder: (context, index) {
@@ -281,10 +315,10 @@ class ReportScreenYearState extends State<ReportScreenYear> {
                           reportData[index]['total_spending'].toString());
                       int itemCount =
                           int.parse(reportData[index]['item_count'].toString());
-            
+
                       // Format the month into readable string (e.g., "January")
                       String monthName = getMonthName(month);
-            
+
                       return Card(
                         elevation: 5,
                         margin: const EdgeInsets.symmetric(
@@ -298,7 +332,7 @@ class ReportScreenYearState extends State<ReportScreenYear> {
                                   fontSize: 20, fontWeight: FontWeight.bold)),
                           subtitle: Text(
                             'Total Spending: RM ${totalSpending.toStringAsFixed(2)}\n'
-                            'Total Items: $itemCount',
+                            'Total Items: $itemCount\n',
                             style: const TextStyle(fontSize: 16),
                           ),
                         ),
@@ -308,8 +342,8 @@ class ReportScreenYearState extends State<ReportScreenYear> {
                 }
               },
             ),
-                    ),
-                    Container(
+          ),
+          Container(
             padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
             margin: const EdgeInsets.all(8),
             decoration: BoxDecoration(
@@ -345,9 +379,9 @@ class ReportScreenYearState extends State<ReportScreenYear> {
                 ),
               ],
             ),
-                    )
-                  ]),
-          )),
+          )
+        ]),
+      )),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           fetchYearlyReport(selectedYear).then((List<dynamic> items) {
