@@ -56,24 +56,6 @@ class ResultaScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 30),
-
-            // Play Again Button
-            // ElevatedButton(
-            //   onPressed: () {
-            //     Navigator.popUntil(context, (route) => route.isFirst);
-            //   },
-            //   style: ElevatedButton.styleFrom(
-            //     padding:
-            //         const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-            //     shape: RoundedRectangleBorder(
-            //       borderRadius: BorderRadius.circular(10),
-            //     ),
-            //   ),
-            //   child: const Text(
-            //     "Play Again",
-            //     style: TextStyle(fontSize: 18),
-            //   ),
-            // ),
           ],
         ),
       ),

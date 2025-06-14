@@ -17,6 +17,7 @@ class _RankScreenMenuState extends State<RankScreenMenu> {
   String? selectedSchool; // Selected school code
   late Future<List<Map<String, dynamic>>> rankings; // Rankings data
   List<Map<String, String>> sarawakSchools = [
+    {"code": "SK000", "name": "All"},
     {"code": "SK001", "name": "SK St Mary, Kuching"},
     {"code": "SK002", "name": "SK St Thomas, Kuching"},
     {"code": "SK003", "name": "SK St Joseph, Miri"},

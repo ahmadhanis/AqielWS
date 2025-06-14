@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:http/io_client.dart';
@@ -18,11 +19,24 @@ class GameCMainScreen extends StatefulWidget {
 class _GameCMainScreenState extends State<GameCMainScreen> {
   String selectedDifficulty = 'Beginner';
 
-  final Map<String, int> difficultyTargets = {
-    'Beginner': 15,
-    'Intermediate': 25,
-    'Advanced': 40,
+  final Map<String, List<int>> difficultyTargetRanges = {
+    'Beginner': [10, 20],
+    'Intermediate': [21, 40],
+    'Advanced': [41, 60],
   };
+  int target = 0;
+  final Map<String, int> difficultyPoints = {
+    'Beginner': 1,
+    'Intermediate': 2,
+    'Advanced': 3,
+  };
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    final range = difficultyTargetRanges[selectedDifficulty]!;
+    target = Random().nextInt(range[1] - range[0] + 1) + range[0];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -146,6 +160,11 @@ class _GameCMainScreenState extends State<GameCMainScreen> {
                         onChanged: (value) {
                           setState(() {
                             selectedDifficulty = value!;
+                            final range =
+                                difficultyTargetRanges[selectedDifficulty]!;
+                            target =
+                                Random().nextInt(range[1] - range[0] + 1) +
+                                range[0];
                           });
                         },
                       ),
@@ -153,11 +172,17 @@ class _GameCMainScreenState extends State<GameCMainScreen> {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    "🎯 Target: ${difficultyTargets[selectedDifficulty]}",
+                    "🎯 Target: $target",
+                    style: const TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    "🏆 Earn ${difficultyPoints[selectedDifficulty]} coin(s) per correct Maze Solve!",
                     style: const TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                 ],
               ),
+
               const SizedBox(height: 30),
 
               // Start Game Button
@@ -175,8 +200,7 @@ class _GameCMainScreenState extends State<GameCMainScreen> {
                                 (_) => GameCScreen(
                                   user: widget.user,
                                   difficulty: selectedDifficulty,
-                                  target:
-                                      difficultyTargets[selectedDifficulty]!,
+                                  target: target,
                                 ),
                           ),
                         );
@@ -221,7 +245,7 @@ class _GameCMainScreenState extends State<GameCMainScreen> {
               (context) => AlertDialog(
                 title: const Text("Deduct a Try"),
                 content: Text(
-                  "Use one try to start Math Maze? Remaining: ${widget.user.dailyTries}",
+                  "Use one try to play the Math Maze? Remaining: ${widget.user.dailyTries}",
                 ),
                 actions: [
                   TextButton(

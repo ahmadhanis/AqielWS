@@ -255,7 +255,7 @@ class _GameBMainScreenState extends State<GameBMainScreen> {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    "🏆 Earn ${difficultyPoints[selectedDifficulty]} point(s) per correct sequence!",
+                    "🏆 Earn ${difficultyPoints[selectedDifficulty]} coin(s) per correct sequence!",
                     style: const TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                 ],

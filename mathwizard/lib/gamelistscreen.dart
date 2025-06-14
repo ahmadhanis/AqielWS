@@ -81,19 +81,20 @@ class _GameListScreenState extends State<GameListScreen> {
                               ),
                             );
                           },
-                          child: CircleAvatar(
-                            radius: 45,
-                            backgroundColor: Colors.blueAccent,
-                            child: Text(
-                              widget.user.fullName
-                                  .toString()
-                                  .substring(0, 2)
-                                  .toUpperCase(),
-                              style: const TextStyle(
-                                fontSize: 36,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
+                          child: ClipOval(
+                            child: Image.network(
+                              "https://slumberjer.com/mathwizard/uploads/profile_images/profile_${widget.user.userId}.jpg",
+                              width: 100,
+                              height: 100,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Image.asset(
+                                  'assets/images/mathwizard.png',
+                                  width: 100,
+                                  height: 100,
+                                  fit: BoxFit.cover,
+                                );
+                              },
                             ),
                           ),
                         ),
@@ -204,8 +205,8 @@ class _GameListScreenState extends State<GameListScreen> {
 
                             // Rewards
                             GestureDetector(
-                              onTap: () {
-                                Navigator.push(
+                              onTap: () async {
+                                await Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder:
@@ -213,6 +214,7 @@ class _GameListScreenState extends State<GameListScreen> {
                                             RewardScreen(user: widget.user),
                                   ),
                                 );
+                                _reloadUser();
                               },
                               child: Column(
                                 children: [
@@ -232,8 +234,8 @@ class _GameListScreenState extends State<GameListScreen> {
 
                             // Rank
                             GestureDetector(
-                              onTap: () {
-                                Navigator.push(
+                              onTap: () async {
+                                await Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder:
@@ -241,6 +243,7 @@ class _GameListScreenState extends State<GameListScreen> {
                                             RankScreenMenu(user: widget.user),
                                   ),
                                 );
+                                _reloadUser();
                               },
                               child: Column(
                                 children: [
@@ -260,8 +263,8 @@ class _GameListScreenState extends State<GameListScreen> {
 
                             // Trade
                             GestureDetector(
-                              onTap: () {
-                                Navigator.push(
+                              onTap: () async {
+                                await Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder:
@@ -269,6 +272,7 @@ class _GameListScreenState extends State<GameListScreen> {
                                             TradeScreen(user: widget.user),
                                   ),
                                 );
+                                _reloadUser();
                               },
                               child: Column(
                                 children: [

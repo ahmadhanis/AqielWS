@@ -203,6 +203,18 @@ class _RewardScreenState extends State<RewardScreen> {
                                               print(
                                                 "Redeem: ${reward.rewardName}",
                                               );
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text(
+                                                    "Reward system still under development!",
+                                                  ),
+                                                  duration: Duration(
+                                                    seconds: 2,
+                                                  ),
+                                                ),
+                                              );
                                             }
                                             : null,
                                     style: ElevatedButton.styleFrom(
@@ -264,7 +276,7 @@ class _RewardScreenState extends State<RewardScreen> {
                       "https://slumberjer.com/mathwizard/images/${reward.rewardId}",
                       fit: BoxFit.cover,
                       height: 200,
-                      width: double.infinity,
+                      width: MediaQuery.of(context).size.width * 0.7, // or 0.8
                       errorBuilder:
                           (context, error, stackTrace) => const Icon(
                             Icons.broken_image,
@@ -273,6 +285,7 @@ class _RewardScreenState extends State<RewardScreen> {
                           ),
                     ),
                   ),
+
                   const SizedBox(height: 16),
                   // Display reward details
                   const Text(

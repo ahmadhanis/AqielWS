@@ -1,5 +1,10 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:http/io_client.dart';
+import 'package:mathwizard/gamec/resultcscreen.dart';
 import 'package:mathwizard/models/user.dart';
 
 class GameCScreen extends StatefulWidget {
@@ -23,11 +28,46 @@ class _GameCScreenState extends State<GameCScreen> {
   List<Offset> path = [];
   int currentSum = 0;
   int gridSize = 4;
-
+  late Timer timer;
+  int timeRemaining = 60; // Game duration: 60 seconds
+  int score = 0;
+  int tries = 0;
   @override
   void initState() {
     super.initState();
-    _generateGrid();
+    // print('INIT FULL USER: ${widget.user.dailyTries}');
+    tries = int.parse(widget.user.dailyTries.toString());
+    startgame();
+  }
+
+  @override
+  void dispose() {
+    timer.cancel();
+    super.dispose();
+  }
+
+  void startgame() {
+    final rand = Random();
+    grid = List.generate(
+      gridSize,
+      (_) => List.generate(gridSize, (_) => rand.nextInt(9) + 1),
+    );
+    path.clear();
+    currentSum = 0;
+
+    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      // print('START GAME FULL USER: ${widget.user.toJson()}');
+      if (timeRemaining > 0) {
+        setState(() {
+          timeRemaining--;
+          // print(widget.user.fullName);
+          // print('IN TIMER Tries left: ${widget.user.dailyTries}');
+        });
+      } else {
+        timer.cancel();
+        _updateCoin();
+      }
+    });
   }
 
   void _generateGrid() {
@@ -56,10 +96,29 @@ class _GameCScreenState extends State<GameCScreen> {
       });
 
       if (currentSum == widget.target) {
-        _showResultDialog(true);
+        // _showResultDialog(true);
+        if (currentSum == widget.target) {
+          score = score + _getCoinReward();
+          setState(() {});
+
+          _showResultDialog(true);
+        }
       } else if (currentSum > widget.target) {
         _showResultDialog(false);
       }
+    }
+  }
+
+  int _getCoinReward() {
+    switch (widget.difficulty) {
+      case 'Beginner':
+        return 1;
+      case 'Intermediate':
+        return 2;
+      case 'Advanced':
+        return 3;
+      default:
+        return 1;
     }
   }
 
@@ -87,7 +146,7 @@ class _GameCScreenState extends State<GameCScreen> {
               ),
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context);
+                  // Navigator.pop(context);
                   Navigator.pop(context); // Exit to main screen
                 },
                 child: const Text("Exit"),
@@ -151,6 +210,22 @@ class _GameCScreenState extends State<GameCScreen> {
         child: Column(
           children: [
             // Target Info
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Time: $timeRemaining",
+                    style: const TextStyle(fontSize: 20, color: Colors.red),
+                  ),
+                  Text(
+                    "Score: $score",
+                    style: const TextStyle(fontSize: 20, color: Colors.green),
+                  ),
+                ],
+              ),
+            ),
             Text(
               "🎯 Target: ${widget.target}",
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
@@ -186,5 +261,60 @@ class _GameCScreenState extends State<GameCScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _updateCoin() async {
+    try {
+      // Temp solution to bypass SSL certificate error
+      HttpClient createHttpClient() {
+        final HttpClient httpClient = HttpClient();
+        httpClient.badCertificateCallback =
+            (X509Certificate cert, String host, int port) => true;
+        return httpClient;
+      }
+
+      final ioClient = IOClient(createHttpClient());
+
+      final url = Uri.parse(
+        "https://slumberjer.com/mathwizard/api/update_coin.php",
+      );
+      final response = await ioClient.post(
+        url,
+        body: {
+          'userid':
+              widget.user.userId.toString(), // Assuming user object is passed
+          'coin': score.toString(),
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final responseBody = json.decode(response.body);
+
+        if (responseBody['status'] == 'success') {
+          // Update the user's coin value locally
+          setState(() {
+            widget.user.coin =
+                (int.parse(widget.user.coin.toString()) + score).toString();
+            widget.user.dailyTries = tries.toString();
+          });
+        }
+      }
+    } catch (e) {
+      print("Error updating coin: $e");
+    } finally {
+      print('Final user: ${widget.user.toJson()}');
+      Navigator.of(context).pop();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder:
+              (_) => ResultcScreen(
+                score: score,
+                user: widget.user,
+                target: widget.target,
+              ), // Pass updated user object
+        ),
+      );
+    }
   }
 }

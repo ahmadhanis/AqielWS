@@ -7,14 +7,15 @@ class User {
   String? standard;
   String? schoolCode;
 
-  User(
-      {this.userId,
-      this.fullName,
-      this.email,
-      this.coin,
-      this.dailyTries,
-      this.standard,
-      this.schoolCode});
+  User({
+    this.userId,
+    this.fullName,
+    this.email,
+    this.coin,
+    this.dailyTries,
+    this.standard,
+    this.schoolCode,
+  });
 
   User.fromJson(Map<String, dynamic> json) {
     userId = json['user_id'];
