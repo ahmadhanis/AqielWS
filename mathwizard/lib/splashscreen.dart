@@ -97,6 +97,7 @@ class _SplashScreenState extends State<SplashScreen>
                       fontStyle: FontStyle.italic,
                       color: Colors.white70,
                     ),
+                    textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 40),
                   const Text(

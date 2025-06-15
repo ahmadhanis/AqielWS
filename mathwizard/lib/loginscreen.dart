@@ -88,7 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
         if (responseBody['status'] == 'success') {
           // Save credentials if Remember Me is checked
           await _saveCredentials();
-          // print(responseBody.data);
+          print(responseBody.data);
           // Parse user object
           User user = User.fromJson(responseBody['data']);
           // print(user.fullName);
