@@ -1,11 +1,12 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:http/io_client.dart';
 import 'package:mathwizard/gamec/resultcscreen.dart';
 import 'package:mathwizard/models/user.dart';
+import 'package:http/http.dart' as http;
 
 class GameCScreen extends StatefulWidget {
   final User user;
@@ -197,7 +198,10 @@ class _GameCScreenState extends State<GameCScreen> {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       backgroundColor: Colors.lightBlue[50],
       appBar: AppBar(
@@ -205,84 +209,165 @@ class _GameCScreenState extends State<GameCScreen> {
         title: const Text("Math Maze"),
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Target Info
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: 600,
+              ), // Limit width on large screens
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    "Time: $timeRemaining",
-                    style: const TextStyle(fontSize: 20, color: Colors.red),
+                  // Time & Score
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            "Time: $timeRemaining",
+                            style: const TextStyle(
+                              fontSize: 20,
+                              color: Colors.red,
+                            ),
+                          ),
+                        ),
+                        Flexible(
+                          child: Text(
+                            "Score: $score",
+                            style: const TextStyle(
+                              fontSize: 20,
+                              color: Colors.green,
+                            ),
+                            textAlign: TextAlign.end,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
+
+                  // Target
                   Text(
-                    "Score: $score",
-                    style: const TextStyle(fontSize: 20, color: Colors.green),
+                    "🎯 Target: ${widget.target}",
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "Current Sum: $currentSum",
+                    style: const TextStyle(fontSize: 18, color: Colors.black54),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Grid
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      return _buildGrid(); // You can adapt grid layout here too
+                    },
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Reset Button
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        _generateGrid();
+                      });
+                    },
+                    icon: const Icon(Icons.refresh),
+                    label: const Text("Reset Grid"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepPurple,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      textStyle: const TextStyle(fontSize: 18),
+                    ),
                   ),
                 ],
               ),
             ),
-            Text(
-              "🎯 Target: ${widget.target}",
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "Current Sum: $currentSum",
-              style: const TextStyle(fontSize: 18, color: Colors.black54),
-            ),
-            const SizedBox(height: 16),
-
-            // Grid
-            _buildGrid(),
-
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: () {
-                setState(() {
-                  _generateGrid();
-                });
-              },
-              icon: const Icon(Icons.refresh),
-              label: const Text("Reset Grid"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 
+  // Future<void> _updateCoin() async {
+  //   try {
+  //     // Temp solution to bypass SSL certificate error
+  //     HttpClient createHttpClient() {
+  //       final HttpClient httpClient = HttpClient();
+  //       httpClient.badCertificateCallback =
+  //           (X509Certificate cert, String host, int port) => true;
+  //       return httpClient;
+  //     }
+
+  //     final ioClient = IOClient(createHttpClient());
+
+  //     final url = Uri.parse(
+  //       "https://slumberjer.com/mathwizard/api/update_coin.php",
+  //     );
+  //     final response = await ioClient.post(
+  //       url,
+  //       body: {
+  //         'userid':
+  //             widget.user.userId.toString(), // Assuming user object is passed
+  //         'coin': score.toString(),
+  //       },
+  //     );
+
+  //     if (response.statusCode == 200) {
+  //       final responseBody = json.decode(response.body);
+
+  //       if (responseBody['status'] == 'success') {
+  //         // Update the user's coin value locally
+  //         setState(() {
+  //           widget.user.coin =
+  //               (int.parse(widget.user.coin.toString()) + score).toString();
+  //           widget.user.dailyTries = tries.toString();
+  //         });
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print("Error updating coin: $e");
+  //   } finally {
+  //     print('Final user: ${widget.user.toJson()}');
+  //     Navigator.of(context).pop();
+  //     Navigator.pushReplacement(
+  //       context,
+  //       MaterialPageRoute(
+  //         builder:
+  //             (_) => ResultcScreen(
+  //               score: score,
+  //               user: widget.user,
+  //               target: widget.target,
+  //             ), // Pass updated user object
+  //       ),
+  //     );
+  //   }
+  // }
+
   Future<void> _updateCoin() async {
     try {
-      // Temp solution to bypass SSL certificate error
-      HttpClient createHttpClient() {
-        final HttpClient httpClient = HttpClient();
-        httpClient.badCertificateCallback =
-            (X509Certificate cert, String host, int port) => true;
-        return httpClient;
-      }
-
-      final ioClient = IOClient(createHttpClient());
-
       final url = Uri.parse(
-        "https://slumberjer.com/mathwizard/api/update_coin.php",
+        "https://slumberjer.com/mathwizard/api/update_coin.php", // Changed to HTTP
       );
-      final response = await ioClient.post(
+
+      final response = await http.post(
         url,
         body: {
-          'userid':
-              widget.user.userId.toString(), // Assuming user object is passed
+          'userid': widget.user.userId.toString(),
           'coin': score.toString(),
         },
       );
@@ -291,18 +376,15 @@ class _GameCScreenState extends State<GameCScreen> {
         final responseBody = json.decode(response.body);
 
         if (responseBody['status'] == 'success') {
-          // Update the user's coin value locally
+          // Update the user's coin and daily tries locally
           setState(() {
             widget.user.coin =
                 (int.parse(widget.user.coin.toString()) + score).toString();
             widget.user.dailyTries = tries.toString();
           });
-        }
-      }
-    } catch (e) {
-      print("Error updating coin: $e");
+        } else {}
+      } else {}
     } finally {
-      print('Final user: ${widget.user.toJson()}');
       Navigator.of(context).pop();
       Navigator.pushReplacement(
         context,
@@ -312,7 +394,7 @@ class _GameCScreenState extends State<GameCScreen> {
                 score: score,
                 user: widget.user,
                 target: widget.target,
-              ), // Pass updated user object
+              ),
         ),
       );
     }

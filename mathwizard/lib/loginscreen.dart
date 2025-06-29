@@ -1,10 +1,8 @@
-// ignore_for_file: unnecessary_const
+// ignore_for_file: unnecessary_const, use_build_context_synchronously, library_private_types_in_public_api, empty_catches
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:http/io_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'gamelistscreen.dart';
@@ -55,25 +53,87 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // Future<void> login() async {
+  //   if (!_formKey.currentState!.validate()) return;
+
+  //   // Temp solution to bypass SSL certificate error
+  //   HttpClient _createHttpClient() {
+  //     final HttpClient httpClient = HttpClient();
+  //     httpClient.badCertificateCallback =
+  //         (X509Certificate cert, String host, int port) => true;
+  //     return httpClient;
+  //   }
+
+  //   final ioClient = IOClient(_createHttpClient());
+
+  //   setState(() {
+  //     isLoading = true;
+  //   });
+  //   try {
+  //     final url = Uri.parse("https://slumberjer.com/mathwizard/api/login.php");
+  //     final response = await ioClient
+  //         .post(
+  //           url,
+  //           body: {
+  //             'email': emailController.text.trim(),
+  //             'password': passwordController.text.trim(),
+  //           },
+  //         )
+  //         .timeout(const Duration(seconds: 10));
+
+  //     if (response.statusCode == 200) {
+  //       final responseBody = json.decode(response.body);
+  //       if (responseBody['status'] == 'success') {
+  //         // Save credentials if Remember Me is checked
+  //         await _saveCredentials();
+  //         print(responseBody.data);
+  //         // Parse user object
+  //         User user = User.fromJson(responseBody['data']);
+  //         // print(user.fullName);
+  //         // Navigate to GameListScreen and pass the User object
+  //         Navigator.pushReplacement(
+  //           context,
+  //           MaterialPageRoute(builder: (_) => GameListScreen(user: user)),
+  //         );
+  //       } else {
+  //         // Show error message
+  //         ScaffoldMessenger.of(
+  //           context,
+  //         ).showSnackBar(SnackBar(content: Text(responseBody['message'])));
+  //       }
+  //     } else {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(content: Text("Failed to connect to server.")),
+  //       );
+  //     }
+  //   } on TimeoutException catch (_) {
+  //     // Handle timeout
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text("Request timed out. Please try again.")),
+  //     );
+  //   } catch (e) {
+  //     // Handle other exceptions
+  //     ScaffoldMessenger.of(
+  //       context,
+  //     ).showSnackBar(SnackBar(content: Text("An error occurred: $e")));
+
+  //     print("$e");
+  //   }
+  //   setState(() {
+  //     isLoading = false;
+  //   });
+  // }
+
   Future<void> login() async {
     if (!_formKey.currentState!.validate()) return;
-
-    // Temp solution to bypass SSL certificate error
-    HttpClient _createHttpClient() {
-      final HttpClient httpClient = HttpClient();
-      httpClient.badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
-      return httpClient;
-    }
-
-    final ioClient = IOClient(_createHttpClient());
 
     setState(() {
       isLoading = true;
     });
+
     try {
       final url = Uri.parse("https://slumberjer.com/mathwizard/api/login.php");
-      final response = await ioClient
+      final response = await http
           .post(
             url,
             body: {
@@ -83,44 +143,41 @@ class _LoginScreenState extends State<LoginScreen> {
           )
           .timeout(const Duration(seconds: 10));
 
+      // Debug
+
       if (response.statusCode == 200) {
         final responseBody = json.decode(response.body);
+
         if (responseBody['status'] == 'success') {
-          // Save credentials if Remember Me is checked
           await _saveCredentials();
-          print(responseBody.data);
-          // Parse user object
-          User user = User.fromJson(responseBody['data']);
-          // print(user.fullName);
-          // Navigate to GameListScreen and pass the User object
+          // ✅ FIXED
+
+          User user = User.fromJson(responseBody['data']); // ✅ FIXED
+
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => GameListScreen(user: user)),
           );
         } else {
-          // Show error message
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(responseBody['message'])));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(responseBody['message'] ?? 'Unknown error')),
+          );
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Failed to connect to server.")),
         );
       }
-    } on TimeoutException catch (_) {
-      // Handle timeout
+    } on TimeoutException {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Request timed out. Please try again.")),
       );
     } catch (e) {
-      // Handle other exceptions
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("An error occurred: $e")));
-
-      print("$e");
     }
+
     setState(() {
       isLoading = false;
     });
@@ -159,8 +216,6 @@ class _LoginScreenState extends State<LoginScreen> {
               TextButton(
                 onPressed: () {
                   Navigator.pop(context);
-                  print(emailController.text.trim());
-                  print("HELLO");
                 },
                 child: const Text("Cancel"),
               ),
@@ -169,7 +224,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   // Send email to reset password
                   Navigator.pop(context);
                   resetPassword(emailController.text.trim());
-                  print(emailController.text.trim());
                 },
                 child: const Text("Submit"),
               ),
@@ -352,34 +406,80 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // Future<void> resetPassword(String emailreset) async {
+  //   HttpClient createHttpClient() {
+  //     final HttpClient httpClient = HttpClient();
+  //     httpClient.badCertificateCallback =
+  //         (X509Certificate cert, String host, int port) => true;
+  //     return httpClient;
+  //   }
+
+  //   final ioClient = IOClient(createHttpClient());
+
+  //   try {
+  //     final url = Uri.parse("https://slumberjer.com/mathwizard/api/reset.php");
+  //     final response = await ioClient
+  //         .post(url, body: {'email': emailreset})
+  //         .timeout(const Duration(seconds: 5));
+  //     print(response.body);
+  //     if (response.statusCode == 200) {
+  //       final responseBody = json.decode(response.body);
+  //       print(response.body);
+  //       if (responseBody['status'] == 'success') {
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           const SnackBar(
+  //             content: const Text("Success. Please check your email"),
+  //             duration: Duration(seconds: 3),
+  //           ),
+  //         );
+  //       } else {
+  //         // Show error message
+  //         ScaffoldMessenger.of(
+  //           context,
+  //         ).showSnackBar(const SnackBar(content: Text("Error")));
+  //       }
+  //     } else {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(content: Text("Failed to connect to server.")),
+  //       );
+  //     }
+  //   } on TimeoutException catch (_) {
+  //     // Handle timeout
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text("Request timed out. Please try again.")),
+  //     );
+  //   } catch (e) {
+  //     // Handle other exceptions
+  //     // ScaffoldMessenger.of(context).showSnackBar(
+  //     //   SnackBar(
+  //     //     content: Text("An error occurred: $e"),
+  //     //   ),
+  //     // );
+
+  //     print("$e");
+  //   }
+  // }
+
   Future<void> resetPassword(String emailreset) async {
-    HttpClient createHttpClient() {
-      final HttpClient httpClient = HttpClient();
-      httpClient.badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
-      return httpClient;
-    }
-
-    final ioClient = IOClient(createHttpClient());
-
     try {
-      final url = Uri.parse("https://slumberjer.com/mathwizard/api/reset.php");
-      final response = await ioClient
+      final url = Uri.parse(
+        "https://slumberjer.com/mathwizard/api/reset.php",
+      ); // Changed to HTTP
+      final response = await http
           .post(url, body: {'email': emailreset})
           .timeout(const Duration(seconds: 5));
-      print(response.body);
+
       if (response.statusCode == 200) {
         final responseBody = json.decode(response.body);
-        print(response.body);
+
         if (responseBody['status'] == 'success') {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: const Text("Success. Please check your email"),
+              content: Text("Success. Please check your email"),
               duration: Duration(seconds: 3),
             ),
           );
         } else {
-          // Show error message
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(const SnackBar(content: Text("Error")));
@@ -390,19 +490,9 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } on TimeoutException catch (_) {
-      // Handle timeout
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Request timed out. Please try again.")),
       );
-    } catch (e) {
-      // Handle other exceptions
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   SnackBar(
-      //     content: Text("An error occurred: $e"),
-      //   ),
-      // );
-
-      print("$e");
-    }
+    } catch (e) {}
   }
 }

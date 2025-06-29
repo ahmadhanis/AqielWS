@@ -1,11 +1,11 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
-import 'package:http/io_client.dart';
 import 'package:mathwizard/gamea/resultascreen.dart';
 import 'package:mathwizard/models/user.dart';
 
@@ -14,7 +14,8 @@ class GameAScreen extends StatefulWidget {
   final String difficulty; // Difficulty level passed from the selection screen
   final User user;
 
-  GameAScreen({
+  const GameAScreen({
+    super.key,
     required this.operation,
     required this.difficulty,
     required this.user,
@@ -53,12 +54,10 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Handle app lifecycle changes
     if (state == AppLifecycleState.paused) {
-      timer.cancel(); // Pause the timer when the app is minimized
-    } else if (state == AppLifecycleState.resumed) {
-      // Restart the timer when the app is resumed
-      if (timeRemaining > 0) {
+      timer.cancel();
+    } else if (state == AppLifecycleState.resumed && timeRemaining > 0) {
+      if (!timer.isActive) {
         startGame();
       }
     }
@@ -66,76 +65,114 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
 
   void startGame() {
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (timeRemaining > 0) {
+      if (mounted && timeRemaining > 0) {
         setState(() {
           timeRemaining--;
         });
       } else {
         timer.cancel();
-        _updateCoin(); // Call the function to update the coins
+        _updateCoin();
       }
     });
     generateQuestion();
   }
 
+  // Future<void> _updateCoin() async {
+  //   try {
+  //     // Temp solution to bypass SSL certificate error
+  //     HttpClient _createHttpClient() {
+  //       final HttpClient httpClient = HttpClient();
+  //       httpClient.badCertificateCallback =
+  //           (X509Certificate cert, String host, int port) => true;
+  //       return httpClient;
+  //     }
+
+  //     final ioClient = IOClient(_createHttpClient());
+
+  //     final url = Uri.parse(
+  //       "https://slumberjer.com/mathwizard/api/update_coin.php",
+  //     );
+  //     final response = await ioClient.post(
+  //       url,
+  //       body: {
+  //         'userid':
+  //             widget.user.userId.toString(), // Assuming user object is passed
+  //         'coin': score.toString(),
+  //       },
+  //     );
+
+  //     print(response.body);
+
+  //     if (response.statusCode == 200) {
+  //       final responseBody = json.decode(response.body);
+
+  //       if (responseBody['status'] == 'success') {
+  //         // Update the user's coin value locally
+  //         setState(() {
+  //           widget.user.coin =
+  //               (int.parse(widget.user.coin.toString()) + score).toString();
+  //         });
+  //         print("Coins updated successfully.");
+  //       } else {
+  //         print("Error updating coins: ${responseBody['message']}");
+  //       }
+  //     } else {
+  //       print(
+  //         "Failed to connect to server. Status code: ${response.statusCode}",
+  //       );
+  //     }
+  //   } catch (e) {
+  //     print("Error updating coins: $e");
+  //   } finally {
+  //     // Navigate to ResultScreen
+  //     Navigator.of(context).pop();
+
+  //     Navigator.pushReplacement(
+  //       context,
+  //       MaterialPageRoute(
+  //         builder:
+  //             (_) => ResultaScreen(
+  //               score: score,
+  //               user: widget.user,
+  //             ), // Pass updated user object
+  //       ),
+  //     );
+  //   }
+  // }
+
   Future<void> _updateCoin() async {
     try {
-      // Temp solution to bypass SSL certificate error
-      HttpClient _createHttpClient() {
-        final HttpClient httpClient = HttpClient();
-        httpClient.badCertificateCallback =
-            (X509Certificate cert, String host, int port) => true;
-        return httpClient;
-      }
-
-      final ioClient = IOClient(_createHttpClient());
-
       final url = Uri.parse(
         "https://slumberjer.com/mathwizard/api/update_coin.php",
-      );
-      final response = await ioClient.post(
+      ); // Changed to HTTP
+
+      final response = await http.post(
         url,
         body: {
-          'userid':
-              widget.user.userId.toString(), // Assuming user object is passed
+          'userid': widget.user.userId.toString(),
           'coin': score.toString(),
         },
       );
 
-      print(response.body);
+      // Debug
 
       if (response.statusCode == 200) {
         final responseBody = json.decode(response.body);
 
         if (responseBody['status'] == 'success') {
-          // Update the user's coin value locally
           setState(() {
             widget.user.coin =
                 (int.parse(widget.user.coin.toString()) + score).toString();
           });
-          print("Coins updated successfully.");
-        } else {
-          print("Error updating coins: ${responseBody['message']}");
-        }
-      } else {
-        print(
-          "Failed to connect to server. Status code: ${response.statusCode}",
-        );
-      }
-    } catch (e) {
-      print("Error updating coins: $e");
+        } else {}
+      } else {}
     } finally {
       // Navigate to ResultScreen
-      Navigator.of(context).pop();
 
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder:
-              (_) => ResultaScreen(
-                score: score,
-                user: widget.user,
-              ), // Pass updated user object
+          builder: (_) => ResultaScreen(score: score, user: widget.user),
         ),
       );
     }
@@ -164,15 +201,14 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
         digits = 1;
         answerRange = 10;
     }
-
+    int attempt = 0;
     do {
       a = random.nextInt(pow(10, digits).toInt()) + 1;
       b = random.nextInt(pow(10, digits).toInt()) + 1;
-
+      attempt++;
       if (widget.difficulty == 'Advanced') {
         c = random.nextInt(pow(10, digits - 1).toInt()) + 1;
       }
-
       switch (widget.operation) {
         case '+':
           question =
@@ -203,6 +239,7 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
           correctAnswer = a ~/ b;
           break;
       }
+      if (attempt > 50) break;
     } while (askedQuestions.contains(question));
 
     askedQuestions.add(question);
@@ -210,17 +247,17 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
     final Set<int> answerSet = {};
     while (answerSet.length < answerRange) {
       int value = correctAnswer + random.nextInt(answerRange * 2) - answerRange;
-      answerSet.add(value); // Allow both positive and negative values
+      answerSet.add(value);
     }
 
     answerSet.remove(answerSet.first);
     answerSet.add(correctAnswer);
 
-    answers = answerSet.toList();
-    answers.shuffle();
-
-    wrongAnswerIndex = null;
-    isProcessing = false; // Allow new taps
+    setState(() {
+      answers = answerSet.toList()..shuffle();
+      wrongAnswerIndex = null;
+      isProcessing = false;
+    });
   }
 
   void handleAnswerTap(int index, int answer) {
@@ -261,17 +298,18 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Solve the following operation"),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text("Solve"), centerTitle: true),
       body: SafeArea(
         child: Column(
           children: [
             // Score and Time Display
             Text(
               question,
-              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: Colors.red,
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
@@ -328,7 +366,7 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
                                         answer.toString().length *
                                             1, // Adjust font size
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                    // color: Colors.white,
                                   ),
                                   textAlign: TextAlign.center,
                                 ),

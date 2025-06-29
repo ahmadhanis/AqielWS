@@ -1,12 +1,10 @@
-// ignore_for_file: unused_import
+// ignore_for_file: unused_import, must_be_immutable
 
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:http/io_client.dart';
 
 import 'package:http/http.dart' as http;
@@ -473,38 +471,70 @@ class _GameListScreenState extends State<GameListScreen> {
     }
   }
 
+  // _reloadUser() async {
+  //   try {
+  //     // Temp solution to bypass SSL certificate error
+  //     HttpClient createHttpClient() {
+  //       final HttpClient httpClient = HttpClient();
+  //       httpClient.badCertificateCallback =
+  //           (X509Certificate cert, String host, int port) => true;
+  //       return httpClient;
+  //     }
+
+  //     final ioClient = IOClient(createHttpClient());
+  //     final url = Uri.parse(
+  //       "https://slumberjer.com/mathwizard/api/reload_user.php",
+  //     );
+  //     final response = await ioClient.post(
+  //       url,
+  //       body: {'userid': widget.user.userId.toString()},
+  //     );
+  //     if (response.statusCode == 200) {
+  //       final responseBody = json.decode(response.body);
+  //       if (responseBody['status'] == 'success') {
+  //         setState(() {
+  //           widget.user = User.fromJson(responseBody['data']);
+  //         });
+  //         ("User info reloaded successfully.");
+  //         // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+  //         //   content: Text("User info reloaded successfully."),
+  //         // ));
+  //       } else {}
+  //     } else {}
+  //   } catch (e) {
+  //     log(e.toString());
+  //   }
+  // }
+
   _reloadUser() async {
     try {
-      // Temp solution to bypass SSL certificate error
-      HttpClient createHttpClient() {
-        final HttpClient httpClient = HttpClient();
-        httpClient.badCertificateCallback =
-            (X509Certificate cert, String host, int port) => true;
-        return httpClient;
-      }
-
-      final ioClient = IOClient(createHttpClient());
       final url = Uri.parse(
         "https://slumberjer.com/mathwizard/api/reload_user.php",
-      );
-      final response = await ioClient.post(
+      ); // Changed to HTTP
+
+      final response = await http.post(
         url,
         body: {'userid': widget.user.userId.toString()},
       );
+
       if (response.statusCode == 200) {
         final responseBody = json.decode(response.body);
         if (responseBody['status'] == 'success') {
           setState(() {
             widget.user = User.fromJson(responseBody['data']);
           });
-          ("User info reloaded successfully.");
+          log("User info reloaded successfully.");
           // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           //   content: Text("User info reloaded successfully."),
           // ));
-        } else {}
-      } else {}
+        } else {
+          log("Server responded with failure status.");
+        }
+      } else {
+        log("Server error: ${response.statusCode}");
+      }
     } catch (e) {
-      log(e.toString());
+      log("Error occurred: $e");
     }
   }
 }

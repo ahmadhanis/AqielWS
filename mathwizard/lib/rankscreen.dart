@@ -1,8 +1,6 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:http/io_client.dart';
 import 'package:mathwizard/models/user.dart';
 
 class RankScreenMenu extends StatefulWidget {
@@ -60,26 +58,52 @@ class _RankScreenMenuState extends State<RankScreenMenu> {
     rankings = fetchRankings(selectedSchool!, selectedStandard);
   }
 
+  // Future<List<Map<String, dynamic>>> fetchRankings(
+  //   String schoolCode,
+  //   String selectedStandard,
+  // ) async {
+  //   HttpClient _createHttpClient() {
+  //     final HttpClient httpClient = HttpClient();
+  //     httpClient.badCertificateCallback =
+  //         (X509Certificate cert, String host, int port) => true;
+  //     return httpClient;
+  //   }
+
+  //   final ioClient = IOClient(_createHttpClient());
+
+  //   try {
+  //     final url = Uri.parse(
+  //       "https://slumberjer.com/mathwizard/api/ranking.php?school_code=$schoolCode&standard=$selectedStandard",
+  //     );
+  //     final response = await ioClient
+  //         .get(url)
+  //         .timeout(const Duration(seconds: 5));
+
+  //     if (response.statusCode == 200) {
+  //       final data = json.decode(response.body);
+  //       if (data['status'] == 'success') {
+  //         return List<Map<String, dynamic>>.from(data['data']);
+  //       } else {
+  //         throw Exception(data['message'] ?? 'Failed to load rankings');
+  //       }
+  //     } else {
+  //       throw Exception('Failed to connect to server');
+  //     }
+  //   } catch (e) {
+  //     throw Exception('No ranking available');
+  //   }
+  // }
+
   Future<List<Map<String, dynamic>>> fetchRankings(
     String schoolCode,
     String selectedStandard,
   ) async {
-    HttpClient _createHttpClient() {
-      final HttpClient httpClient = HttpClient();
-      httpClient.badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
-      return httpClient;
-    }
-
-    final ioClient = IOClient(_createHttpClient());
-
     try {
       final url = Uri.parse(
-        "https://slumberjer.com/mathwizard/api/ranking.php?school_code=$schoolCode&standard=$selectedStandard",
+        "https://slumberjer.com/mathwizard/api/ranking.php?school_code=$schoolCode&standard=$selectedStandard", // Changed to HTTP
       );
-      final response = await ioClient
-          .get(url)
-          .timeout(const Duration(seconds: 5));
+
+      final response = await http.get(url).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -151,6 +175,7 @@ class _RankScreenMenuState extends State<RankScreenMenu> {
                 onChanged: (value) {
                   setState(() {
                     selectedStandard = value!;
+                    // ignore: avoid_print
                     print(value);
                   });
                   refreshRankings();
@@ -275,9 +300,9 @@ class _RankScreenMenuState extends State<RankScreenMenu> {
                           ),
                           child: ListTile(
                             leading: CircleAvatar(
-                              child: Text("${index + 1}"),
                               backgroundColor: Colors.blueAccent,
                               foregroundColor: Colors.white,
+                              child: Text("${index + 1}"),
                             ),
                             title: Text(rank['full_name']),
                             subtitle: Text("Coins: ${rank['coin']}"),

@@ -1,8 +1,9 @@
+// ignore_for_file: library_private_types_in_public_api, empty_catches, use_build_context_synchronously
+
 import 'dart:convert';
-import 'dart:io';
+import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
-import 'package:http/io_client.dart';
 import 'gamebscreen.dart'; // Replace with the screen where the game logic will be implemented
 import 'package:mathwizard/models/user.dart';
 
@@ -24,38 +25,64 @@ class _GameBMainScreenState extends State<GameBMainScreen> {
     'Advanced': 3,
   };
 
+  // Future<bool> _deductDailyTry() async {
+  //   try {
+  //     // Temp solution to bypass SSL certificate error
+  //     HttpClient _createHttpClient() {
+  //       final HttpClient httpClient = HttpClient();
+  //       httpClient.badCertificateCallback =
+  //           (X509Certificate cert, String host, int port) => true;
+  //       return httpClient;
+  //     }
+
+  //     final ioClient = IOClient(_createHttpClient());
+  //     final url = Uri.parse(
+  //       "https://slumberjer.com/mathwizard/api/update_tries.php",
+  //     );
+  //     final response = await ioClient.post(
+  //       url,
+  //       body: {'userid': widget.user.userId},
+  //     );
+  //     if (response.statusCode == 200) {
+  //       final responseBody = json.decode(response.body);
+  //       if (responseBody['status'] == 'success') {
+  //         setState(() {
+  //           widget.user.dailyTries =
+  //               (int.parse(widget.user.dailyTries.toString()) - 1)
+  //                   .toString(); // Update UI after successful deduction
+  //         });
+  //         return true;
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print("Error deducting daily try: $e");
+  //   }
+  //   return false;
+  // }
+
   Future<bool> _deductDailyTry() async {
     try {
-      // Temp solution to bypass SSL certificate error
-      HttpClient _createHttpClient() {
-        final HttpClient httpClient = HttpClient();
-        httpClient.badCertificateCallback =
-            (X509Certificate cert, String host, int port) => true;
-        return httpClient;
-      }
-
-      final ioClient = IOClient(_createHttpClient());
       final url = Uri.parse(
-        "https://slumberjer.com/mathwizard/api/update_tries.php",
+        "https://slumberjer.com/mathwizard/api/update_tries.php", // Use HTTP instead of HTTPS
       );
-      final response = await ioClient.post(
+
+      final response = await http.post(
         url,
         body: {'userid': widget.user.userId},
       );
+
       if (response.statusCode == 200) {
         final responseBody = json.decode(response.body);
         if (responseBody['status'] == 'success') {
           setState(() {
             widget.user.dailyTries =
-                (int.parse(widget.user.dailyTries.toString()) - 1)
-                    .toString(); // Update UI after successful deduction
+                (int.parse(widget.user.dailyTries.toString()) - 1).toString();
           });
           return true;
         }
       }
-    } catch (e) {
-      print("Error deducting daily try: $e");
-    }
+    } catch (e) {}
+
     return false;
   }
 
@@ -83,46 +110,68 @@ class _GameBMainScreenState extends State<GameBMainScreen> {
         false;
   }
 
+  // _reloadUser() async {
+  //   try {
+  //     // Temp solution to bypass SSL certificate error
+  //     HttpClient _createHttpClient() {
+  //       final HttpClient httpClient = HttpClient();
+  //       httpClient.badCertificateCallback =
+  //           (X509Certificate cert, String host, int port) => true;
+  //       return httpClient;
+  //     }
+
+  //     final ioClient = IOClient(_createHttpClient());
+  //     final url = Uri.parse(
+  //       "https://slumberjer.com/mathwizard/api/reload_user.php",
+  //     );
+  //     final response = await ioClient.post(
+  //       url,
+  //       body: {'userid': widget.user.userId.toString()},
+  //     );
+  //     print(response.body);
+  //     if (response.statusCode == 200) {
+  //       final responseBody = json.decode(response.body);
+  //       if (responseBody['status'] == 'success') {
+  //         setState(() {
+  //           widget.user = User.fromJson(responseBody['data']);
+  //         });
+  //         ("User info reloaded successfully.");
+  //         // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+  //         //   content: Text("User info reloaded successfully."),
+  //         // ));
+  //       } else {
+  //         print("Error reloading user info: ${responseBody['message']}");
+  //       }
+  //     } else {
+  //       print(
+  //         "Failed to connect to server. Status code: ${response.statusCode}",
+  //       );
+  //     }
+  //   } catch (e) {
+  //     print("Error reloading user info: $e");
+  //   }
+  // }
+
   _reloadUser() async {
     try {
-      // Temp solution to bypass SSL certificate error
-      HttpClient _createHttpClient() {
-        final HttpClient httpClient = HttpClient();
-        httpClient.badCertificateCallback =
-            (X509Certificate cert, String host, int port) => true;
-        return httpClient;
-      }
-
-      final ioClient = IOClient(_createHttpClient());
       final url = Uri.parse(
-        "https://slumberjer.com/mathwizard/api/reload_user.php",
+        "https://slumberjer.com/mathwizard/api/reload_user.php", // Changed to HTTP
       );
-      final response = await ioClient.post(
+
+      final response = await http.post(
         url,
         body: {'userid': widget.user.userId.toString()},
       );
-      print(response.body);
+
       if (response.statusCode == 200) {
         final responseBody = json.decode(response.body);
         if (responseBody['status'] == 'success') {
           setState(() {
             widget.user = User.fromJson(responseBody['data']);
           });
-          ("User info reloaded successfully.");
-          // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          //   content: Text("User info reloaded successfully."),
-          // ));
-        } else {
-          print("Error reloading user info: ${responseBody['message']}");
-        }
-      } else {
-        print(
-          "Failed to connect to server. Status code: ${response.statusCode}",
-        );
-      }
-    } catch (e) {
-      print("Error reloading user info: $e");
-    }
+        } else {}
+      } else {}
+    } catch (e) {}
   }
 
   @override

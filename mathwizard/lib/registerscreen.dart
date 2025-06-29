@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously, library_private_types_in_public_api
+
 import 'dart:convert';
 import 'dart:math';
 import 'package:http/http.dart' as http;
@@ -92,35 +94,41 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final responseBody = json.decode(response.body);
       showDialog(
         context: context,
-        builder: (_) => AlertDialog(
-          title: const Text("Registration Successful"),
-          content: Text(responseBody['message'] ?? "Please check your email!"),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.of(context)
-                    .pop(); // Navigate back to the previous screen
-              },
-              child: const Text("OK"),
+        builder:
+            (_) => AlertDialog(
+              title: const Text("Registration Successful"),
+              content: Text(
+                responseBody['message'] ?? "Please check your email!",
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    Navigator.of(
+                      context,
+                    ).pop(); // Navigate back to the previous screen
+                  },
+                  child: const Text("OK"),
+                ),
+              ],
             ),
-          ],
-        ),
       );
     } else {
       showDialog(
         context: context,
-        builder: (_) => AlertDialog(
-          title: const Text("Registration Failed"),
-          content: Text(
-              "Error: ${response.reasonPhrase ?? 'Unknown error occurred'}"),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text("OK"),
+        builder:
+            (_) => AlertDialog(
+              title: const Text("Registration Failed"),
+              content: Text(
+                "Error: ${response.reasonPhrase ?? 'Unknown error occurred'}",
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text("OK"),
+                ),
+              ],
             ),
-          ],
-        ),
       );
     }
   }
@@ -128,20 +136,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> confirmRegistration() async {
     final isConfirmed = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Confirm Registration"),
-        content: const Text("Do you want to submit your registration?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text("Cancel"),
+      builder:
+          (_) => AlertDialog(
+            title: const Text("Confirm Registration"),
+            content: const Text("Do you want to submit your registration?"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text("Cancel"),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text("Confirm"),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text("Confirm"),
-          ),
-        ],
-      ),
     );
 
     if (isConfirmed ?? false) {
@@ -161,10 +170,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final isWideScreen = mediaQuery.size.width > 600;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Register"),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text("Register"), centerTitle: true),
       body: SingleChildScrollView(
         child: Center(
           child: ConstrainedBox(
@@ -218,8 +224,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return "Please enter your email.";
-                        } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
-                            .hasMatch(value)) {
+                        } else if (!RegExp(
+                          r'^[^@]+@[^@]+\.[^@]+',
+                        ).hasMatch(value)) {
                           return "Please enter a valid email.";
                         }
                         return null;
@@ -284,13 +291,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     // Dropdown for Schools
                     DropdownButtonFormField<String>(
                       value: selectedSchool,
-                      items: sarawakSchools
-                          .map((school) => DropdownMenuItem(
-                                value: school["code"],
-                                child: Text(
-                                    "${school["name"]} (${school["code"]})"),
-                              ))
-                          .toList(),
+                      items:
+                          sarawakSchools
+                              .map(
+                                (school) => DropdownMenuItem(
+                                  value: school["code"],
+                                  child: Text(
+                                    "${school["name"]} (${school["code"]})",
+                                  ),
+                                ),
+                              )
+                              .toList(),
                       onChanged: (value) {
                         setState(() {
                           selectedSchool = value!;

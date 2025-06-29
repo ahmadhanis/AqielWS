@@ -1,9 +1,12 @@
+// ignore_for_file: use_build_context_synchronously, empty_catches
+
 import 'dart:convert';
+// ignore: unused_import
 import 'dart:io';
 import 'dart:math';
+import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
-import 'package:http/io_client.dart';
 import 'package:mathwizard/models/user.dart';
 import 'gamecscreen.dart'; // Replace with the actual game screen for Math Maze
 
@@ -193,7 +196,7 @@ class _GameCMainScreenState extends State<GameCMainScreen> {
                     if (shouldDeduct) {
                       final success = await _deductDailyTry();
                       if (success) {
-                        Navigator.push(
+                        await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder:
@@ -262,16 +265,40 @@ class _GameCMainScreenState extends State<GameCMainScreen> {
         false;
   }
 
+  // Future<bool> _deductDailyTry() async {
+  //   try {
+  //     final ioClient = IOClient(
+  //       HttpClient()..badCertificateCallback = (cert, host, port) => true,
+  //     );
+
+  //     final response = await ioClient.post(
+  //       Uri.parse("https://slumberjer.com/mathwizard/api/update_tries.php"),
+  //       body: {'userid': widget.user.userId},
+  //     );
+  //     if (response.statusCode == 200) {
+  //       final data = json.decode(response.body);
+  //       if (data['status'] == 'success') {
+  //         setState(() {
+  //           widget.user.dailyTries =
+  //               (int.parse(widget.user.dailyTries.toString()) - 1).toString();
+  //         });
+  //         return true;
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print("Error deducting try: $e");
+  //   }
+  //   return false;
+  // }
   Future<bool> _deductDailyTry() async {
     try {
-      final ioClient = IOClient(
-        HttpClient()..badCertificateCallback = (cert, host, port) => true,
-      );
-
-      final response = await ioClient.post(
-        Uri.parse("https://slumberjer.com/mathwizard/api/update_tries.php"),
+      final response = await http.post(
+        Uri.parse(
+          "http://slumberjer.com/mathwizard/api/update_tries.php",
+        ), // Changed to HTTP
         body: {'userid': widget.user.userId},
       );
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] == 'success') {
@@ -281,23 +308,43 @@ class _GameCMainScreenState extends State<GameCMainScreen> {
           });
           return true;
         }
-      }
-    } catch (e) {
-      print("Error deducting try: $e");
-    }
+      } else {}
+    } catch (e) {}
     return false;
   }
+  // Future<void> _reloadUser() async {
+  //   try {
+  //     final ioClient = IOClient(
+  //       HttpClient()..badCertificateCallback = (cert, host, port) => true,
+  //     );
+
+  //     final response = await ioClient.post(
+  //       Uri.parse("https://slumberjer.com/mathwizard/api/reload_user.php"),
+  //       body: {'userid': widget.user.userId},
+  //     );
+  //     if (response.statusCode == 200) {
+  //       final data = json.decode(response.body);
+  //       if (data['status'] == 'success') {
+  //         setState(() {
+  //           widget.user.coin = data['data']['coin'];
+  //           widget.user.dailyTries = data['data']['dailyTries'];
+  //         });
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print("Reload error: $e");
+  //   }
+  // }
 
   Future<void> _reloadUser() async {
     try {
-      final ioClient = IOClient(
-        HttpClient()..badCertificateCallback = (cert, host, port) => true,
-      );
-
-      final response = await ioClient.post(
-        Uri.parse("https://slumberjer.com/mathwizard/api/reload_user.php"),
+      final response = await http.post(
+        Uri.parse(
+          "http://slumberjer.com/mathwizard/api/reload_user.php",
+        ), // Changed to HTTP
         body: {'userid': widget.user.userId},
       );
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] == 'success') {
@@ -305,10 +352,8 @@ class _GameCMainScreenState extends State<GameCMainScreen> {
             widget.user.coin = data['data']['coin'];
             widget.user.dailyTries = data['data']['dailyTries'];
           });
-        }
-      }
-    } catch (e) {
-      print("Reload error: $e");
-    }
+        } else {}
+      } else {}
+    } catch (e) {}
   }
 }

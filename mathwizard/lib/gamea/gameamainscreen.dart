@@ -1,8 +1,8 @@
+// ignore_for_file: use_build_context_synchronously, library_private_types_in_public_api, empty_catches
+
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:http/io_client.dart';
 import 'package:mathwizard/gamea/gameascreen.dart';
 import 'package:mathwizard/models/user.dart';
 // ignore: unused_import
@@ -178,10 +178,10 @@ class _GameAMainScreenState extends State<GameAMainScreen> {
                     mainAxisSpacing: 10,
                     physics: const NeverScrollableScrollPhysics(),
                     children: [
-                      _buildOperationButton(context, "➕", Colors.green),
-                      _buildOperationButton(context, "➖", Colors.orange),
-                      _buildOperationButton(context, "✖️", Colors.blue),
-                      _buildOperationButton(context, "➗", Colors.purple),
+                      _buildOperationButton(context, "➕", '+', Colors.green),
+                      _buildOperationButton(context, "➖", '-', Colors.orange),
+                      _buildOperationButton(context, "✖️", '*', Colors.blue),
+                      _buildOperationButton(context, "➗", '/', Colors.purple),
                     ],
                   ),
                 ],
@@ -196,6 +196,7 @@ class _GameAMainScreenState extends State<GameAMainScreen> {
   Widget _buildOperationButton(
     BuildContext context,
     String operation,
+    String realop,
     Color color,
   ) {
     return ElevatedButton(
@@ -216,7 +217,7 @@ class _GameAMainScreenState extends State<GameAMainScreen> {
                   builder:
                       (_) => GameAScreen(
                         user: widget.user,
-                        operation: operation,
+                        operation: realop,
                         difficulty: selectedDifficulty,
                       ),
                 ),
@@ -250,46 +251,75 @@ class _GameAMainScreenState extends State<GameAMainScreen> {
     );
   }
 
+  // _reloadUser() async {
+  //   try {
+  //     // Temp solution to bypass SSL certificate error
+  //     HttpClient _createHttpClient() {
+  //       final HttpClient httpClient = HttpClient();
+  //       httpClient.badCertificateCallback =
+  //           (X509Certificate cert, String host, int port) => true;
+  //       return httpClient;
+  //     }
+
+  //     final ioClient = IOClient(_createHttpClient());
+  //     final url = Uri.parse(
+  //       "https://slumberjer.com/mathwizard/api/reload_user.php",
+  //     );
+  //     final response = await ioClient.post(
+  //       url,
+  //       body: {'userid': widget.user.userId.toString()},
+  //     );
+  //     print(response.body);
+  //     if (response.statusCode == 200) {
+  //       final responseBody = json.decode(response.body);
+  //       if (responseBody['status'] == 'success') {
+  //         setState(() {
+  //           widget.user = User.fromJson(responseBody['data']);
+  //         });
+  //         ("User info reloaded successfully.");
+  //         // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+  //         //   content: Text("User info reloaded successfully."),
+  //         // ));
+  //       } else {
+  //         print("Error reloading user info: ${responseBody['message']}");
+  //       }
+  //     } else {
+  //       print(
+  //         "Failed to connect to server. Status code: ${response.statusCode}",
+  //       );
+  //     }
+  //   } catch (e) {
+  //     print("Error reloading user info: $e");
+  //   }
+  // }
+
   _reloadUser() async {
     try {
-      // Temp solution to bypass SSL certificate error
-      HttpClient _createHttpClient() {
-        final HttpClient httpClient = HttpClient();
-        httpClient.badCertificateCallback =
-            (X509Certificate cert, String host, int port) => true;
-        return httpClient;
-      }
-
-      final ioClient = IOClient(_createHttpClient());
       final url = Uri.parse(
         "https://slumberjer.com/mathwizard/api/reload_user.php",
-      );
-      final response = await ioClient.post(
+      ); // Changed to HTTP
+
+      final response = await http.post(
         url,
         body: {'userid': widget.user.userId.toString()},
       );
-      print(response.body);
+
+      // Debug output
+
       if (response.statusCode == 200) {
         final responseBody = json.decode(response.body);
+
         if (responseBody['status'] == 'success') {
           setState(() {
             widget.user = User.fromJson(responseBody['data']);
           });
-          ("User info reloaded successfully.");
+          // Optional UI feedback:
           // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           //   content: Text("User info reloaded successfully."),
           // ));
-        } else {
-          print("Error reloading user info: ${responseBody['message']}");
-        }
-      } else {
-        print(
-          "Failed to connect to server. Status code: ${response.statusCode}",
-        );
-      }
-    } catch (e) {
-      print("Error reloading user info: $e");
-    }
+        } else {}
+      } else {}
+    } catch (e) {}
   }
 
   Future<bool> _showConfirmDialog(BuildContext context) async {
@@ -316,38 +346,65 @@ class _GameAMainScreenState extends State<GameAMainScreen> {
         false;
   }
 
+  // Future<bool> _deductDailyTry() async {
+  //   try {
+  //     // Temp solution to bypass SSL certificate error
+  //     HttpClient _createHttpClient() {
+  //       final HttpClient httpClient = HttpClient();
+  //       httpClient.badCertificateCallback =
+  //           (X509Certificate cert, String host, int port) => true;
+  //       return httpClient;
+  //     }
+
+  //     final ioClient = IOClient(_createHttpClient());
+  //     final url = Uri.parse(
+  //       "https://slumberjer.com/mathwizard/api/update_tries.php",
+  //     );
+  //     final response = await ioClient.post(
+  //       url,
+  //       body: {'userid': widget.user.userId},
+  //     );
+  //     if (response.statusCode == 200) {
+  //       final responseBody = json.decode(response.body);
+  //       if (responseBody['status'] == 'success') {
+  //         setState(() {
+  //           widget.user.dailyTries =
+  //               (int.parse(widget.user.dailyTries.toString()) - 1)
+  //                   .toString(); // Update UI after successful deduction
+  //         });
+  //         return true;
+  //       }
+  //     }
+  //   } catch (e) {
+  //     print("Error deducting daily try: $e");
+  //   }
+  //   return false;
+  // }
+
   Future<bool> _deductDailyTry() async {
     try {
-      // Temp solution to bypass SSL certificate error
-      HttpClient _createHttpClient() {
-        final HttpClient httpClient = HttpClient();
-        httpClient.badCertificateCallback =
-            (X509Certificate cert, String host, int port) => true;
-        return httpClient;
-      }
-
-      final ioClient = IOClient(_createHttpClient());
       final url = Uri.parse(
         "https://slumberjer.com/mathwizard/api/update_tries.php",
-      );
-      final response = await ioClient.post(
+      ); // Changed to HTTP
+
+      final response = await http.post(
         url,
         body: {'userid': widget.user.userId},
       );
+
       if (response.statusCode == 200) {
         final responseBody = json.decode(response.body);
+
         if (responseBody['status'] == 'success') {
           setState(() {
             widget.user.dailyTries =
-                (int.parse(widget.user.dailyTries.toString()) - 1)
-                    .toString(); // Update UI after successful deduction
+                (int.parse(widget.user.dailyTries.toString()) - 1).toString();
           });
           return true;
         }
-      }
-    } catch (e) {
-      print("Error deducting daily try: $e");
-    }
+      } else {}
+    } catch (e) {}
+
     return false;
   }
 }

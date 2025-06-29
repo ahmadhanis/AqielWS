@@ -15,6 +15,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         fontFamily: 'ComicSans', // A playful font (add to pubspec.yaml)
       ),
+      debugShowCheckedModeBanner: false,
       home: const SplashScreen(),
     );
   }

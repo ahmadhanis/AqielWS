@@ -1,9 +1,10 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:http/io_client.dart';
 import 'package:mathwizard/models/reward.dart';
 import 'package:mathwizard/models/user.dart';
+import 'package:http/http.dart' as http;
 
 class RewardScreen extends StatefulWidget {
   final User user;
@@ -24,19 +25,11 @@ class _RewardScreenState extends State<RewardScreen> {
   }
 
   Future<List<Reward>> fetchRewards() async {
-    // Temp solution to bypass SSL certificate error
-    HttpClient createHttpClient() {
-      final HttpClient httpClient = HttpClient();
-      httpClient.badCertificateCallback =
-          (X509Certificate cert, String host, int port) => true;
-      return httpClient;
-    }
-
-    final ioClient = IOClient(createHttpClient());
     final url = Uri.parse(
-      "https://slumberjer.com/mathwizard/api/get_rewards.php",
+      "https://slumberjer.com/mathwizard/api/get_rewards.php", // Changed to HTTP
     );
-    final response = await ioClient.get(url);
+
+    final response = await http.get(url);
 
     if (response.statusCode == 200) {
       final List<dynamic> rewardData = json.decode(response.body)['data'];
@@ -45,6 +38,29 @@ class _RewardScreenState extends State<RewardScreen> {
       throw Exception("Failed to load rewards");
     }
   }
+
+  // Future<List<Reward>> fetchRewards() async {
+  //   // Temp solution to bypass SSL certificate error
+  //   HttpClient createHttpClient() {
+  //     final HttpClient httpClient = HttpClient();
+  //     httpClient.badCertificateCallback =
+  //         (X509Certificate cert, String host, int port) => true;
+  //     return httpClient;
+  //   }
+
+  //   final ioClient = IOClient(createHttpClient());
+  //   final url = Uri.parse(
+  //     "https://slumberjer.com/mathwizard/api/get_rewards.php",
+  //   );
+  //   final response = await ioClient.get(url);
+
+  //   if (response.statusCode == 200) {
+  //     final List<dynamic> rewardData = json.decode(response.body)['data'];
+  //     return rewardData.map((json) => Reward.fromJson(json)).toList();
+  //   } else {
+  //     throw Exception("Failed to load rewards");
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -200,9 +216,6 @@ class _RewardScreenState extends State<RewardScreen> {
                                         isRedeemable
                                             ? () {
                                               // Redeem Reward Logic Here
-                                              print(
-                                                "Redeem: ${reward.rewardName}",
-                                              );
                                               ScaffoldMessenger.of(
                                                 context,
                                               ).showSnackBar(
