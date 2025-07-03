@@ -157,19 +157,19 @@ class _MainScreenState extends State<MainScreen> {
                             gridDelegate:
                                 SliverGridDelegateWithFixedCrossAxisCount(
                                   crossAxisCount: crossAxisCount,
-                                  childAspectRatio: 3.5,
+                                  childAspectRatio: 3.2,
                                 ),
                             itemBuilder: (context, index) {
                               final item = itemList[index];
                               final imageUrl =
-                                  "${MyConfig.myurl}ktargo/assets/images/items/item-${item.itemId}.png?v=$ran";
+                                  "${MyConfig.myurl}uploads/assets/images/items/item-${item.itemId}.png?v=$ran";
 
                               return Card(
                                 elevation: 4,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                margin: const EdgeInsets.all(8),
+                                // margin: const EdgeInsets.all(8),
                                 child: InkWell(
                                   splashColor: Colors.purple.shade200,
                                   onTap: () => showItemDetails(item),
@@ -214,6 +214,7 @@ class _MainScreenState extends State<MainScreen> {
                                                         Colors.purple.shade600,
                                                   ),
                                                 ),
+                                                const SizedBox(height: 10),
                                                 Row(
                                                   children: [
                                                     Text(
@@ -333,7 +334,7 @@ class _MainScreenState extends State<MainScreen> {
     http
         .get(
           Uri.parse(
-            "${MyConfig.myurl}/ktargo/php/load_items.php?search=$s&pageno=$curpage",
+            "${MyConfig.myurl}/api/load_items.php?search=$s&pageno=$curpage",
           ),
         )
         .then((response) {
@@ -371,7 +372,7 @@ class _MainScreenState extends State<MainScreen> {
 
   void showItemDetails(Item item) {
     final imageUrl =
-        "${MyConfig.myurl}ktargo/assets/images/items/item-${item.itemId}.png?r=$ran";
+        "${MyConfig.myurl}uploads/assets/images/items/item-${item.itemId}.png?r=$ran";
     final phone = "+6${item.userPhone}";
 
     showDialog(
@@ -734,7 +735,7 @@ class _MainScreenState extends State<MainScreen> {
     String productName,
   ) async {
     final response = await http.post(
-      Uri.parse("${MyConfig.myurl}ktargo/php/send_message.php"),
+      Uri.parse("${MyConfig.myurl}api/send_message.php"),
       body: {
         "sender_id": senderId,
         "receiver_id": receiverId,

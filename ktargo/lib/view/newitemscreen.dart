@@ -82,7 +82,7 @@ class _NewItemScreenState extends State<NewItemScreen> {
                           GestureDetector(
                             onTap: showSelectionDialog,
                             child: Container(
-                              height: 180,
+                              height: screenHeight * 0.3,
                               width: double.infinity,
                               decoration: BoxDecoration(
                                 border: Border.all(color: Colors.grey),
@@ -229,11 +229,28 @@ class _NewItemScreenState extends State<NewItemScreen> {
   }
 
   void insertItemDialog() {
+    if (widget.user.userCredit == "0") {
+      _showSnackbar("You need to top up your credit first.", color: Colors.red);
+      return;
+    }
+    final priceText = priceController.text.trim();
     if (_image == null) {
       _showSnackbar("Please select an image");
       return;
     }
-
+    final price = double.tryParse(priceText);
+    if (price == null) {
+      _showSnackbar("Please enter a valid number for price.");
+      return;
+    }
+    if (price <= 0) {
+      _showSnackbar("Price must be greater than zero.");
+      return;
+    }
+    if (priceText.isEmpty) {
+      _showSnackbar("Price is required.");
+      return;
+    }
     if (!_formKey.currentState!.validate()) return;
 
     showDialog(
@@ -241,7 +258,99 @@ class _NewItemScreenState extends State<NewItemScreen> {
       builder:
           (_) => AlertDialog(
             title: const Text("Add this item?"),
-            content: const Text("1 credit will be deducted.\nAre you sure you want to submit this item?"),
+            content: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Card(
+                    color: Colors.grey.shade50,
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+
+                        children: [
+                          Row(
+                            children: const [
+                              Icon(
+                                Icons.policy_rounded,
+                                color: Colors.deepPurple,
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                "Submission Notice",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          const Text.rich(
+                            TextSpan(
+                              style: TextStyle(fontSize: 14, height: 1.6),
+                              children: [
+                                TextSpan(
+                                  text: "By submitting, you agree to our ",
+                                ),
+                                TextSpan(
+                                  text: "terms and conditions",
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                TextSpan(
+                                  text:
+                                      ". Please ensure all information is accurate before proceeding.\n\n",
+                                ),
+                                TextSpan(
+                                  text:
+                                      "⚠ Item postings are your responsibility. If any issues occur, you will be held accountable.",
+                                  style: TextStyle(color: Colors.redAccent),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Card(
+                    color: Colors.red.shade50,
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        children: const [
+                          Icon(Icons.warning_amber_rounded, color: Colors.red),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              "1 credit will be deducted upon submission.\nAre you sure you want to continue?",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.red,
+                                height: 1.5,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
             actions: [
               TextButton(
                 onPressed: () {
@@ -265,7 +374,7 @@ class _NewItemScreenState extends State<NewItemScreen> {
     // final base64Image;
 
     final response = await http.post(
-      Uri.parse("${MyConfig.myurl}/ktargo/php/insert_item.php"),
+      Uri.parse("${MyConfig.myurl}/api/insert_item.php"),
       body: {
         "name": itemController.text,
         "description": descController.text,

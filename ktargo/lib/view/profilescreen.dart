@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -27,6 +28,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   File? _image;
   Uint8List? webImageBytes;
   late double screenHeight, screenWidth;
+  int ran = Random().nextInt(1000);
 
   final List<String> unilist = [
     "Akasia",
@@ -94,17 +96,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         GestureDetector(
                           onTap: _changeProfileImage,
-                          child: CircleAvatar(
-                            radius: 50,
-                            backgroundImage:
-                                _image != null
-                                    ? _buildItemImage()
-                                    : NetworkImage(
-                                          "${MyConfig.myurl}ktargo/assets/images/profiles/${user.userId}.png",
-                                        )
-                                        as ImageProvider,
+                          child: Container(
+                            width: 250,
+                            height: 350,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.rectangle,
+                              border: Border.all(
+                                color: Colors.grey.shade300,
+                                width: 2,
+                              ),
+                              image: DecorationImage(
+                                image:
+                                    _image != null
+                                        ? _buildItemImage()
+                                        : NetworkImage(
+                                              "${MyConfig.myurl}uploads/assets/images/profiles/${user.userId}.png?ran=$ran",
+                                            )
+                                            as ImageProvider,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
                           ),
                         ),
+
                         const SizedBox(height: 10),
                         Center(
                           child: Text(
@@ -340,7 +354,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final base64Image = getBase64Image();
 
     final response = await http.post(
-      Uri.parse("${MyConfig.myurl}ktargo/php/update_profile.php"),
+      Uri.parse("${MyConfig.myurl}api/update_profile.php"),
       body: {
         "userid": widget.user.userId,
         "name": name,
@@ -386,6 +400,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> buyCredit(int amount) async {
     // Navigator.pop(context);
+    if ((int.parse(credit) + amount) > 50) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("You cannot have more than 50 credits."),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
     await Navigator.push(
       context,
       AnimatedRoute.slideFromRight(

@@ -38,7 +38,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
     setState(() => isLoading = true);
     try {
       var response = await http.post(
-        Uri.parse("${MyConfig.myurl}ktargo/php/load_conversation.php"),
+        Uri.parse("${MyConfig.myurl}api/load_conversation.php"),
         body: {'user_id': widget.user.userId, 'partner_id': widget.partnerId},
       );
 
@@ -62,7 +62,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
 
     try {
       var response = await http.post(
-        Uri.parse("${MyConfig.myurl}ktargo/php/send_message.php"),
+        Uri.parse("${MyConfig.myurl}api/send_message.php"),
         body: {
           'sender_id': widget.user.userId,
           'receiver_id': widget.partnerId,

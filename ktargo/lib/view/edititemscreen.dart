@@ -33,7 +33,7 @@ class _EditItemScreenState extends State<EditItemScreen> {
   String delivery = "Postage";
   String itemStatus = "New";
   String itemQty = "1";
-
+  late double screenHeight, screenWidth;
   final deliveryOptions = ['Delivery', 'Pickup'];
   final itemStatusOptions = ['Used', 'New', 'Refurbished', 'Damaged'];
   final qtyOptions = List.generate(10, (index) => '${index + 1}');
@@ -44,13 +44,15 @@ class _EditItemScreenState extends State<EditItemScreen> {
     itemController.text = widget.item.itemName ?? '';
     descController.text = widget.item.itemDesc ?? '';
     priceController.text = widget.item.itemPrice ?? '';
-    delivery = widget.item.itemDelivery ?? 'Postage';
-    itemStatus = widget.item.itemStatus ?? 'New';
+    delivery = widget.item.itemDelivery ?? 'Delivery';
+    itemStatus = widget.item.itemStatus ?? 'Used';
     itemQty = widget.item.itemQty ?? '1';
   }
 
   @override
   Widget build(BuildContext context) {
+    screenHeight = MediaQuery.of(context).size.height;
+    screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       backgroundColor: Colors.amber.shade50,
       appBar: AppBar(
@@ -89,24 +91,29 @@ class _EditItemScreenState extends State<EditItemScreen> {
                         children: [
                           GestureDetector(
                             onTap: showSelectionDialog,
-                            child: Container(
-                              height: 180,
-                              width: double.infinity,
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey),
-                                borderRadius: BorderRadius.circular(10),
-                                image: DecorationImage(
-                                  image:
-                                      _image != null
-                                          ? _buildItemImage()
-                                          : NetworkImage(
-                                                "${MyConfig.myurl}ktargo/assets/images/items/item-${widget.item.itemId}.png?timestamp=${DateTime.now().millisecondsSinceEpoch}",
-                                              )
-                                              as ImageProvider,
-                                  fit: BoxFit.contain,
-                                ),
-                              ),
-                            ),
+                            child:
+                                _image != null
+                                    ? Image(
+                                      image: _buildItemImage(),
+                                      fit: BoxFit.contain,
+                                      width: double.infinity,
+                                    )
+                                    : Image.network(
+                                      "${MyConfig.myurl}uploads/assets/images/items/item-${widget.item.itemId}.png?timestamp=${DateTime.now().millisecondsSinceEpoch}",
+                                      fit: BoxFit.contain,
+                                      width: double.infinity,
+                                      errorBuilder: (
+                                        context,
+                                        error,
+                                        stackTrace,
+                                      ) {
+                                        return Image.asset(
+                                          "assets/images/unigo.png",
+                                          fit: BoxFit.contain,
+                                          width: double.infinity,
+                                        );
+                                      },
+                                    ),
                           ),
                           const SizedBox(height: 20),
                           _buildTextField(
@@ -315,12 +322,32 @@ class _EditItemScreenState extends State<EditItemScreen> {
 
   void updateItemDialog() {
     if (!_formKey.currentState!.validate()) return;
+    if (widget.user.userCredit == "0") {
+      _showSnackbar("You need to top up your credit first.", color: Colors.red);
+      return;
+    }
+    final priceText = priceController.text.trim();
 
+    final price = double.tryParse(priceText);
+    if (price == null) {
+      _showSnackbar("Please enter a valid number for price.");
+      return;
+    }
+    if (price <= 0) {
+      _showSnackbar("Price must be greater than zero.");
+      return;
+    }
+    if (priceText.isEmpty) {
+      _showSnackbar("Price is required.");
+      return;
+    }
     showDialog(
       context: context,
       builder:
           (_) => AlertDialog(
-            title: const Text("1 credit will be deducted.\nAre you sure you want to Update Item?"),
+            title: const Text(
+              "1 credit will be deducted.\nAre you sure you want to Update Item?",
+            ),
             content: const Text("Are you sure you want to save changes?"),
             actions: [
               TextButton(
@@ -339,12 +366,11 @@ class _EditItemScreenState extends State<EditItemScreen> {
     );
   }
 
-
   void updateItem() async {
     var base64Image = _image != null ? getBase64Image() : "NA";
 
     final response = await http.post(
-      Uri.parse("${MyConfig.myurl}ktargo/php/update_item.php"),
+      Uri.parse("${MyConfig.myurl}api/update_item.php"),
       body: {
         "itemid": widget.item.itemId.toString(),
         "name": itemController.text,

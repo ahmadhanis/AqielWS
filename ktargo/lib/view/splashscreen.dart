@@ -71,7 +71,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
       try {
         final response = await http.post(
-          Uri.parse("${MyConfig.myurl}/ktargo/php/login_user.php"),
+          Uri.parse("${MyConfig.myurl}/api/login_user.php"),
           body: {'email': email, 'password': password},
         );
         // debugPrint("Response status: ${response.body}");

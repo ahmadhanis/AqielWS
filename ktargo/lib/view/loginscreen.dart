@@ -261,7 +261,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     http
         .post(
-          Uri.parse("${MyConfig.myurl}ktargo/php/login_user.php"),
+          Uri.parse("${MyConfig.myurl}api/login_user.php"),
           body: {"email": email, "password": password},
         )
         .then((response) {
@@ -377,7 +377,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> forgotPassword(String email) async {
     try {
       final response = await http.post(
-        Uri.parse("${MyConfig.myurl}/ktargo/php/forgot_password.php"),
+        Uri.parse("${MyConfig.myurl}/api/forgot_password.php"),
         body: {"email": email},
       );
 

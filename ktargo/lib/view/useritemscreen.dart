@@ -142,7 +142,7 @@ class _UserItemScreenState extends State<UserItemScreen> {
                       itemBuilder: (context, index) {
                         final item = itemList[index];
                         final imageUrl =
-                            "${MyConfig.myurl}ktargo/assets/images/items/item-${item.itemId}.png?v=$ran";
+                            "${MyConfig.myurl}uploads/assets/images/items/item-${item.itemId}.png?v=$ran";
 
                         return Card(
                           margin: EdgeInsets.zero,
@@ -219,6 +219,12 @@ class _UserItemScreenState extends State<UserItemScreen> {
                                           );
                                           loadUserItems();
                                         },
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.sell),
+                                        color: Colors.amber.shade900,
+                                        onPressed:
+                                            () => updateStatusDialog(item),
                                       ),
                                       IconButton(
                                         icon: const Icon(Icons.delete),
@@ -323,11 +329,7 @@ class _UserItemScreenState extends State<UserItemScreen> {
   void loadUserItems() {
     String userid = widget.user.userId.toString();
     http
-        .get(
-          Uri.parse(
-            "${MyConfig.myurl}ktargo/php/load_items.php?userid=$userid",
-          ),
-        )
+        .get(Uri.parse("${MyConfig.myurl}api/load_items.php?userid=$userid"))
         .then((response) {
           // log(response.body);
           // print(response.body);
@@ -382,7 +384,7 @@ class _UserItemScreenState extends State<UserItemScreen> {
             // "userid":"${widget.user.userId}",
             "itemid": itemId,
           },
-          Uri.parse("${MyConfig.myurl}ktargo/php/delete_item.php"),
+          Uri.parse("${MyConfig.myurl}api/delete_item.php"),
         )
         .then((response) {
           if (response.statusCode == 200) {
@@ -445,7 +447,7 @@ class _UserItemScreenState extends State<UserItemScreen> {
             "item_id": itemId,
             "item_status": "sold",
           },
-          Uri.parse("${MyConfig.myurl}ktargo/php/update_item_status.php"),
+          Uri.parse("${MyConfig.myurl}api/update_item_status.php"),
         )
         .then((response) {
           if (response.statusCode == 200) {

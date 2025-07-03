@@ -307,20 +307,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-String? getBase64Image() {
-  if (kIsWeb && webImageBytes != null) {
-    return base64Encode(webImageBytes!);
-  } else if (!kIsWeb && _image != null) {
-    return base64Encode(_image!.readAsBytesSync());
+  String? getBase64Image() {
+    if (kIsWeb && webImageBytes != null) {
+      return base64Encode(webImageBytes!);
+    } else if (!kIsWeb && _image != null) {
+      return base64Encode(_image!.readAsBytesSync());
+    }
+    return null;
   }
-  return null;
-}
 
   void registerUser() async {
     final base64Image = getBase64Image();
 
     final response = await http.post(
-      Uri.parse("${MyConfig.myurl}/ktargo/php/register_user.php"),
+      Uri.parse("${MyConfig.myurl}/api/register_user.php"),
       body: {
         "name": nameController.text,
         "email": emailController.text,

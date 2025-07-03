@@ -1,3 +1,3 @@
 class MyConfig {
-  static const String myurl = "http://slumberjer.com/";
+  static const String myurl = "https://ktargo.slumberjer.com/";
 }

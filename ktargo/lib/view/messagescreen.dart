@@ -32,7 +32,7 @@ class _MessageScreenState extends State<MessageScreen> {
     setState(() => isLoading = true);
     try {
       var response = await http.post(
-        Uri.parse("${MyConfig.myurl}ktargo/php/load_messages.php"),
+        Uri.parse("${MyConfig.myurl}api/load_messages.php"),
         body: {'user_id': widget.user.userId},
       );
 
@@ -56,7 +56,7 @@ class _MessageScreenState extends State<MessageScreen> {
   Future<void> _markMessageAsRead(String messageId) async {
     try {
       await http.post(
-        Uri.parse("${MyConfig.myurl}ktargo/php/mark_read.php"),
+        Uri.parse("${MyConfig.myurl}api/mark_read.php"),
         body: {'message_id': messageId},
       );
     } catch (e) {
@@ -234,7 +234,7 @@ class _MessageScreenState extends State<MessageScreen> {
   _deleteMessage(String messageid) {
     http
         .post(
-          Uri.parse("${MyConfig.myurl}ktargo/php/delete_message.php"),
+          Uri.parse("${MyConfig.myurl}api/delete_message.php"),
           body: {'message_id': messageid},
         )
         .then((response) {
