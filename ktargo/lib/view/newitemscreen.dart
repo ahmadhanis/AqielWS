@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, depend_on_referenced_packages
 
 import 'dart:convert';
 import 'dart:io';
@@ -241,7 +241,7 @@ class _NewItemScreenState extends State<NewItemScreen> {
       builder:
           (_) => AlertDialog(
             title: const Text("Add this item?"),
-            content: const Text("Are you sure you want to submit this item?"),
+            content: const Text("1 credit will be deducted.\nAre you sure you want to submit this item?"),
             actions: [
               TextButton(
                 onPressed: () {
@@ -260,7 +260,9 @@ class _NewItemScreenState extends State<NewItemScreen> {
   }
 
   void registerItem() async {
-    final base64Image = base64Encode(_image!.readAsBytesSync());
+    final base64Image = getBase64Image();
+
+    // final base64Image;
 
     final response = await http.post(
       Uri.parse("${MyConfig.myurl}/ktargo/php/insert_item.php"),
@@ -335,9 +337,18 @@ class _NewItemScreenState extends State<NewItemScreen> {
     if (pickedFile != null) {
       _image = File(pickedFile.path);
       if (kIsWeb) webImageBytes = await pickedFile.readAsBytes();
-      cropImage();
-      // setState(() {});
+      // cropImage();
+      setState(() {});
     }
+  }
+
+  String? getBase64Image() {
+    if (kIsWeb && webImageBytes != null) {
+      return base64Encode(webImageBytes!);
+    } else if (!kIsWeb && _image != null) {
+      return base64Encode(_image!.readAsBytesSync());
+    }
+    return null;
   }
 
   Future<void> _selectFromGallery() async {

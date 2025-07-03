@@ -1,3 +1,5 @@
+// ignore_for_file: depend_on_referenced_packages
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -72,7 +74,7 @@ class _SplashScreenState extends State<SplashScreen> {
           Uri.parse("${MyConfig.myurl}/ktargo/php/login_user.php"),
           body: {'email': email, 'password': password},
         );
-
+        // debugPrint("Response status: ${response.body}");
         if (response.statusCode == 200) {
           var jsondata = json.decode(response.body);
           if (jsondata['status'] == 'success') {

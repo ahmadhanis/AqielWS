@@ -1,7 +1,7 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, depend_on_referenced_packages
 
 import 'dart:convert';
-import 'dart:developer';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -12,7 +12,9 @@ import 'package:ktargo/shared/animated_route.dart';
 import 'package:ktargo/shared/myconfig.dart';
 import 'package:ktargo/shared/mydrawer.dart';
 import 'package:ktargo/view/edititemscreen.dart';
+import 'package:ktargo/view/loginscreen.dart';
 import 'package:ktargo/view/newitemscreen.dart';
+import 'package:ktargo/view/registerscreen.dart';
 
 class UserItemScreen extends StatefulWidget {
   final User user;
@@ -25,6 +27,9 @@ class UserItemScreen extends StatefulWidget {
 class _UserItemScreenState extends State<UserItemScreen> {
   List<Item> itemList = <Item>[]; // List of item objects
   late double screenWidth, screenHeight;
+  int ran = Random().nextInt(1000); // Random number for image cache busting
+  GlobalKey<RefreshIndicatorState> refreshKey =
+      GlobalKey<RefreshIndicatorState>();
   @override
   void initState() {
     super.initState();
@@ -39,188 +44,260 @@ class _UserItemScreenState extends State<UserItemScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.user.userName} Items'),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.amber.shade900, Colors.purple.shade600],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+        flexibleSpace: SizedBox.expand(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.amber.shade900, Colors.purple.shade600],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
           ),
         ),
         elevation: 0,
         backgroundColor: Colors.transparent,
       ),
-      body:
-          itemList.isEmpty
-              ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.inbox, size: 80, color: Colors.grey.shade400),
-                    const SizedBox(height: 16),
-                    Text(
-                      "No items found.",
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.grey.shade600,
-                        fontWeight: FontWeight.w600,
+      body: RefreshIndicator(
+        key: refreshKey,
+        color: Colors.amber.shade900,
+        onRefresh: () async {
+          loadUserItems();
+        },
+        child:
+            itemList.isEmpty
+                ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.inbox, size: 80, color: Colors.grey.shade400),
+                      const SizedBox(height: 16),
+                      Text(
+                        "No items found.",
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "You haven't listed any items yet.",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey.shade500,
+                      const SizedBox(height: 8),
+                      Text(
+                        "You haven't listed any items yet.",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade500,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    ElevatedButton.icon(
-                      onPressed: () async {
-                        await Navigator.push(
-                          context,
-                          AnimatedRoute.slideFromRight(
-                            NewItemScreen(user: widget.user),
+                      const SizedBox(height: 12),
+                      ElevatedButton.icon(
+                        onPressed: () async {
+                          await Navigator.push(
+                            context,
+                            AnimatedRoute.slideFromRight(
+                              NewItemScreen(user: widget.user),
+                            ),
+                          );
+                          loadUserItems();
+                        },
+                        icon: const Icon(Icons.add),
+                        label: const Text("Add Your First Item"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.purple.shade600,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
                           ),
-                        );
-                        loadUserItems();
-                      },
-                      icon: const Icon(Icons.add),
-                      label: const Text("Add Your First Item"),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.purple.shade600,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              )
-              : LayoutBuilder(
-                builder: (context, constraints) {
-                  double width = constraints.maxWidth;
-                  int crossAxisCount;
+                    ],
+                  ),
+                )
+                : LayoutBuilder(
+                  builder: (context, constraints) {
+                    double width = constraints.maxWidth;
+                    int crossAxisCount;
 
-                  if (width > 1200) {
-                    crossAxisCount = 3; // Desktop
-                  } else if (width > 800) {
-                    crossAxisCount = 2; // Tablet
-                  } else {
-                    crossAxisCount = 1; // Mobile
-                  }
+                    if (width > 1200) {
+                      crossAxisCount = 3; // Desktop
+                    } else if (width > 800) {
+                      crossAxisCount = 2; // Tablet
+                    } else {
+                      crossAxisCount = 1; // Mobile
+                    }
 
-                  return GridView.builder(
-                    padding: const EdgeInsets.all(12),
-                    itemCount: itemList.length,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: crossAxisCount,
-                      mainAxisSpacing: 12,
-                      crossAxisSpacing: 12,
-                      childAspectRatio:
-                          width > 1200 ? 3.8 : (width > 800 ? 3.5 : 2.8),
-                    ),
-                    itemBuilder: (context, index) {
-                      final item = itemList[index];
-                      final imageUrl =
-                          "${MyConfig.myurl}ktargo/assets/images/items/item-${item.itemId}.png";
+                    return GridView.builder(
+                      padding: const EdgeInsets.all(12),
+                      itemCount: itemList.length,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount,
+                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 12,
+                        childAspectRatio:
+                            width > 1200 ? 3.8 : (width > 800 ? 3.5 : 2.8),
+                      ),
+                      itemBuilder: (context, index) {
+                        final item = itemList[index];
+                        final imageUrl =
+                            "${MyConfig.myurl}ktargo/assets/images/items/item-${item.itemId}.png?v=$ran";
 
-                      return Card(
-                        margin: EdgeInsets.zero,
-                        child: InkWell(
-                          onLongPress: () => updateStatusDialog(item),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Image
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(6),
-                                  child: Image.network(
-                                    imageUrl,
-                                    width: width > 1200 ? 130 : width * 0.2,
-                                    height: screenHeight * 0.13,
-                                    fit: BoxFit.cover,
-                                    errorBuilder:
-                                        (context, error, stackTrace) =>
-                                            const Icon(
-                                              Icons.broken_image,
-                                              size: 80,
-                                            ),
+                        return Card(
+                          margin: EdgeInsets.zero,
+                          child: InkWell(
+                            onLongPress: () => updateStatusDialog(item),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Image
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(6),
+                                    child: Image.network(
+                                      imageUrl,
+                                      width: width > 1200 ? 130 : width * 0.2,
+                                      height: screenHeight * 0.13,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) =>
+                                              const Icon(
+                                                Icons.broken_image,
+                                                size: 80,
+                                              ),
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 10),
+                                  const SizedBox(width: 10),
 
-                                // Details
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                  // Details
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          truncateString(
+                                            item.itemName.toString(),
+                                            15,
+                                          ),
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                            color: Colors.purple.shade600,
+                                          ),
+                                        ),
+                                        Text("Price: RM ${item.itemPrice}"),
+                                        Text("Qty: ${item.itemQty}"),
+                                        Text("Delivery: ${item.itemDelivery}"),
+                                        Text(
+                                          "Date: ${formatDate(item.itemDate)}",
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  // Action buttons
+                                  Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Text(
-                                        truncateString(
-                                          item.itemName.toString(),
-                                          15,
-                                        ),
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                          color: Colors.purple.shade600,
-                                        ),
+                                      IconButton(
+                                        icon: const Icon(Icons.edit),
+                                        color: Colors.blue,
+                                        onPressed: () async {
+                                          await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (context) => EditItemScreen(
+                                                    user: widget.user,
+                                                    item: item,
+                                                  ),
+                                            ),
+                                          );
+                                          loadUserItems();
+                                        },
                                       ),
-                                      Text("Price: RM ${item.itemPrice}"),
-                                      Text("Qty: ${item.itemQty}"),
-                                      Text("Delivery: ${item.itemDelivery}"),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete),
+                                        color: Colors.red,
+                                        onPressed: () => deleteDialog(item),
+                                      ),
                                     ],
                                   ),
-                                ),
-
-                                // Action buttons
-                                Column(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.edit),
-                                      color: Colors.blue,
-                                      onPressed: () async {
-                                        await Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder:
-                                                (context) => EditItemScreen(
-                                                  user: widget.user,
-                                                  item: item,
-                                                ),
-                                          ),
-                                        );
-                                        loadUserItems();
-                                      },
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete),
-                                      color: Colors.red,
-                                      onPressed: () => deleteDialog(item),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    );
+                  },
+                ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          if (widget.user.userId == "0") {
+            askloginorRegisterDialog(context);
+          } else {
+            if (widget.user.userCredit == "0") {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("You need to top up your credit first."),
+                ),
+              );
+              return;
+            }
+            await Navigator.push(
+              context,
+              AnimatedRoute.slideFromRight(NewItemScreen(user: widget.user)),
+            );
+            loadUserItems();
+          }
+        },
+        // backgroundColor: Colors.purple.shade600,
+        child: const Icon(Icons.add),
+      ),
+      drawer: MyDrawer(user: widget.user),
+    );
+  }
+
+  void askloginorRegisterDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text("Login or Register"),
+            content: const Text("You need to login or register to add items."),
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreen(),
+                    ),
                   );
                 },
+                child: const Text("Login"),
               ),
-      drawer: MyDrawer(user: widget.user),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const RegisterScreen(),
+                    ),
+                  );
+                },
+                child: const Text("Register"),
+              ),
+            ],
+          ),
     );
   }
 
@@ -252,7 +329,7 @@ class _UserItemScreenState extends State<UserItemScreen> {
           ),
         )
         .then((response) {
-          log(response.body);
+          // log(response.body);
           // print(response.body);
           if (response.statusCode == 200) {
             var data = jsonDecode(response.body);

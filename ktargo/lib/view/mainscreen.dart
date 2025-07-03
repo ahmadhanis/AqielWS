@@ -1,13 +1,15 @@
-// ignore_for_file: prefer_typing_uninitialized_variables, use_build_context_synchronously, unused_element
+// ignore_for_file: prefer_typing_uninitialized_variables, use_build_context_synchronously, unused_element, depend_on_referenced_packages
 
 import 'dart:convert';
-import 'dart:developer';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ktargo/model/item.dart';
 import 'package:ktargo/model/user.dart';
+import 'package:ktargo/shared/animated_route.dart';
 import 'package:ktargo/shared/myconfig.dart';
 import 'package:ktargo/shared/mydrawer.dart';
+import 'package:ktargo/view/loginscreen.dart';
 import 'package:ktargo/view/newitemscreen.dart';
 import 'package:ktargo/view/registerscreen.dart';
 import 'package:http/http.dart' as http;
@@ -30,6 +32,7 @@ class _MainScreenState extends State<MainScreen> {
   var color;
   String status = "Searching...";
   bool isLoading = false;
+  int ran = Random().nextInt(1000);
 
   GlobalKey<RefreshIndicatorState> refreshKey =
       GlobalKey<RefreshIndicatorState>();
@@ -46,12 +49,14 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Market Place"),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.amber.shade900, Colors.purple.shade600],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+        flexibleSpace: SizedBox.expand(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.amber.shade900, Colors.purple.shade600],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
           ),
         ),
@@ -157,7 +162,7 @@ class _MainScreenState extends State<MainScreen> {
                             itemBuilder: (context, index) {
                               final item = itemList[index];
                               final imageUrl =
-                                  "${MyConfig.myurl}ktargo/assets/images/items/item-${item.itemId}.png";
+                                  "${MyConfig.myurl}ktargo/assets/images/items/item-${item.itemId}.png?v=$ran";
 
                               return Card(
                                 elevation: 4,
@@ -233,6 +238,9 @@ class _MainScreenState extends State<MainScreen> {
                                                 Text(
                                                   "Block: ${(item.userUniversity ?? "N/A").toUpperCase()}",
                                                 ),
+                                                Text(
+                                                  "Date: ${formatDate(item.itemDate)}",
+                                                ),
                                               ],
                                             ),
                                           ),
@@ -285,19 +293,19 @@ class _MainScreenState extends State<MainScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           if (widget.user.userId == "0") {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Please login to add items.")),
-            );
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const RegisterScreen()),
-            );
+            askloginorRegisterDialog(context);
           } else {
+            if (widget.user.userCredit == "0") {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("You need to top up your credit first."),
+                ),
+              );
+              return;
+            }
             await Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => NewItemScreen(user: widget.user),
-              ),
+              AnimatedRoute.slideFromRight(NewItemScreen(user: widget.user)),
             );
             loadItems("all");
           }
@@ -363,7 +371,7 @@ class _MainScreenState extends State<MainScreen> {
 
   void showItemDetails(Item item) {
     final imageUrl =
-        "${MyConfig.myurl}ktargo/assets/images/items/item-${item.itemId}.png";
+        "${MyConfig.myurl}ktargo/assets/images/items/item-${item.itemId}.png?r=$ran";
     final phone = "+6${item.userPhone}";
 
     showDialog(
@@ -804,6 +812,43 @@ class _MainScreenState extends State<MainScreen> {
                   Navigator.of(context).pop();
                 },
                 child: const Text("Add"),
+              ),
+            ],
+          ),
+    );
+  }
+
+  void askloginorRegisterDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text("Login or Register"),
+            content: const Text("You need to login or register to add items."),
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreen(),
+                    ),
+                  );
+                },
+                child: const Text("Login"),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const RegisterScreen(),
+                    ),
+                  );
+                },
+                child: const Text("Register"),
               ),
             ],
           ),

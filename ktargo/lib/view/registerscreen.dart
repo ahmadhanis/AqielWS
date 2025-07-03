@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, depend_on_referenced_packages
 
 import 'dart:convert';
 import 'dart:io';
@@ -307,8 +307,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
+String? getBase64Image() {
+  if (kIsWeb && webImageBytes != null) {
+    return base64Encode(webImageBytes!);
+  } else if (!kIsWeb && _image != null) {
+    return base64Encode(_image!.readAsBytesSync());
+  }
+  return null;
+}
+
   void registerUser() async {
-    String base64Image = base64Encode(_image!.readAsBytesSync());
+    final base64Image = getBase64Image();
 
     final response = await http.post(
       Uri.parse("${MyConfig.myurl}/ktargo/php/register_user.php"),

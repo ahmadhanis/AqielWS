@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, depend_on_referenced_packages
 
 import 'dart:convert';
 import 'dart:io';
@@ -98,9 +98,9 @@ class _EditItemScreenState extends State<EditItemScreen> {
                                 image: DecorationImage(
                                   image:
                                       _image != null
-                                          ? FileImage(_image!)
+                                          ? _buildItemImage()
                                           : NetworkImage(
-                                                "${MyConfig.myurl}ktargo/assets/images/items/item-${widget.item.itemId}.png",
+                                                "${MyConfig.myurl}ktargo/assets/images/items/item-${widget.item.itemId}.png?timestamp=${DateTime.now().millisecondsSinceEpoch}",
                                               )
                                               as ImageProvider,
                                   fit: BoxFit.contain,
@@ -276,8 +276,26 @@ class _EditItemScreenState extends State<EditItemScreen> {
     if (pickedFile != null) {
       _image = File(pickedFile.path);
       if (kIsWeb) webImageBytes = await pickedFile.readAsBytes();
-      cropImage();
+
+      // cropImage();
+
+      setState(() {});
     }
+  }
+
+  ImageProvider _buildItemImage() {
+    return kIsWeb
+        ? MemoryImage(webImageBytes!)
+        : FileImage(_image!) as ImageProvider;
+  }
+
+  String? getBase64Image() {
+    if (kIsWeb && webImageBytes != null) {
+      return base64Encode(webImageBytes!);
+    } else if (!kIsWeb && _image != null) {
+      return base64Encode(_image!.readAsBytesSync());
+    }
+    return null;
   }
 
   Future<void> _selectFromGallery() async {
@@ -302,7 +320,7 @@ class _EditItemScreenState extends State<EditItemScreen> {
       context: context,
       builder:
           (_) => AlertDialog(
-            title: const Text("Update Item?"),
+            title: const Text("1 credit will be deducted.\nAre you sure you want to Update Item?"),
             content: const Text("Are you sure you want to save changes?"),
             actions: [
               TextButton(
@@ -321,17 +339,9 @@ class _EditItemScreenState extends State<EditItemScreen> {
     );
   }
 
-  /*************  ✨ Windsurf Command ⭐  *************/
-  /// Updates an existing item by sending a POST request to the server with the
-  /// updated item details. This includes the item ID, name, description, status,
-  /// quantity, image (converted to base64), user ID, delivery method, and price.
-  /// If the update is successful, a success message is shown and the current
-  /// screen is closed. Otherwise, an error message is displayed.
 
-  /*******  da7ea6e9-aa44-4564-9b0a-0c91ca71a9f7  *******/
   void updateItem() async {
-    String base64Image =
-        _image != null ? base64Encode(_image!.readAsBytesSync()) : "NA";
+    var base64Image = _image != null ? getBase64Image() : "NA";
 
     final response = await http.post(
       Uri.parse("${MyConfig.myurl}ktargo/php/update_item.php"),

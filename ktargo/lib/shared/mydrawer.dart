@@ -1,4 +1,4 @@
-// ignore_for_file: deprecated_member_use, use_build_context_synchronously
+// ignore_for_file: deprecated_member_use, use_build_context_synchronously, depend_on_referenced_packages
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -52,7 +52,7 @@ class _MyDrawerState extends State<MyDrawer> {
                   child: ClipOval(
                     child: FutureBuilder<bool>(
                       future: _checkNetworkImage(
-                        "${MyConfig.myurl}unigo/assets/images/profiles/${widget.user.userId}.png",
+                        "${MyConfig.myurl}ktargo/assets/images/profiles/${widget.user.userId}.png",
                       ),
                       builder: (context, snapshot) {
                         if (widget.user.userId == "0") {
@@ -66,7 +66,7 @@ class _MyDrawerState extends State<MyDrawer> {
                                 ConnectionState.done &&
                             snapshot.data == true) {
                           return Image.network(
-                            "${MyConfig.myurl}unigo/assets/images/profiles/${widget.user.userId}.png",
+                            "${MyConfig.myurl}ktargo/assets/images/profiles/${widget.user.userId}.png?v=${DateTime.now().millisecondsSinceEpoch}",
                             fit: BoxFit.cover,
                             width: 80,
                             height: 80,
@@ -83,7 +83,7 @@ class _MyDrawerState extends State<MyDrawer> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 10),
+
                 Text(
                   widget.user.userName ?? "Guest",
                   style: const TextStyle(
@@ -92,6 +92,12 @@ class _MyDrawerState extends State<MyDrawer> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+                Text(
+                  widget.user.userCredit == "0"
+                      ? "No Credit"
+                      : "Credit: ${widget.user.userCredit}",
+                ),
+                const SizedBox(height: 2),
               ],
             ),
           ),
@@ -195,6 +201,14 @@ class _MyDrawerState extends State<MyDrawer> {
             },
           ),
           ListTile(
+            leading: const Icon(Icons.favorite),
+            title: const Text("About KTARGO!"),
+            onTap: () {
+              Navigator.pop(context);
+              aboutDialog();
+            },
+          ),
+          ListTile(
             leading: const Icon(Icons.logout),
             title: const Text("Logout"),
             onTap: () {
@@ -266,5 +280,30 @@ class _MyDrawerState extends State<MyDrawer> {
     } catch (_) {
       return false;
     }
+  }
+
+  void aboutDialog() {
+    showAboutDialog(
+      context: context,
+      applicationName: "KTARGO",
+      applicationVersion: "1.0.0",
+      applicationIcon: Image.asset(
+        "assets/images/aqiel.png",
+        width: 100,
+        height: 100,
+      ),
+      applicationLegalese: "© 2025 KTARGO! All rights reserved.",
+      children: [
+        const SizedBox(height: 16),
+        const Text(
+          "Developed by Muhammad Aqiel Akhtar",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          "KTARGO is a marketplace app built to connect buyers and sellers within IPGKTAR campus.",
+        ),
+      ],
+    );
   }
 }
