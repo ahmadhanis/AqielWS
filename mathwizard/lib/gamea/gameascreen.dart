@@ -306,7 +306,7 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
             Text(
               question,
               style: const TextStyle(
-                fontSize: 32,
+                fontSize: 40,
                 fontWeight: FontWeight.bold,
                 color: Colors.red,
               ),

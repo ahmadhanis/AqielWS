@@ -144,6 +144,8 @@ class _LoginScreenState extends State<LoginScreen> {
           .timeout(const Duration(seconds: 10));
 
       // Debug
+      print("Response Status Code: ${response.statusCode}");
+      print("Response Body: ${response.body}");
 
       if (response.statusCode == 200) {
         final responseBody = json.decode(response.body);
@@ -151,9 +153,9 @@ class _LoginScreenState extends State<LoginScreen> {
         if (responseBody['status'] == 'success') {
           await _saveCredentials();
           // ✅ FIXED
-
+          print('Before USER');
           User user = User.fromJson(responseBody['data']); // ✅ FIXED
-
+          print('Before USER');
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => GameListScreen(user: user)),
@@ -173,6 +175,7 @@ class _LoginScreenState extends State<LoginScreen> {
         const SnackBar(content: Text("Request timed out. Please try again.")),
       );
     } catch (e) {
+      print("Error: $e");
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text("An error occurred: $e")));

@@ -180,8 +180,8 @@ class _GameAMainScreenState extends State<GameAMainScreen> {
                     children: [
                       _buildOperationButton(context, "➕", '+', Colors.green),
                       _buildOperationButton(context, "➖", '-', Colors.orange),
-                      _buildOperationButton(context, "✖️", '*', Colors.blue),
-                      _buildOperationButton(context, "➗", '/', Colors.purple),
+                      _buildOperationButton(context, "✖️", '×', Colors.blue),
+                      _buildOperationButton(context, "➗", '÷', Colors.purple),
                     ],
                   ),
                 ],

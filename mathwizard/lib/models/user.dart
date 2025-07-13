@@ -18,12 +18,12 @@ class User {
   });
 
   User.fromJson(Map<String, dynamic> json) {
-    userId = json['user_id'];
+    userId = json['user_id']?.toString();
     fullName = json['full_name'];
     email = json['email'];
-    coin = json['coin'];
-    dailyTries = json['daily_tries'];
-    standard = json['standard'];
+    coin = json['coin']?.toString();
+    dailyTries = json['daily_tries']?.toString();
+    standard = json['standard']?.toString();
     schoolCode = json['school_code'];
   }
 
