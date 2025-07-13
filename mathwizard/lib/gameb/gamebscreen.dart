@@ -231,7 +231,7 @@ class _GameBScreenState extends State<GameBScreen> {
   Future<void> _updateCoin() async {
     try {
       final url = Uri.parse(
-        "http://slumberjer.com/mathwizard/api/update_coin.php", // Use HTTP
+        "https://slumberjer.com/mathwizard/api/update_coin.php", // Use HTTP
       );
 
       final response = await http.post(

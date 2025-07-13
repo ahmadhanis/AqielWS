@@ -303,61 +303,6 @@ class _GameCScreenState extends State<GameCScreen> {
     );
   }
 
-  // Future<void> _updateCoin() async {
-  //   try {
-  //     // Temp solution to bypass SSL certificate error
-  //     HttpClient createHttpClient() {
-  //       final HttpClient httpClient = HttpClient();
-  //       httpClient.badCertificateCallback =
-  //           (X509Certificate cert, String host, int port) => true;
-  //       return httpClient;
-  //     }
-
-  //     final ioClient = IOClient(createHttpClient());
-
-  //     final url = Uri.parse(
-  //       "https://slumberjer.com/mathwizard/api/update_coin.php",
-  //     );
-  //     final response = await ioClient.post(
-  //       url,
-  //       body: {
-  //         'userid':
-  //             widget.user.userId.toString(), // Assuming user object is passed
-  //         'coin': score.toString(),
-  //       },
-  //     );
-
-  //     if (response.statusCode == 200) {
-  //       final responseBody = json.decode(response.body);
-
-  //       if (responseBody['status'] == 'success') {
-  //         // Update the user's coin value locally
-  //         setState(() {
-  //           widget.user.coin =
-  //               (int.parse(widget.user.coin.toString()) + score).toString();
-  //           widget.user.dailyTries = tries.toString();
-  //         });
-  //       }
-  //     }
-  //   } catch (e) {
-  //     print("Error updating coin: $e");
-  //   } finally {
-  //     print('Final user: ${widget.user.toJson()}');
-  //     Navigator.of(context).pop();
-  //     Navigator.pushReplacement(
-  //       context,
-  //       MaterialPageRoute(
-  //         builder:
-  //             (_) => ResultcScreen(
-  //               score: score,
-  //               user: widget.user,
-  //               target: widget.target,
-  //             ), // Pass updated user object
-  //       ),
-  //     );
-  //   }
-  // }
-
   Future<void> _updateCoin() async {
     try {
       final url = Uri.parse(
