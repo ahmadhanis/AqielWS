@@ -12,6 +12,7 @@ import 'package:mathwizard/gamea/gameamainscreen.dart';
 import 'package:mathwizard/gameb/gamebmainscreen.dart';
 import 'package:mathwizard/gamec/gamecmainscreen.dart';
 import 'package:mathwizard/gamed/gamedmainscreen.dart';
+import 'package:mathwizard/gamee/gameemainscreen.dart';
 import 'package:mathwizard/models/user.dart';
 import 'package:mathwizard/profilescreen.dart';
 import 'package:mathwizard/rankscreen.dart';
@@ -443,6 +444,12 @@ class _GameListScreenState extends State<GameListScreen> {
       await Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => GameDMainScreen(user: widget.user)),
+      );
+      await _reloadUser();
+    } else if (gameName == "Math Runner") {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => GameEMainScreen(user: widget.user)),
       );
       await _reloadUser();
     } else {
