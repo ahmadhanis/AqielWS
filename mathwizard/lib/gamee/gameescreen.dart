@@ -28,6 +28,7 @@ class _GameEScreenState extends State<GameEScreen> {
   late List<String> options;
   late String target;
   List<int> flashRedIndices = [];
+  int? flashGreenIndex;
   int comboStreak = 0;
   final AudioPlayer audioPlayer = AudioPlayer();
   final rand = Random();
@@ -42,6 +43,7 @@ class _GameEScreenState extends State<GameEScreen> {
   @override
   void dispose() {
     timer.cancel();
+    audioPlayer.dispose();
     super.dispose();
   }
 
@@ -91,7 +93,6 @@ class _GameEScreenState extends State<GameEScreen> {
     correctAnswer = "$a $op $b";
     target = "$result";
 
-    // Generate 3 wrong but plausible answers
     Set<String> generated = {correctAnswer};
 
     while (generated.length < 4) {
@@ -110,7 +111,6 @@ class _GameEScreenState extends State<GameEScreen> {
         expr = "$wrongA $wrongOp $wrongB";
       }
 
-      // Avoid adding same result as correct
       try {
         double eval = _evaluateExpression(wrongA, wrongOp, wrongB);
         if (eval.toString() != target && eval.isFinite) {
@@ -143,6 +143,7 @@ class _GameEScreenState extends State<GameEScreen> {
         audioPlayer.play(AssetSource('sounds/right.wav'));
         score += _getCoinReward();
         comboStreak++;
+        flashGreenIndex = selectedIndex; // Highlight correct choice in green
 
         if (comboStreak % 5 == 0) {
           timeRemaining += 5;
@@ -159,16 +160,15 @@ class _GameEScreenState extends State<GameEScreen> {
         audioPlayer.play(AssetSource('sounds/wrong.wav'));
         score -= _getPenalty();
         if (score < 0) score = 0;
-        comboStreak = 0; // Reset on wrong answer
-
+        comboStreak = 0;
         flashRedIndices.add(selectedIndex);
       }
     });
 
-    // Delay before next question
     Future.delayed(const Duration(milliseconds: 500), () {
       setState(() {
         flashRedIndices.clear();
+        flashGreenIndex = null;
         questionIndex++;
         _generateGate();
       });
@@ -209,12 +209,19 @@ class _GameEScreenState extends State<GameEScreen> {
         backgroundColor: Colors.deepPurple,
         title: const Text("🏃‍♂️ Math Runner"),
         centerTitle: true,
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            timer.cancel();
+            _updateCoin();
+          },
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // Timer & Score
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -228,16 +235,23 @@ class _GameEScreenState extends State<GameEScreen> {
                 ),
               ],
             ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(
+                "🔥 Streak: $comboStreak",
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
+                ),
+              ),
+            ),
             const SizedBox(height: 20),
-
-            // Target Display
             Text(
               "🎯 Reach: $target",
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 30),
-
-            // Gates (Left and Right Choices)
             Expanded(
               child: GridView.count(
                 crossAxisCount: 2,
@@ -248,6 +262,7 @@ class _GameEScreenState extends State<GameEScreen> {
                 children: List.generate(options.length, (index) {
                   final opt = options[index];
                   final isRed = flashRedIndices.contains(index);
+                  final isGreen = flashGreenIndex == index;
 
                   return GestureDetector(
                     onTap: () => _handleChoice(opt),
@@ -255,7 +270,12 @@ class _GameEScreenState extends State<GameEScreen> {
                       duration: const Duration(milliseconds: 300),
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: isRed ? Colors.redAccent : Colors.blueAccent,
+                        color:
+                            isGreen
+                                ? Colors.greenAccent
+                                : (isRed
+                                    ? Colors.redAccent
+                                    : Colors.blueAccent),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Center(
@@ -273,9 +293,7 @@ class _GameEScreenState extends State<GameEScreen> {
                 }),
               ),
             ),
-
             const SizedBox(height: 20),
-
             Text(
               "Gate ${questionIndex + 1}",
               style: const TextStyle(fontSize: 16, color: Colors.grey),

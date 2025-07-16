@@ -12,7 +12,7 @@ import 'package:mathwizard/models/user.dart';
 
 class GameAScreen extends StatefulWidget {
   final String operation;
-  final String difficulty; // Difficulty level passed from the selection screen
+  final String difficulty;
   final User user;
 
   const GameAScreen({
@@ -28,27 +28,24 @@ class GameAScreen extends StatefulWidget {
 
 class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
   int score = 0;
-  int timeRemaining = 60; // in seconds
-  int streak = 0; // Track consecutive correct answers
+  int timeRemaining = 60;
+  int streak = 0;
   late Timer timer;
   final AudioPlayer _audioPlayer = AudioPlayer();
   String question = "";
   int correctAnswer = 0;
   List<int> answers = [];
   final Random random = Random();
-  final Set<String> askedQuestions = {}; // To track already asked questions
+  final Set<String> askedQuestions = {};
 
-  int? wrongAnswerIndex; // Track the wrong answer's index for highlighting
-  bool isProcessing = false; // Prevent multiple simultaneous taps
+  int? wrongAnswerIndex;
+  int? correctAnswerIndex;
+  bool isProcessing = false;
 
   @override
   void initState() {
     super.initState();
-
-    // Add observer for app lifecycle
     WidgetsBinding.instance.addObserver(this);
-
-    // Schedule task after first frame is rendered
     WidgetsBinding.instance.addPostFrameCallback((_) {
       startGame();
     });
@@ -83,7 +80,7 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
     try {
       final url = Uri.parse(
         "https://slumberjer.com/mathwizard/api/update_coin.php",
-      ); // Changed to HTTP
+      );
 
       final response = await http.post(
         url,
@@ -116,7 +113,6 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
         );
       }
     } finally {
-      // Navigate to ResultScreen
       if (score > 0) {
         _audioPlayer.play(AssetSource('sounds/win.wav'));
       } else {
@@ -136,7 +132,6 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
     int digits;
     int answerRange;
 
-    // Determine number of digits and answer range based on difficulty level
     switch (widget.difficulty) {
       case 'Beginner':
         digits = 1;
@@ -184,10 +179,8 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
           correctAnswer = widget.difficulty == 'Advanced' ? a * b * c : a * b;
           break;
         case '÷':
-          b = random.nextInt(pow(10, digits).toInt() - 1) + 1; // b >= 1
-          a =
-              b *
-              random.nextInt(pow(10, digits).toInt()); // a is a multiple of b
+          b = random.nextInt(pow(10, digits).toInt() - 1) + 1;
+          a = b * random.nextInt(pow(10, digits).toInt());
           question = "$a ÷ $b";
           correctAnswer = a ~/ b;
           break;
@@ -209,21 +202,25 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
     setState(() {
       answers = answerSet.toList()..shuffle();
       wrongAnswerIndex = null;
+      correctAnswerIndex = null;
       isProcessing = false;
     });
   }
 
   void handleAnswerTap(int index, int answer) {
-    if (isProcessing) return; // Prevent multiple taps
+    if (isProcessing) return;
     isProcessing = true;
 
     setState(() {
       if (answer == correctAnswer) {
-        // Correct answer
+        correctAnswerIndex = index; // Highlight correct answer in green
         streak++;
+        _audioPlayer.play(AssetSource('sounds/right.wav'));
+
         if (streak >= 5) {
-          timeRemaining += 2; // Add 5 seconds for 5 correct answers in a row
-          streak = 0; // Reset streak
+          _audioPlayer.play(AssetSource('sounds/coin.wav'));
+          timeRemaining += 2;
+          streak = 0;
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text("🔥 5-Streak! +2s Bonus!"),
@@ -244,22 +241,22 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
             score += 3;
             break;
         }
+        _audioPlayer.play(AssetSource('sounds/right.wav'));
         generateQuestion();
       } else {
         _audioPlayer.play(AssetSource('sounds/wrong.wav'));
-        // Wrong answer
-        streak = 0; // Reset streak
+        streak = 0;
         wrongAnswerIndex = index;
         if (score > 0) {
-          score--; // Deduct 1 coin only if score is positive
+          score--;
         }
       }
     });
 
-    // Allow taps again after state is updated
     Future.delayed(const Duration(seconds: 1), () {
       setState(() {
         wrongAnswerIndex = null;
+        correctAnswerIndex = null;
         isProcessing = false;
       });
     });
@@ -271,19 +268,18 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
       appBar: AppBar(
         title: const Text("Solve"),
         centerTitle: true,
-        automaticallyImplyLeading: false, // Disable default back button
+        automaticallyImplyLeading: false,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            timer.cancel(); // Stop the timer
-            _updateCoin(); // Update coins before navigating
+            timer.cancel();
+            _updateCoin();
           },
         ),
       ),
       body: SafeArea(
         child: Column(
           children: [
-            // Score and Time Display
             Text(
               question,
               style: const TextStyle(
@@ -327,7 +323,6 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
                 ),
               ),
             ),
-            // Answers Section
             Expanded(
               child: Center(
                 child: Wrap(
@@ -338,17 +333,20 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
                         final index = entry.key;
                         final answer = entry.value;
                         final isWrongAnswer = wrongAnswerIndex == index;
+                        final isCorrectAnswer = correctAnswerIndex == index;
 
                         return GestureDetector(
                           onTap: () => handleAnswerTap(index, answer),
                           child: CircleAvatar(
                             radius: 50,
                             backgroundColor:
-                                isWrongAnswer
-                                    ? Colors.red
-                                    : (isProcessing
-                                        ? Colors.grey
-                                        : Colors.blue),
+                                isCorrectAnswer
+                                    ? Colors.greenAccent
+                                    : (isWrongAnswer
+                                        ? Colors.red
+                                        : (isProcessing
+                                            ? Colors.grey
+                                            : Colors.blue)),
                             child: FittedBox(
                               fit: BoxFit.scaleDown,
                               child: Padding(

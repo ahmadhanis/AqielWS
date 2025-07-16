@@ -309,7 +309,7 @@ class _GameBScreenState extends State<GameBScreen> {
                     style: const TextStyle(fontSize: 20, color: Colors.red),
                   ),
                   Text(
-                    "Score: $score",
+                    "⭐ Coins: $score",
                     style: const TextStyle(fontSize: 20, color: Colors.green),
                   ),
                 ],

@@ -97,10 +97,11 @@ class _GameCScreenState extends State<GameCScreen> {
       });
 
       if (currentSum == widget.target) {
+        _audioPlayer.play(AssetSource('sounds/right.wav'));
         score = score + _getCoinReward();
         streak++;
-        _audioPlayer.play(AssetSource('sounds/coin.wav'));
         if (streak >= 3) {
+          _audioPlayer.play(AssetSource('sounds/coin.wav'));
           timeRemaining += 5; // Add 5 seconds for 3 consecutive wins
           streak = 0; // Reset streak
           ScaffoldMessenger.of(context).showSnackBar(

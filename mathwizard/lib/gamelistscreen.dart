@@ -72,14 +72,15 @@ class _GameListScreenState extends State<GameListScreen> {
                       children: [
                         // Avatar Section
                         GestureDetector(
-                          onTap: () {
-                            Navigator.push(
+                          onTap: () async {
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder:
                                     (_) => ProfileScreen(user: widget.user),
                               ),
                             );
+                            _reloadUser();
                           },
                           child: ClipOval(
                             child: Image.network(
