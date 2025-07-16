@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, library_private_types_in_public_api
 
 import 'dart:async';
 import 'dart:convert';
@@ -294,6 +294,14 @@ class _GameBScreenState extends State<GameBScreen> {
       appBar: AppBar(
         title: Text("Sequence Hunter: ${widget.difficulty}"),
         centerTitle: true,
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            timer.cancel();
+            _updateCoin();
+          },
+        ),
       ),
       body: SafeArea(
         child: Column(

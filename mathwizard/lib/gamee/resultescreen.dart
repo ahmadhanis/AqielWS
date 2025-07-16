@@ -92,13 +92,15 @@ class ResulteScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 30),
 
-              // Back to Menu
+              // Return Button
               ElevatedButton.icon(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
                 icon: const Icon(Icons.arrow_back),
-                label: const Text(
+                label: Text(
                   "Back to Menu",
                   style: TextStyle(fontFamily: 'ComicSans'),
                 ),
@@ -107,7 +109,7 @@ class ResulteScreen extends StatelessWidget {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 32,
-                    vertical: 14,
+                    vertical: 16,
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15),

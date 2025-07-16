@@ -211,10 +211,10 @@ class _GameDScreenState extends State<GameDScreen> {
           ),
         );
       },
-      onAccept: (value) {
+      onAcceptWithDetails: (details) {
         setState(() {
-          droppedTiles[index] = value;
-          availableTiles.remove(value);
+          droppedTiles[index] = details.data;
+          availableTiles.remove(details.data);
         });
       },
     );
@@ -228,6 +228,14 @@ class _GameDScreenState extends State<GameDScreen> {
         backgroundColor: Colors.blueAccent,
         title: const Text("Equation Builder"),
         centerTitle: true,
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            timer.cancel();
+            _updateCoin();
+          },
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),

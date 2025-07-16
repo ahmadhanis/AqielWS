@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously, library_private_types_in_public_api, empty_catches
+// ignore_for_file: use_build_context_synchronously, library_private_types_in_public_api, empty_catches, must_be_immutable
 
 import 'dart:convert';
 
@@ -252,48 +252,6 @@ class _GameAMainScreenState extends State<GameAMainScreen> {
       ),
     );
   }
-
-  // _reloadUser() async {
-  //   try {
-  //     // Temp solution to bypass SSL certificate error
-  //     HttpClient _createHttpClient() {
-  //       final HttpClient httpClient = HttpClient();
-  //       httpClient.badCertificateCallback =
-  //           (X509Certificate cert, String host, int port) => true;
-  //       return httpClient;
-  //     }
-
-  //     final ioClient = IOClient(_createHttpClient());
-  //     final url = Uri.parse(
-  //       "https://slumberjer.com/mathwizard/api/reload_user.php",
-  //     );
-  //     final response = await ioClient.post(
-  //       url,
-  //       body: {'userid': widget.user.userId.toString()},
-  //     );
-  //     print(response.body);
-  //     if (response.statusCode == 200) {
-  //       final responseBody = json.decode(response.body);
-  //       if (responseBody['status'] == 'success') {
-  //         setState(() {
-  //           widget.user = User.fromJson(responseBody['data']);
-  //         });
-  //         ("User info reloaded successfully.");
-  //         // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-  //         //   content: Text("User info reloaded successfully."),
-  //         // ));
-  //       } else {
-  //         print("Error reloading user info: ${responseBody['message']}");
-  //       }
-  //     } else {
-  //       print(
-  //         "Failed to connect to server. Status code: ${response.statusCode}",
-  //       );
-  //     }
-  //   } catch (e) {
-  //     print("Error reloading user info: $e");
-  //   }
-  // }
 
   _reloadUser() async {
     try {

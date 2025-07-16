@@ -213,7 +213,7 @@ class _GameCScreenState extends State<GameCScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
+    // final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       backgroundColor: Colors.lightBlue[50],
@@ -221,6 +221,14 @@ class _GameCScreenState extends State<GameCScreen> {
         backgroundColor: Colors.blueAccent,
         title: const Text("Math Maze"),
         centerTitle: true,
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            timer.cancel();
+            _updateCoin();
+          },
+        ),
       ),
       body: SingleChildScrollView(
         child: Padding(

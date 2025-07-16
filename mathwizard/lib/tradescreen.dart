@@ -100,7 +100,7 @@ class _TradeScreenState extends State<TradeScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: Chip(
                       label: Text(myItems[index]),
-                      backgroundColor: Colors.blueAccent.withOpacity(0.2),
+                      backgroundColor: Colors.blueAccent.withAlpha(50),
                     ),
                   );
                 },

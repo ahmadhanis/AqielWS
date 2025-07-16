@@ -1,3 +1,5 @@
+// ignore_for_file: must_be_immutable, use_build_context_synchronously
+
 import 'dart:convert';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
@@ -138,7 +140,7 @@ class _GameEMainScreenState extends State<GameEMainScreen> {
                   if (shouldProceed) {
                     final success = await _deductDailyTry();
                     if (success) {
-                        audioPlayer.play(AssetSource('sounds/start.mp3'));
+                      audioPlayer.play(AssetSource('sounds/start.mp3'));
                       await Navigator.push(
                         context,
                         MaterialPageRoute(

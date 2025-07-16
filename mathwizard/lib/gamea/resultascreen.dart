@@ -63,6 +63,31 @@ class ResultaScreen extends StatelessWidget {
                         color: Colors.blue,
                       ),
                     ),
+                    const SizedBox(height: 30),
+
+                    // Return Button
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      icon: const Icon(Icons.arrow_back),
+                      label: Text(
+                        "Back to Menu",
+                        style: TextStyle(fontFamily: 'ComicSans'),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurple,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 16,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        textStyle: const TextStyle(fontSize: 16),
+                      ),
+                    ),
                   ],
                 ),
               ),

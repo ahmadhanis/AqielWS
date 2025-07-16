@@ -38,7 +38,6 @@ class _GameCMainScreenState extends State<GameCMainScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     final range = difficultyTargetRanges[selectedDifficulty]!;
     target = Random().nextInt(range[1] - range[0] + 1) + range[0];

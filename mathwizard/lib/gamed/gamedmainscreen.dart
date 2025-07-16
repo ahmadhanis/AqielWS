@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously, empty_catches
+// ignore_for_file: use_build_context_synchronously, empty_catches, must_be_immutable
 
 import 'dart:convert';
 import 'dart:math';
@@ -318,8 +318,6 @@ class _GameDMainScreenState extends State<GameDMainScreen> {
         Uri.parse("https://slumberjer.com/mathwizard/api/reload_user.php"),
         body: {'userid': widget.user.userId},
       );
-      print("${widget.user.dailyTries} tries left before reload");
-      print(response.body);
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 

@@ -106,15 +106,19 @@ class ResultcScreen extends StatelessWidget {
               ),
               const SizedBox(height: 30),
 
-              // Back to Menu Button
+              // Return Button
               ElevatedButton.icon(
                 onPressed: () {
                   Navigator.pop(context);
                 },
                 icon: const Icon(Icons.arrow_back),
-                label: const Text("Back to Menu"),
+                label: Text(
+                  "Back to Menu",
+                  style: TextStyle(fontFamily: 'ComicSans'),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.deepPurple,
+                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 32,
                     vertical: 16,
@@ -123,7 +127,6 @@ class ResultcScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(15),
                   ),
                   textStyle: const TextStyle(fontSize: 16),
-                  foregroundColor: Colors.white,
                 ),
               ),
             ],

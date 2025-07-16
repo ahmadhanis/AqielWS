@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously, library_private_types_in_public_api
 
 import 'dart:convert';
 import 'dart:io';
@@ -95,7 +95,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     request.fields['full_name'] = fullNameController.text.trim();
     request.fields['school_code'] = selectedSchool;
     request.fields['standard'] = selectedStandard;
-    
+
     if (passwordController.text.isNotEmpty) {
       request.fields['password'] = passwordController.text.trim();
     }
