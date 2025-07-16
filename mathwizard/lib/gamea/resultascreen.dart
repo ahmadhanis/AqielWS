@@ -9,15 +9,27 @@ class ResultaScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isWin = score > 0;
+
     return Scaffold(
       appBar: AppBar(title: const Text("Game Over"), centerTitle: true),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Text(
+              isWin ? "🎉 Great Run!" : "😢 Better Luck Next Time!",
+              style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                color: isWin ? Colors.green : Colors.redAccent,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
             // Display Score
             Text(
-              "Your Score: $score",
+              "Coins Earned: $score",
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),

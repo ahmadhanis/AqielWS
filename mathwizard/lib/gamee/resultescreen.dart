@@ -98,7 +98,10 @@ class ResulteScreen extends StatelessWidget {
               ElevatedButton.icon(
                 onPressed: () => Navigator.pop(context),
                 icon: const Icon(Icons.arrow_back),
-                label: const Text("Back to Menu"),
+                label: const Text(
+                  "Back to Menu",
+                  style: TextStyle(fontFamily: 'ComicSans'),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.deepPurple,
                   foregroundColor: Colors.white,

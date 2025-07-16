@@ -97,6 +97,7 @@ class _RewardScreenState extends State<RewardScreen> {
                           ),
                         ),
                       ),
+
                       const SizedBox(width: 16),
                       Expanded(
                         child: Column(
@@ -126,7 +127,16 @@ class _RewardScreenState extends State<RewardScreen> {
                 ),
               ),
             ),
-
+            Center(
+              child: Text(
+                "Under Development!!!",
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.redAccent,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
             // Rewards Section
             Expanded(
               child: FutureBuilder<List<Reward>>(

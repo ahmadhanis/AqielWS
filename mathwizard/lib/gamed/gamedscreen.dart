@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:mathwizard/models/user.dart';
@@ -31,6 +32,7 @@ class _GameDScreenState extends State<GameDScreen> {
   int timeRemaining = 60;
   int score = 0;
   int tries = 0;
+  final AudioPlayer audioPlayer = AudioPlayer();
 
   @override
   void initState() {
@@ -101,13 +103,13 @@ class _GameDScreenState extends State<GameDScreen> {
   int _getCoinReward() {
     switch (widget.difficulty) {
       case 'Beginner':
-        return 1;
-      case 'Intermediate':
         return 2;
+      case 'Intermediate':
+        return 4;
       case 'Advanced':
-        return 3;
+        return 6;
       default:
-        return 1;
+        return 2;
     }
   }
 
@@ -122,9 +124,11 @@ class _GameDScreenState extends State<GameDScreen> {
     final win = evaluateEquation();
 
     if (win) {
+      audioPlayer.play(AssetSource('sounds/win.wav'));
       score += _getCoinReward();
       _showResultDialog(true);
     } else {
+      audioPlayer.play(AssetSource('sounds/wrong.wav'));
       _showResultDialog(false);
     }
   }
@@ -152,10 +156,10 @@ class _GameDScreenState extends State<GameDScreen> {
                 },
                 child: const Text("Try Another"),
               ),
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("Close"),
-              ),
+              // TextButton(
+              //   onPressed: () => Navigator.pop(context),
+              //   child: const Text("Close"),
+              // ),
             ],
           ),
     );
@@ -285,6 +289,12 @@ class _GameDScreenState extends State<GameDScreen> {
                       .map((value) => _buildDraggableTile(value))
                       .toList(),
             ),
+            ElevatedButton(
+              onPressed: () {
+                generateTiles();
+              },
+              child: const Text("Reset Tiles"),
+            ),
           ],
         ),
       ),
@@ -316,7 +326,12 @@ class _GameDScreenState extends State<GameDScreen> {
         }
       }
     } finally {
-      Navigator.of(context).pop();
+      if (score > 0) {
+        audioPlayer.play(AssetSource('sounds/win.wav'));
+      } else {
+        audioPlayer.play(AssetSource('sounds/lose.wav'));
+      }
+      // Navigator.of(context).pop();
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(

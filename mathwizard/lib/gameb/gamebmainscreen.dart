@@ -1,6 +1,7 @@
 // ignore_for_file: library_private_types_in_public_api, empty_catches, use_build_context_synchronously
 
 import 'dart:convert';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
@@ -18,47 +19,12 @@ class GameBMainScreen extends StatefulWidget {
 
 class _GameBMainScreenState extends State<GameBMainScreen> {
   String selectedDifficulty = 'Beginner'; // Default difficulty
-
+  final AudioPlayer _audioPlayer = AudioPlayer();
   final Map<String, int> difficultyPoints = {
     'Beginner': 1,
     'Intermediate': 2,
     'Advanced': 3,
   };
-
-  // Future<bool> _deductDailyTry() async {
-  //   try {
-  //     // Temp solution to bypass SSL certificate error
-  //     HttpClient _createHttpClient() {
-  //       final HttpClient httpClient = HttpClient();
-  //       httpClient.badCertificateCallback =
-  //           (X509Certificate cert, String host, int port) => true;
-  //       return httpClient;
-  //     }
-
-  //     final ioClient = IOClient(_createHttpClient());
-  //     final url = Uri.parse(
-  //       "https://slumberjer.com/mathwizard/api/update_tries.php",
-  //     );
-  //     final response = await ioClient.post(
-  //       url,
-  //       body: {'userid': widget.user.userId},
-  //     );
-  //     if (response.statusCode == 200) {
-  //       final responseBody = json.decode(response.body);
-  //       if (responseBody['status'] == 'success') {
-  //         setState(() {
-  //           widget.user.dailyTries =
-  //               (int.parse(widget.user.dailyTries.toString()) - 1)
-  //                   .toString(); // Update UI after successful deduction
-  //         });
-  //         return true;
-  //       }
-  //     }
-  //   } catch (e) {
-  //     print("Error deducting daily try: $e");
-  //   }
-  //   return false;
-  // }
 
   Future<bool> _deductDailyTry() async {
     try {
@@ -307,6 +273,40 @@ class _GameBMainScreenState extends State<GameBMainScreen> {
                     "🏆 Earn ${difficultyPoints[selectedDifficulty]} coin(s) per correct sequence!",
                     style: const TextStyle(fontSize: 16, color: Colors.grey),
                   ),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.deepPurple),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text(
+                          "📘 Game Instructions",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        Text("✔️ Identify the missing number in the sequence."),
+                        Text(
+                          "✔️ Tap the correct number from the choices provided.",
+                        ),
+                        Text(
+                          "✔️ Answer quickly to earn coins and beat the timer.",
+                        ),
+                        Text(
+                          "❌ Wrong answers will deduct coins or end the streak.",
+                        ),
+                        Text(
+                          "🎯 Aim for combo streaks to earn bonus time or rewards.",
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
 
@@ -320,6 +320,7 @@ class _GameBMainScreenState extends State<GameBMainScreen> {
                     if (shouldDeduct) {
                       final success = await _deductDailyTry();
                       if (success) {
+                        _audioPlayer.play(AssetSource('sounds/start.mp3'));
                         await Navigator.push(
                           context,
                           MaterialPageRoute(

@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:mathwizard/gamee/resultescreen.dart';
@@ -28,7 +29,7 @@ class _GameEScreenState extends State<GameEScreen> {
   late String target;
   List<int> flashRedIndices = [];
   int comboStreak = 0;
-
+  final AudioPlayer audioPlayer = AudioPlayer();
   final rand = Random();
 
   @override
@@ -139,12 +140,13 @@ class _GameEScreenState extends State<GameEScreen> {
 
     setState(() {
       if (isCorrect) {
+        audioPlayer.play(AssetSource('sounds/right.wav'));
         score += _getCoinReward();
         comboStreak++;
 
         if (comboStreak % 5 == 0) {
           timeRemaining += 5;
-
+          audioPlayer.play(AssetSource('sounds/coin.wav'));
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text("🔥 5-Streak! +5s Bonus!"),
@@ -154,6 +156,7 @@ class _GameEScreenState extends State<GameEScreen> {
           );
         }
       } else {
+        audioPlayer.play(AssetSource('sounds/wrong.wav'));
         score -= _getPenalty();
         if (score < 0) score = 0;
         comboStreak = 0; // Reset on wrong answer
@@ -174,6 +177,8 @@ class _GameEScreenState extends State<GameEScreen> {
 
   int _getPenalty() {
     switch (widget.difficulty) {
+      case 'Beginner':
+        return 1;
       case 'Intermediate':
         return 1;
       case 'Advanced':
@@ -185,6 +190,8 @@ class _GameEScreenState extends State<GameEScreen> {
 
   int _getCoinReward() {
     switch (widget.difficulty) {
+      case 'Beginner':
+        return 1;
       case 'Intermediate':
         return 2;
       case 'Advanced':
@@ -305,6 +312,11 @@ class _GameEScreenState extends State<GameEScreen> {
     } catch (e) {
       // handle error silently
     } finally {
+      if (score > 0) {
+        audioPlayer.play(AssetSource('sounds/win.wav'));
+      } else {
+        audioPlayer.play(AssetSource('sounds/lose.wav'));
+      }
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(

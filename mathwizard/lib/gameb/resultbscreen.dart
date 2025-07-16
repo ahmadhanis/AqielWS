@@ -9,6 +9,7 @@ class ResultbScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isWin = score > 0;
     return Scaffold(
       appBar: AppBar(title: const Text("Game Over"), centerTitle: true),
       body: Center(
@@ -16,6 +17,15 @@ class ResultbScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Display Score
+            Text(
+              isWin ? "🎉 Great Sequencer!" : "😢 Better Luck Next Time!",
+              style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                color: isWin ? Colors.green : Colors.redAccent,
+              ),
+              textAlign: TextAlign.center,
+            ),
             Text(
               "Your Score: $score",
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),

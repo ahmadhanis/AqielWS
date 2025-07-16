@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:mathwizard/gamec/resultcscreen.dart';
 import 'package:mathwizard/models/user.dart';
@@ -33,10 +34,11 @@ class _GameCScreenState extends State<GameCScreen> {
   int timeRemaining = 60; // Game duration: 60 seconds
   int score = 0;
   int tries = 0;
+  int streak = 0; // Track consecutive wins
+  final AudioPlayer _audioPlayer = AudioPlayer();
   @override
   void initState() {
     super.initState();
-    // print('INIT FULL USER: ${widget.user.dailyTries}');
     tries = int.parse(widget.user.dailyTries.toString());
     startgame();
   }
@@ -44,6 +46,7 @@ class _GameCScreenState extends State<GameCScreen> {
   @override
   void dispose() {
     timer.cancel();
+    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -57,12 +60,9 @@ class _GameCScreenState extends State<GameCScreen> {
     currentSum = 0;
 
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      // print('START GAME FULL USER: ${widget.user.toJson()}');
       if (timeRemaining > 0) {
         setState(() {
           timeRemaining--;
-          // print(widget.user.fullName);
-          // print('IN TIMER Tries left: ${widget.user.dailyTries}');
         });
       } else {
         timer.cancel();
@@ -97,14 +97,27 @@ class _GameCScreenState extends State<GameCScreen> {
       });
 
       if (currentSum == widget.target) {
-        // _showResultDialog(true);
-        if (currentSum == widget.target) {
-          score = score + _getCoinReward();
-          setState(() {});
-
-          _showResultDialog(true);
+        score = score + _getCoinReward();
+        streak++;
+        _audioPlayer.play(AssetSource('sounds/coin.wav'));
+        if (streak >= 3) {
+          timeRemaining += 5; // Add 5 seconds for 3 consecutive wins
+          streak = 0; // Reset streak
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Streak Combo! +5 seconds!"),
+              duration: Duration(seconds: 2),
+            ),
+          );
         }
+        setState(() {});
+        _showResultDialog(true);
       } else if (currentSum > widget.target) {
+        if (score > 0) {
+          score--; // Deduct 1 coin for wrong answer
+          _audioPlayer.play(AssetSource('sounds/wrong.wav'));
+        }
+        streak = 0; // Reset streak
         _showResultDialog(false);
       }
     }
@@ -113,11 +126,11 @@ class _GameCScreenState extends State<GameCScreen> {
   int _getCoinReward() {
     switch (widget.difficulty) {
       case 'Beginner':
-        return 1;
-      case 'Intermediate':
         return 2;
-      case 'Advanced':
+      case 'Intermediate':
         return 3;
+      case 'Advanced':
+        return 4;
       default:
         return 1;
     }
@@ -145,13 +158,13 @@ class _GameCScreenState extends State<GameCScreen> {
                 },
                 child: const Text("Play Again"),
               ),
-              TextButton(
-                onPressed: () {
-                  // Navigator.pop(context);
-                  Navigator.pop(context); // Exit to main screen
-                },
-                child: const Text("Exit"),
-              ),
+              // TextButton(
+              //   onPressed: () {
+              //     timer.cancel(); // Stop timer
+              //     _updateCoin(); // Update coins before exiting
+              //   },
+              //   child: const Text("Exit"),
+              // ),
             ],
           ),
     );
@@ -198,7 +211,6 @@ class _GameCScreenState extends State<GameCScreen> {
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
 
@@ -220,7 +232,7 @@ class _GameCScreenState extends State<GameCScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Time & Score
+                  // Time, Score & Streak
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     child: Row(
@@ -237,7 +249,7 @@ class _GameCScreenState extends State<GameCScreen> {
                         ),
                         Flexible(
                           child: Text(
-                            "Score: $score",
+                            "⭐ Coins: $score",
                             style: const TextStyle(
                               fontSize: 20,
                               color: Colors.green,
@@ -248,7 +260,19 @@ class _GameCScreenState extends State<GameCScreen> {
                       ],
                     ),
                   ),
-
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      "Streak: $streak",
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   // Target
                   Text(
                     "🎯 Target: ${widget.target}",
@@ -283,7 +307,10 @@ class _GameCScreenState extends State<GameCScreen> {
                       });
                     },
                     icon: const Icon(Icons.refresh),
-                    label: const Text("Reset Grid"),
+                    label: Text(
+                      "Reset Grid",
+                      style: TextStyle(fontFamily: 'ComicSans'),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.deepPurple,
                       foregroundColor: Colors.white,
@@ -306,7 +333,7 @@ class _GameCScreenState extends State<GameCScreen> {
   Future<void> _updateCoin() async {
     try {
       final url = Uri.parse(
-        "https://slumberjer.com/mathwizard/api/update_coin.php", // Changed to HTTP
+        "https://slumberjer.com/mathwizard/api/update_coin.php",
       );
 
       final response = await http.post(
@@ -321,15 +348,31 @@ class _GameCScreenState extends State<GameCScreen> {
         final responseBody = json.decode(response.body);
 
         if (responseBody['status'] == 'success') {
-          // Update the user's coin and daily tries locally
           setState(() {
             widget.user.coin =
                 (int.parse(widget.user.coin.toString()) + score).toString();
             widget.user.dailyTries = tries.toString();
           });
-        } else {}
-      } else {}
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                "Failed to update coins: ${responseBody['message']}",
+              ),
+            ),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Server error: ${response.statusCode}")),
+        );
+      }
     } finally {
+      if (score > 0) {
+        _audioPlayer.play(AssetSource('sounds/win.wav'));
+      } else {
+        _audioPlayer.play(AssetSource('sounds/lose.wav'));
+      }
       Navigator.of(context).pop();
       Navigator.pushReplacement(
         context,

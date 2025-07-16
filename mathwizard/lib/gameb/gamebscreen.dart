@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:mathwizard/gameb/resultbscreen.dart';
 import 'package:mathwizard/models/user.dart';
@@ -28,7 +29,8 @@ class _GameBScreenState extends State<GameBScreen> {
   List<int> answerOptions = [];
   final Random random = Random();
   bool isProcessing = false; // To prevent multiple simultaneous taps
-
+  int comboStreak = 0;
+  final AudioPlayer _audioPlayer = AudioPlayer();
   @override
   void initState() {
     super.initState();
@@ -38,6 +40,7 @@ class _GameBScreenState extends State<GameBScreen> {
   @override
   void dispose() {
     timer.cancel();
+    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -137,6 +140,7 @@ class _GameBScreenState extends State<GameBScreen> {
 
       if (selectedAnswer == expectedAnswer) {
         // Correct answer
+        _audioPlayer.play(AssetSource('sounds/right.wav'));
         switch (widget.difficulty) {
           case 'Beginner':
             score += 1;
@@ -152,17 +156,30 @@ class _GameBScreenState extends State<GameBScreen> {
         }
         sequence[blankIndex] = selectedAnswer; // Fill the blank in the sequence
         missingIndexes.remove(blankIndex); // Remove from missing indexes
+        comboStreak++;
+        if (comboStreak % 6 == 0) {
+          _audioPlayer.play(AssetSource('sounds/coin.wav'));
+          timeRemaining += 5;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("🎉 Combo x3! +5s bonus time!"),
+              duration: Duration(seconds: 2),
+              backgroundColor: Colors.deepPurpleAccent,
+            ),
+          );
+        }
       } else {
+        _audioPlayer.play(AssetSource('sounds/wrong.wav'));
         // Incorrect answer
         switch (widget.difficulty) {
           case 'Beginner':
-            score -= 1;
+            score -= 0;
             break;
           case 'Intermediate':
-            score -= 2;
+            score -= 1;
             break;
           case 'Advanced':
-            score -= 3;
+            score -= 2;
             break;
           default:
             score -= 1; // Default to beginner if difficulty is unknown
@@ -247,16 +264,21 @@ class _GameBScreenState extends State<GameBScreen> {
 
         if (responseBody['status'] == 'success') {
           // Update the user's coin value locally
+
           setState(() {
             widget.user.coin =
                 (int.parse(widget.user.coin.toString()) + score).toString();
           });
         } else {}
       } else {}
-    } catch (e) {
     } finally {
       // Navigate to ResultScreen
       Navigator.of(context).pop();
+      if (score > 0) {
+        await _audioPlayer.play(AssetSource('sounds/win.wav'));
+      } else {
+        await _audioPlayer.play(AssetSource('sounds/lose.wav'));
+      }
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(

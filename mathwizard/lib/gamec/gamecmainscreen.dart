@@ -4,6 +4,7 @@ import 'dart:convert';
 // ignore: unused_import
 import 'dart:io';
 import 'dart:math';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
@@ -21,6 +22,7 @@ class GameCMainScreen extends StatefulWidget {
 
 class _GameCMainScreenState extends State<GameCMainScreen> {
   String selectedDifficulty = 'Beginner';
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
   final Map<String, List<int>> difficultyTargetRanges = {
     'Beginner': [10, 20],
@@ -29,10 +31,11 @@ class _GameCMainScreenState extends State<GameCMainScreen> {
   };
   int target = 0;
   final Map<String, int> difficultyPoints = {
-    'Beginner': 1,
-    'Intermediate': 2,
-    'Advanced': 3,
+    'Beginner': 2,
+    'Intermediate': 3,
+    'Advanced': 4,
   };
+
   @override
   void initState() {
     // TODO: implement initState
@@ -183,6 +186,33 @@ class _GameCMainScreenState extends State<GameCMainScreen> {
                     "🏆 Earn ${difficultyPoints[selectedDifficulty]} coin(s) per correct Maze Solve!",
                     style: const TextStyle(fontSize: 16, color: Colors.grey),
                   ),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.deepPurple),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: const [
+                        Text(
+                          "📘 Game Instructions",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        Text("✔️ Select a number."),
+                        Text(
+                          "✔️ Continue to select the next number until you reach the target number.",
+                        ),
+                        Text("❌ Wrong answers reduce your chance to win."),
+                        Text("🎯 Aim for combo streaks to earn bonus time"),
+                      ],
+                    ),
+                  ),
                 ],
               ),
 
@@ -196,6 +226,7 @@ class _GameCMainScreenState extends State<GameCMainScreen> {
                     if (shouldDeduct) {
                       final success = await _deductDailyTry();
                       if (success) {
+                        _audioPlayer.play(AssetSource('sounds/start.mp3'));
                         await Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -265,31 +296,6 @@ class _GameCMainScreenState extends State<GameCMainScreen> {
         false;
   }
 
-  // Future<bool> _deductDailyTry() async {
-  //   try {
-  //     final ioClient = IOClient(
-  //       HttpClient()..badCertificateCallback = (cert, host, port) => true,
-  //     );
-
-  //     final response = await ioClient.post(
-  //       Uri.parse("https://slumberjer.com/mathwizard/api/update_tries.php"),
-  //       body: {'userid': widget.user.userId},
-  //     );
-  //     if (response.statusCode == 200) {
-  //       final data = json.decode(response.body);
-  //       if (data['status'] == 'success') {
-  //         setState(() {
-  //           widget.user.dailyTries =
-  //               (int.parse(widget.user.dailyTries.toString()) - 1).toString();
-  //         });
-  //         return true;
-  //       }
-  //     }
-  //   } catch (e) {
-  //     print("Error deducting try: $e");
-  //   }
-  //   return false;
-  // }
   Future<bool> _deductDailyTry() async {
     try {
       final response = await http.post(
@@ -312,29 +318,6 @@ class _GameCMainScreenState extends State<GameCMainScreen> {
     } catch (e) {}
     return false;
   }
-  // Future<void> _reloadUser() async {
-  //   try {
-  //     final ioClient = IOClient(
-  //       HttpClient()..badCertificateCallback = (cert, host, port) => true,
-  //     );
-
-  //     final response = await ioClient.post(
-  //       Uri.parse("https://slumberjer.com/mathwizard/api/reload_user.php"),
-  //       body: {'userid': widget.user.userId},
-  //     );
-  //     if (response.statusCode == 200) {
-  //       final data = json.decode(response.body);
-  //       if (data['status'] == 'success') {
-  //         setState(() {
-  //           widget.user.coin = data['data']['coin'];
-  //           widget.user.dailyTries = data['data']['dailyTries'];
-  //         });
-  //       }
-  //     }
-  //   } catch (e) {
-  //     print("Reload error: $e");
-  //   }
-  // }
 
   Future<void> _reloadUser() async {
     try {

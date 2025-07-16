@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
@@ -28,8 +29,9 @@ class GameAScreen extends StatefulWidget {
 class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
   int score = 0;
   int timeRemaining = 60; // in seconds
+  int streak = 0; // Track consecutive correct answers
   late Timer timer;
-
+  final AudioPlayer _audioPlayer = AudioPlayer();
   String question = "";
   int correctAnswer = 0;
   List<int> answers = [];
@@ -77,69 +79,6 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
     generateQuestion();
   }
 
-  // Future<void> _updateCoin() async {
-  //   try {
-  //     // Temp solution to bypass SSL certificate error
-  //     HttpClient _createHttpClient() {
-  //       final HttpClient httpClient = HttpClient();
-  //       httpClient.badCertificateCallback =
-  //           (X509Certificate cert, String host, int port) => true;
-  //       return httpClient;
-  //     }
-
-  //     final ioClient = IOClient(_createHttpClient());
-
-  //     final url = Uri.parse(
-  //       "https://slumberjer.com/mathwizard/api/update_coin.php",
-  //     );
-  //     final response = await ioClient.post(
-  //       url,
-  //       body: {
-  //         'userid':
-  //             widget.user.userId.toString(), // Assuming user object is passed
-  //         'coin': score.toString(),
-  //       },
-  //     );
-
-  //     print(response.body);
-
-  //     if (response.statusCode == 200) {
-  //       final responseBody = json.decode(response.body);
-
-  //       if (responseBody['status'] == 'success') {
-  //         // Update the user's coin value locally
-  //         setState(() {
-  //           widget.user.coin =
-  //               (int.parse(widget.user.coin.toString()) + score).toString();
-  //         });
-  //         print("Coins updated successfully.");
-  //       } else {
-  //         print("Error updating coins: ${responseBody['message']}");
-  //       }
-  //     } else {
-  //       print(
-  //         "Failed to connect to server. Status code: ${response.statusCode}",
-  //       );
-  //     }
-  //   } catch (e) {
-  //     print("Error updating coins: $e");
-  //   } finally {
-  //     // Navigate to ResultScreen
-  //     Navigator.of(context).pop();
-
-  //     Navigator.pushReplacement(
-  //       context,
-  //       MaterialPageRoute(
-  //         builder:
-  //             (_) => ResultaScreen(
-  //               score: score,
-  //               user: widget.user,
-  //             ), // Pass updated user object
-  //       ),
-  //     );
-  //   }
-  // }
-
   Future<void> _updateCoin() async {
     try {
       final url = Uri.parse(
@@ -154,8 +93,6 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
         },
       );
 
-      // Debug
-
       if (response.statusCode == 200) {
         final responseBody = json.decode(response.body);
 
@@ -164,11 +101,27 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
             widget.user.coin =
                 (int.parse(widget.user.coin.toString()) + score).toString();
           });
-        } else {}
-      } else {}
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                "Failed to update coins: ${responseBody['message']}",
+              ),
+            ),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Server error: ${response.statusCode}")),
+        );
+      }
     } finally {
       // Navigate to ResultScreen
-
+      if (score > 0) {
+        _audioPlayer.play(AssetSource('sounds/win.wav'));
+      } else {
+        _audioPlayer.play(AssetSource('sounds/lose.wav'));
+      }
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -267,6 +220,19 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
     setState(() {
       if (answer == correctAnswer) {
         // Correct answer
+        streak++;
+        if (streak >= 5) {
+          timeRemaining += 2; // Add 5 seconds for 5 correct answers in a row
+          streak = 0; // Reset streak
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("🔥 5-Streak! +2s Bonus!"),
+              duration: Duration(seconds: 1),
+              backgroundColor: Colors.orangeAccent,
+            ),
+          );
+          _audioPlayer.play(AssetSource('sounds/coin.wav'));
+        }
         switch (widget.difficulty) {
           case 'Beginner':
             score += 1;
@@ -280,9 +246,13 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
         }
         generateQuestion();
       } else {
+        _audioPlayer.play(AssetSource('sounds/wrong.wav'));
         // Wrong answer
+        streak = 0; // Reset streak
         wrongAnswerIndex = index;
-        score--;
+        if (score > 0) {
+          score--; // Deduct 1 coin only if score is positive
+        }
       }
     });
 
@@ -298,7 +268,18 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Solve"), centerTitle: true),
+      appBar: AppBar(
+        title: const Text("Solve"),
+        centerTitle: true,
+        automaticallyImplyLeading: false, // Disable default back button
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            timer.cancel(); // Stop the timer
+            _updateCoin(); // Update coins before navigating
+          },
+        ),
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -317,7 +298,7 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "Score: $score",
+                    "⭐ Coins: $score",
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -335,7 +316,17 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
                 ],
               ),
             ),
-
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Text(
+                "Streak: $streak",
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
+                ),
+              ),
+            ),
             // Answers Section
             Expanded(
               child: Center(
@@ -353,7 +344,11 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
                           child: CircleAvatar(
                             radius: 50,
                             backgroundColor:
-                                isWrongAnswer ? Colors.red : Colors.blue,
+                                isWrongAnswer
+                                    ? Colors.red
+                                    : (isProcessing
+                                        ? Colors.grey
+                                        : Colors.blue),
                             child: FittedBox(
                               fit: BoxFit.scaleDown,
                               child: Padding(
@@ -361,12 +356,9 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
                                 child: Text(
                                   "$answer",
                                   style: TextStyle(
-                                    fontSize:
-                                        24 -
-                                        answer.toString().length *
-                                            1, // Adjust font size
+                                    fontSize: 24 - answer.toString().length * 1,
                                     fontWeight: FontWeight.bold,
-                                    // color: Colors.white,
+                                    color: Colors.white,
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
@@ -387,6 +379,7 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
   @override
   void dispose() {
     timer.cancel();
+    _audioPlayer.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }

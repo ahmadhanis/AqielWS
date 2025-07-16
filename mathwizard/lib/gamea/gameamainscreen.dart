@@ -7,6 +7,7 @@ import 'package:mathwizard/gamea/gameascreen.dart';
 import 'package:mathwizard/models/user.dart';
 // ignore: unused_import
 import 'package:http/http.dart' as http;
+import 'package:audioplayers/audioplayers.dart';
 
 class GameAMainScreen extends StatefulWidget {
   User user;
@@ -19,7 +20,7 @@ class GameAMainScreen extends StatefulWidget {
 
 class _GameAMainScreenState extends State<GameAMainScreen> {
   String selectedDifficulty = 'Beginner'; // Default difficulty
-
+  final AudioPlayer _audioPlayer = AudioPlayer();
   final Map<String, int> difficultyPoints = {
     'Beginner': 1,
     'Intermediate': 2,
@@ -211,6 +212,7 @@ class _GameAMainScreenState extends State<GameAMainScreen> {
           if (shouldDeduct) {
             final success = await _deductDailyTry();
             if (success) {
+              _audioPlayer.play(AssetSource('sounds/start.mp3'));
               await Navigator.push(
                 context,
                 MaterialPageRoute(

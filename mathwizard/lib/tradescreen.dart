@@ -79,6 +79,16 @@ class _TradeScreenState extends State<TradeScreen> {
               "Your Items",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
+            Center(
+              child: Text(
+                "Under Development!!!",
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.redAccent,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
             const SizedBox(height: 10),
             SizedBox(
               height: 50,

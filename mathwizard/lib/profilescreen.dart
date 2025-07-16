@@ -25,7 +25,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String selectedSchool = '';
   bool isLoading = false;
   File? _image;
-
+  String selectedStandard = '1';
   List<Map<String, String>> sarawakSchools = [
     {"code": "SK001", "name": "SK St Mary, Kuching"},
     {"code": "SK002", "name": "SK St Thomas, Kuching"},
@@ -64,6 +64,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     fullNameController.text = widget.user.fullName.toString();
     selectedSchool = widget.user.schoolCode.toString();
+    selectedStandard = widget.user.standard.toString();
   }
 
   Future<void> _updateProfile() async {
@@ -93,6 +94,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     request.fields['old_password'] = oldpasswordController.text.trim();
     request.fields['full_name'] = fullNameController.text.trim();
     request.fields['school_code'] = selectedSchool;
+    request.fields['standard'] = selectedStandard;
+    
     if (passwordController.text.isNotEmpty) {
       request.fields['password'] = passwordController.text.trim();
     }
@@ -219,6 +222,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
+                DropdownButtonFormField<String>(
+                  value: selectedStandard,
+                  items: List.generate(
+                    6,
+                    (index) => DropdownMenuItem(
+                      value: (index + 1).toString(),
+                      child: Text("Standard ${index + 1}"),
+                    ),
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedStandard = value!;
+                    });
+                  },
+                  decoration: const InputDecoration(
+                    labelText: "Standard",
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 20),
                 TextFormField(
                   controller: oldpasswordController,
                   obscureText: true,
@@ -229,6 +252,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
+
                 // Password Field
                 TextFormField(
                   controller: passwordController,
