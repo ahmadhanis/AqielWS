@@ -217,7 +217,7 @@ class _GameEMainScreenState extends State<GameEMainScreen> {
   Future<bool> _deductDailyTry() async {
     try {
       final response = await http.post(
-        Uri.parse("http://slumberjer.com/mathwizard/api/update_tries.php"),
+        Uri.parse("https://slumberjer.com/mathwizard/api/update_tries.php"),
         body: {'userid': widget.user.userId},
       );
 
@@ -240,7 +240,7 @@ class _GameEMainScreenState extends State<GameEMainScreen> {
   Future<void> _reloadUser() async {
     try {
       final response = await http.post(
-        Uri.parse("http://slumberjer.com/mathwizard/api/reload_user.php"),
+        Uri.parse("https://slumberjer.com/mathwizard/api/reload_user.php"),
         body: {'userid': widget.user.userId},
       );
 

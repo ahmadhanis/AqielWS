@@ -143,15 +143,20 @@ class _GameEScreenState extends State<GameEScreen> {
         audioPlayer.play(AssetSource('sounds/right.wav'));
         score += _getCoinReward();
         comboStreak++;
-        flashGreenIndex = selectedIndex; // Highlight correct choice in green
+        flashGreenIndex = selectedIndex;
 
         if (comboStreak % 5 == 0) {
           timeRemaining += 5;
           audioPlayer.play(AssetSource('sounds/coin.wav'));
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("🔥 5-Streak! +5s Bonus!"),
-              duration: Duration(seconds: 2),
+            SnackBar(
+              content: Text(
+                "🔥 5-Streak! +5s Bonus!",
+                style: TextStyle(
+                  fontSize: MediaQuery.of(context).size.width * 0.04,
+                ),
+              ),
+              duration: const Duration(seconds: 2),
               backgroundColor: Colors.orangeAccent,
             ),
           );
@@ -203,103 +208,170 @@ class _GameEScreenState extends State<GameEScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double screenHeight = MediaQuery.of(context).size.height;
+    final double baseFontSize = screenWidth > 900 ? 18 : screenWidth * 0.045;
+    final double spacing = screenWidth > 900 ? 16 : screenWidth * 0.03;
+    final double optionWidth = screenWidth > 900 ? 150 : screenWidth * 0.35;
+    final double optionHeight = screenWidth > 900 ? 60 : screenHeight * 0.08;
+    // final int crossAxisCount = screenWidth > 900 ? 4 : 2; // More columns on desktop
+
     return Scaffold(
       backgroundColor: Colors.lightBlue[50],
       appBar: AppBar(
         backgroundColor: Colors.deepPurple,
-        title: const Text("🏃‍♂️ Math Runner"),
+        title: Text(
+          "🏃‍♂️ Math Runner",
+          style: TextStyle(fontSize: baseFontSize * 1.1),
+        ),
         centerTitle: true,
         automaticallyImplyLeading: false,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, size: baseFontSize),
           onPressed: () {
             timer.cancel();
             _updateCoin();
           },
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "⏱ Time: $timeRemaining",
-                  style: const TextStyle(fontSize: 18, color: Colors.red),
-                ),
-                Text(
-                  "⭐ Score: $score",
-                  style: const TextStyle(fontSize: 18, color: Colors.green),
-                ),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Text(
-                "🔥 Streak: $comboStreak",
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue,
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              "🎯 Reach: $target",
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 30),
-            Expanded(
-              child: GridView.count(
-                crossAxisCount: 2,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
-                childAspectRatio: 1.4,
-                physics: const NeverScrollableScrollPhysics(),
-                children: List.generate(options.length, (index) {
-                  final opt = options[index];
-                  final isRed = flashRedIndices.contains(index);
-                  final isGreen = flashGreenIndex == index;
-
-                  return GestureDetector(
-                    onTap: () => _handleChoice(opt),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color:
-                            isGreen
-                                ? Colors.greenAccent
-                                : (isRed
-                                    ? Colors.redAccent
-                                    : Colors.blueAccent),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Center(
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.all(spacing),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
                         child: Text(
-                          opt,
-                          style: const TextStyle(
-                            fontSize: 20,
-                            color: Colors.white,
+                          "⏱ Time: $timeRemaining",
+                          style: TextStyle(
+                            fontSize: baseFontSize,
+                            color: Colors.red,
+                            fontWeight: FontWeight.bold,
                           ),
-                          textAlign: TextAlign.center,
                         ),
                       ),
+                      Flexible(
+                        child: Text(
+                          "⭐ Score: $score",
+                          style: TextStyle(
+                            fontSize: baseFontSize,
+                            color: Colors.green,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: spacing),
+                    child: Text(
+                      "🔥 Streak: $comboStreak",
+                      style: TextStyle(
+                        fontSize: baseFontSize,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue,
+                      ),
                     ),
-                  );
-                }),
+                  ),
+                  SizedBox(height: spacing * 2),
+                  Text(
+                    "🎯 Reach: $target",
+                    style: TextStyle(
+                      fontSize: baseFontSize * 1.3,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: spacing * 3),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxHeight:
+                          screenHeight * 0.4, // Limit height for scrolling
+                      minHeight: optionHeight * 2 + spacing,
+                    ),
+                    child: SingleChildScrollView(
+                      child: Wrap(
+                        spacing: spacing,
+                        runSpacing: spacing,
+                        alignment: WrapAlignment.center,
+                        children: List.generate(options.length, (index) {
+                          final opt = options[index];
+                          final isRed = flashRedIndices.contains(index);
+                          final isGreen = flashGreenIndex == index;
+                          bool isHovered = false;
+
+                          return StatefulBuilder(
+                            builder: (context, setState) {
+                              return MouseRegion(
+                                onEnter:
+                                    (_) => setState(() => isHovered = true),
+                                onExit:
+                                    (_) => setState(() => isHovered = false),
+                                child: GestureDetector(
+                                  onTap: () => _handleChoice(opt),
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 300),
+                                    width: optionWidth,
+                                    height: optionHeight,
+                                    padding: EdgeInsets.all(spacing * 0.5),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          isGreen
+                                              ? Colors.greenAccent
+                                              : (isRed
+                                                  ? Colors.redAccent
+                                                  : Colors.blueAccent),
+                                      borderRadius: BorderRadius.circular(
+                                        spacing,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(
+                                            isHovered ? 0.3 : 0.2,
+                                          ),
+                                          blurRadius: spacing * 0.5,
+                                          offset: Offset(0, spacing * 0.2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Center(
+                                      child: FittedBox(
+                                        child: Text(
+                                          opt,
+                                          style: TextStyle(
+                                            fontSize: baseFontSize * 0.9,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        }),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: spacing * 2),
+                  Text(
+                    "Gate ${questionIndex + 1}",
+                    style: TextStyle(
+                      fontSize: baseFontSize * 0.8,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 20),
-            Text(
-              "Gate ${questionIndex + 1}",
-              style: const TextStyle(fontSize: 16, color: Colors.grey),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -307,7 +379,7 @@ class _GameEScreenState extends State<GameEScreen> {
   Future<void> _updateCoin() async {
     try {
       final url = Uri.parse(
-        "http://slumberjer.com/mathwizard/api/update_coin.php",
+        "https://slumberjer.com/mathwizard/api/update_coin.php",
       );
 
       final response = await http.post(

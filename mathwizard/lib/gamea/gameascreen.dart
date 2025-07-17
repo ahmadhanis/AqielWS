@@ -222,8 +222,13 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
           timeRemaining += 2;
           streak = 0;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("🔥 5-Streak! +2s Bonus!"),
+            SnackBar(
+              content: Text(
+                "🔥 5-Streak! +2s Bonus!",
+                style: TextStyle(
+                  fontSize: MediaQuery.of(context).size.width * 0.04,
+                ),
+              ),
               duration: Duration(seconds: 1),
               backgroundColor: Colors.orangeAccent,
             ),

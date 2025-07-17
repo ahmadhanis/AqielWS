@@ -21,16 +21,17 @@ class GameBScreen extends StatefulWidget {
 
 class _GameBScreenState extends State<GameBScreen> {
   late Timer timer;
-  int timeRemaining = 60; // Game duration: 60 seconds
+  int timeRemaining = 60;
   int score = 0;
   List<int?> sequence = [];
   List<int?> answersequence = [];
   List<int> missingIndexes = [];
   List<int> answerOptions = [];
   final Random random = Random();
-  bool isProcessing = false; // To prevent multiple simultaneous taps
+  bool isProcessing = false;
   int comboStreak = 0;
   final AudioPlayer _audioPlayer = AudioPlayer();
+
   @override
   void initState() {
     super.initState();
@@ -46,7 +47,6 @@ class _GameBScreenState extends State<GameBScreen> {
 
   void _startGame() {
     _generateSequence();
-
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (timeRemaining > 0) {
         setState(() {
@@ -63,7 +63,6 @@ class _GameBScreenState extends State<GameBScreen> {
     int sequenceLength;
     int blanks;
 
-    // Determine the sequence length and number of blanks based on difficulty
     switch (widget.difficulty) {
       case 'Beginner':
         sequenceLength = 5;
@@ -82,10 +81,9 @@ class _GameBScreenState extends State<GameBScreen> {
         blanks = 3;
     }
 
-    // Generate a sorted sequence in ascending or descending order
-    int start = random.nextInt(20) + 1; // Random start point
-    int step = random.nextInt(5) + 1; // Random step size
-    bool ascending = random.nextBool(); // Random order
+    int start = random.nextInt(20) + 1;
+    int step = random.nextInt(5) + 1;
+    bool ascending = random.nextBool();
 
     sequence = List.generate(
       sequenceLength,
@@ -93,12 +91,10 @@ class _GameBScreenState extends State<GameBScreen> {
     );
     answersequence = List.from(sequence);
 
-    // Ensure sequence is not empty
     if (sequence.isEmpty) {
       throw Exception("Failed to generate a valid sequence.");
     }
 
-    // Select random indices to replace with blanks
     missingIndexes = [];
     while (missingIndexes.length < blanks) {
       int randomIndex = random.nextInt(sequenceLength);
@@ -107,30 +103,25 @@ class _GameBScreenState extends State<GameBScreen> {
       }
     }
 
-    // Replace the selected indices with `null` (blanks)
     for (int index in missingIndexes) {
       sequence[index] = null;
     }
 
-    // Generate answer options
     answerOptions = List.generate(
       blanks * 2,
       (_) => start + random.nextInt(step * sequenceLength),
     );
 
-    // Add the correct answers
     answerOptions.addAll(
       missingIndexes.map(
         (index) => ascending ? start + (index * step) : start - (index * step),
       ),
     );
 
-    // Shuffle the answer options
     answerOptions.shuffle();
   }
 
   void _handleAnswer(int selectedAnswer, int blankIndex) {
-    // print("SELECTED ANSWER: $selectedAnswer, BLANK INDEX: $blankIndex");
     if (blankIndex < 0 || blankIndex >= sequence.length) {
       throw Exception("Invalid blank index: $blankIndex");
     }
@@ -139,7 +130,6 @@ class _GameBScreenState extends State<GameBScreen> {
       int? expectedAnswer = answersequence[blankIndex];
 
       if (selectedAnswer == expectedAnswer) {
-        // Correct answer
         _audioPlayer.play(AssetSource('sounds/right.wav'));
         switch (widget.difficulty) {
           case 'Beginner':
@@ -152,25 +142,27 @@ class _GameBScreenState extends State<GameBScreen> {
             score += 3;
             break;
           default:
-            score += 1; // Default to beginner if difficulty is unknown
+            score += 1;
         }
-        sequence[blankIndex] = selectedAnswer; // Fill the blank in the sequence
-        missingIndexes.remove(blankIndex); // Remove from missing indexes
+        sequence[blankIndex] = selectedAnswer;
+        missingIndexes.remove(blankIndex);
         comboStreak++;
         if (comboStreak % 6 == 0) {
           _audioPlayer.play(AssetSource('sounds/coin.wav'));
           timeRemaining += 5;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("🎉 Combo x3! +5s bonus time!"),
-              duration: Duration(seconds: 2),
+            SnackBar(
+              content: Text(
+                "🎉 Combo x3! +5s bonus time!",
+                style: TextStyle(fontSize: MediaQuery.of(context).size.width * 0.04),
+              ),
+              duration: const Duration(seconds: 2),
               backgroundColor: Colors.deepPurpleAccent,
             ),
           );
         }
       } else {
         _audioPlayer.play(AssetSource('sounds/wrong.wav'));
-        // Incorrect answer
         switch (widget.difficulty) {
           case 'Beginner':
             score -= 0;
@@ -182,73 +174,20 @@ class _GameBScreenState extends State<GameBScreen> {
             score -= 2;
             break;
           default:
-            score -= 1; // Default to beginner if difficulty is unknown
+            score -= 1;
         }
       }
 
-      // Check if all blanks are filled
       if (missingIndexes.isEmpty) {
-        _generateSequence(); // Generate a new sequence
+        _generateSequence();
       }
     });
   }
 
-  // Future<void> _updateCoin() async {
-  //   try {
-  //     // Temp solution to bypass SSL certificate error
-  //     HttpClient createHttpClient() {
-  //       final HttpClient httpClient = HttpClient();
-  //       httpClient.badCertificateCallback =
-  //           (X509Certificate cert, String host, int port) => true;
-  //       return httpClient;
-  //     }
-
-  //     final ioClient = IOClient(createHttpClient());
-
-  //     final url = Uri.parse(
-  //       "https://slumberjer.com/mathwizard/api/update_coin.php",
-  //     );
-  //     final response = await ioClient.post(
-  //       url,
-  //       body: {
-  //         'userid':
-  //             widget.user.userId.toString(), // Assuming user object is passed
-  //         'coin': score.toString(),
-  //       },
-  //     );
-
-  //     if (response.statusCode == 200) {
-  //       final responseBody = json.decode(response.body);
-
-  //       if (responseBody['status'] == 'success') {
-  //         // Update the user's coin value locally
-  //         setState(() {
-  //           widget.user.coin =
-  //               (int.parse(widget.user.coin.toString()) + score).toString();
-  //         });
-  //       } else {}
-  //     } else {}
-  //   } catch (e) {
-  //   } finally {
-  //     // Navigate to ResultScreen
-  //     Navigator.of(context).pop();
-  //     Navigator.pushReplacement(
-  //       context,
-  //       MaterialPageRoute(
-  //         builder:
-  //             (_) => ResultbScreen(
-  //               score: score,
-  //               user: widget.user,
-  //             ), // Pass updated user object
-  //       ),
-  //     );
-  //   }
-  // }
-
   Future<void> _updateCoin() async {
     try {
       final url = Uri.parse(
-        "https://slumberjer.com/mathwizard/api/update_coin.php", // Use HTTP
+        "https://slumberjer.com/mathwizard/api/update_coin.php",
       );
 
       final response = await http.post(
@@ -261,18 +200,14 @@ class _GameBScreenState extends State<GameBScreen> {
 
       if (response.statusCode == 200) {
         final responseBody = json.decode(response.body);
-
         if (responseBody['status'] == 'success') {
-          // Update the user's coin value locally
-
           setState(() {
             widget.user.coin =
                 (int.parse(widget.user.coin.toString()) + score).toString();
           });
-        } else {}
-      } else {}
+        }
+      }
     } finally {
-      // Navigate to ResultScreen
       Navigator.of(context).pop();
       if (score > 0) {
         await _audioPlayer.play(AssetSource('sounds/win.wav'));
@@ -290,13 +225,21 @@ class _GameBScreenState extends State<GameBScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    // final double screenHeight = MediaQuery.of(context).size.height;
+    final double baseFontSize = screenWidth * 0.05;
+    final double spacing = screenWidth * 0.03;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text("Sequence Hunter: ${widget.difficulty}"),
+        title: Text(
+          "Sequence Hunter: ${widget.difficulty}",
+          style: TextStyle(fontSize: baseFontSize * 0.9),
+        ),
         centerTitle: true,
         automaticallyImplyLeading: false,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, size: baseFontSize),
           onPressed: () {
             timer.cancel();
             _updateCoin();
@@ -304,114 +247,161 @@ class _GameBScreenState extends State<GameBScreen> {
         ),
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            // Timer and Score Display
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Time: $timeRemaining",
-                    style: const TextStyle(fontSize: 20, color: Colors.red),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Column(
+              children: [
+                // Timer and Score Display
+                Padding(
+                  padding: EdgeInsets.all(spacing),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
+                        child: FittedBox(
+                          child: Text(
+                            "Time: $timeRemaining",
+                            style: TextStyle(
+                              fontSize: baseFontSize,
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Flexible(
+                        child: FittedBox(
+                          child: Text(
+                            "⭐ Coins: $score",
+                            style: TextStyle(
+                              fontSize: baseFontSize,
+                              color: Colors.green,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  Text(
-                    "⭐ Coins: $score",
-                    style: const TextStyle(fontSize: 20, color: Colors.green),
-                  ),
-                ],
-              ),
-            ),
-
-            // Sequence Display
-            Expanded(
-              child: Center(
-                child: Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children:
-                      sequence
-                          .asMap()
-                          .entries
-                          .map(
-                            (entry) =>
-                                entry.value == null
-                                    ? SizedBox(
-                                      width: 50,
-                                      height: 50,
-                                      child: ElevatedButton(
-                                        onPressed: () {
-                                          // Show answer options for this blank
-                                          _showAnswerOptions(entry.key);
-                                        },
-                                        child: const Text(
-                                          "?",
-                                          style: TextStyle(
-                                            fontSize: 24,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                      ),
-                                    )
-                                    : SizedBox(
-                                      width: 50,
-                                      height: 50,
-                                      child: DecoratedBox(
-                                        decoration: BoxDecoration(
-                                          color: Colors.blueAccent,
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            "${entry.value}",
-                                            style: const TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                        ),
+                ),
+                // Sequence Display
+                Expanded(
+                  child: Center(
+                    child: Wrap(
+                      spacing: spacing,
+                      runSpacing: spacing,
+                      alignment: WrapAlignment.center,
+                      children: sequence.asMap().entries.map((entry) {
+                        final double boxSize = screenWidth * 0.12;
+                        return entry.value == null
+                            ? SizedBox(
+                                width: boxSize,
+                                height: boxSize,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    padding: EdgeInsets.zero,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(spacing * 0.5),
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    _showAnswerOptions(entry.key);
+                                  },
+                                  child: Text(
+                                    "?",
+                                    style: TextStyle(
+                                      fontSize: baseFontSize * 0.8,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : SizedBox(
+                                width: boxSize,
+                                height: boxSize,
+                                child: DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    color: Colors.blueAccent,
+                                    borderRadius: BorderRadius.circular(spacing * 0.5),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      "${entry.value}",
+                                      style: TextStyle(
+                                        fontSize: baseFontSize * 0.8,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
                                       ),
                                     ),
-                          )
-                          .toList(),
+                                  ),
+                                ),
+                              );
+                      }).toList(),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-          ],
+                SizedBox(height: spacing),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 
   void _showAnswerOptions(int blankIndex) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double baseFontSize = screenWidth * 0.05;
+    final double spacing = screenWidth * 0.03;
+
     showDialog(
       context: context,
-      builder:
-          (_) => AlertDialog(
-            title: const Text("Select the Missing Number"),
-            content: Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children:
-                  answerOptions
-                      .map(
-                        (option) => ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context); // Close the dialog
-                            _handleAnswer(option, blankIndex);
-                          },
-                          child: Text("$option"),
-                        ),
-                      )
-                      .toList(),
+      builder: (_) => AlertDialog(
+        title: Text(
+          "Select the Missing Number",
+          style: TextStyle(fontSize: baseFontSize * 0.9),
+        ),
+        content: SingleChildScrollView(
+          child: Wrap(
+            spacing: spacing,
+            runSpacing: spacing,
+            alignment: WrapAlignment.center,
+            children: answerOptions.map((option) {
+              return SizedBox(
+                width: screenWidth * 0.2,
+                height: screenWidth * 0.12,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(spacing * 0.5),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _handleAnswer(option, blankIndex);
+                  },
+                  child: FittedBox(
+                    child: Text(
+                      "$option",
+                      style: TextStyle(fontSize: baseFontSize * 0.7),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              "Cancel",
+              style: TextStyle(fontSize: baseFontSize * 0.7),
             ),
           ),
+        ],
+      ),
     );
   }
 }

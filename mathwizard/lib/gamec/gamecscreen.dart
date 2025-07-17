@@ -105,9 +105,15 @@ class _GameCScreenState extends State<GameCScreen> {
           timeRemaining += 5; // Add 5 seconds for 3 consecutive wins
           streak = 0; // Reset streak
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Streak Combo! +5 seconds!"),
+            SnackBar(
+              content: Text(
+                "🔥Streak Combo! +5 seconds!",
+                style: TextStyle(
+                  fontSize: MediaQuery.of(context).size.width * 0.04,
+                ),
+              ),
               duration: Duration(seconds: 2),
+              backgroundColor: Colors.orangeAccent,
             ),
           );
         }
