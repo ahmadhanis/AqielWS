@@ -19,9 +19,9 @@ class GameFMainScreen extends StatefulWidget {
 class _GameFMainScreenState extends State<GameFMainScreen> {
   String selectedDifficulty = 'Beginner';
   final Map<String, int> difficultyPoints = {
-    'Beginner': 1,
-    'Intermediate': 2,
-    'Advanced': 3,
+    'Beginner': 3,
+    'Intermediate': 6,
+    'Advanced': 9,
   };
   final AudioPlayer audioPlayer = AudioPlayer();
 
@@ -31,7 +31,7 @@ class _GameFMainScreenState extends State<GameFMainScreen> {
       backgroundColor: Colors.orange[50],
       appBar: AppBar(
         backgroundColor: Colors.deepPurple,
-        title: const Text("🧮 Time Trial Pyramid"),
+        title: const Text("🧮 Number Pyramid"),
         centerTitle: true,
       ),
       body: Padding(

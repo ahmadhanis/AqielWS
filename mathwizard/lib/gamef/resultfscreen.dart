@@ -4,8 +4,14 @@ import 'package:mathwizard/models/user.dart';
 class ResultfScreen extends StatelessWidget {
   final int score;
   final User user;
+  final String difficulty;
 
-  const ResultfScreen({super.key, required this.score, required this.user});
+  const ResultfScreen({
+    super.key,
+    required this.score,
+    required this.user,
+    required this.difficulty,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +33,7 @@ class ResultfScreen extends StatelessWidget {
               Text(
                 isWin
                     ? "🎯 Great job solving pyramids!"
-                    : "⛔ Time's up! Try again tomorrow!",
+                    : "⛔ Time's up! Try again!",
                 style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.bold,

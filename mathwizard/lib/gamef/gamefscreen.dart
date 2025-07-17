@@ -5,9 +5,9 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:mathwizard/gamef/resultfscreen.dart';
 import 'package:mathwizard/models/user.dart';
+import 'package:http/http.dart' as http;
 
 class GameFScreen extends StatefulWidget {
   final User user;
@@ -20,444 +20,386 @@ class GameFScreen extends StatefulWidget {
 }
 
 class _GameFScreenState extends State<GameFScreen> {
-  late Timer timer;
-  int timeRemaining = 60;
-  int score = 0;
-  int streak = 0;
-  int pyramidCount = 0;
-  final AudioPlayer audioPlayer = AudioPlayer();
-  final Random random = Random();
-  late int screenHeight, screenWidth;
-  List<List<int?>> pyramid = [];
-  List<TextEditingController> controllers = [];
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  late Timer _timer;
+  int _streak = 0; // New variable to track streak
+  int _remainingTime = 60;
+  int _score = 0;
+  late int _levels;
+  late int _numBlanks;
+  late int _maxRange;
+  late int _pointsPer;
+
+  late List<List<int>> _fullPyramid;
+  late List<List<String?>> _pyramidDisplay;
+  late List<Offset> _blankPositions;
+  late Map<Offset, List<int>> _optionsPerBlank;
 
   @override
   void initState() {
     super.initState();
-    _setDifficultyParameters();
-    _generateNewPyramid();
+    _configureDifficulty();
+    _generateNewPuzzle();
     _startTimer();
   }
 
-  @override
-  void dispose() {
-    timer.cancel();
-    for (var c in controllers) {
-      c.dispose();
-    }
-    audioPlayer.dispose();
-    super.dispose();
-  }
-
-  void _setDifficultyParameters() {
+  void _configureDifficulty() {
+    final rand = Random();
     switch (widget.difficulty) {
       case 'Intermediate':
-        timeRemaining = 75;
+        _levels = 4;
+        _numBlanks = 4;
+        _maxRange = 50;
+        _pointsPer = 2;
         break;
       case 'Advanced':
-        timeRemaining = 90;
+        _levels = 5;
+        _numBlanks = rand.nextInt(3) + 6; // 6 to 8 blanks
+        _maxRange = 99;
+        _pointsPer = 3;
         break;
       default:
-        timeRemaining = 60;
+        _levels = 3;
+        _numBlanks = 2;
+        _maxRange = 20;
+        _pointsPer = 1;
     }
   }
 
   void _startTimer() {
-    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (timeRemaining > 0) {
-        setState(() {
-          timeRemaining--;
-        });
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_remainingTime > 0) {
+        setState(() => _remainingTime--);
       } else {
         timer.cancel();
-        _updateCoin();
+        _endGame();
       }
     });
   }
 
-  void _generateNewPyramid() {
-    pyramid.clear();
-    controllers.clear();
-    int min = 1, max = 10;
-    int baseSize = 3;
-
-    // Adjust pyramid size and number range based on difficulty and progress
-    switch (widget.difficulty) {
-      case 'Intermediate':
-        min = 5;
-        max = 25;
-        baseSize = pyramidCount < 5 ? 3 : 4;
-        break;
-      case 'Advanced':
-        min = -30;
-        max = 60;
-        baseSize =
-            pyramidCount < 3
-                ? 3
-                : pyramidCount < 6
-                ? 4
-                : 5;
-        break;
-    }
-
-    // Generate base row
-    List<int> base = List.generate(
-      baseSize,
-      (_) => random.nextInt(max - min + 1) + min,
+  void _generateNewPuzzle() {
+    final rand = Random();
+    // Build bottom-up pyramid
+    List<List<int>> pyramid = [];
+    List<int> bottom = List.generate(
+      _levels,
+      (_) => rand.nextInt(_maxRange) + 1,
     );
-
-    // Build pyramid upwards
-    pyramid = [base];
-    for (int i = baseSize - 1; i > 0; i--) {
-      List<int> nextRow = [];
-      for (int j = 0; j < i; j++) {
-        nextRow.add(pyramid.last[j]! + pyramid.last[j + 1]!);
+    pyramid.add(bottom);
+    for (int r = 1; r < _levels; r++) {
+      final prev = pyramid[r - 1];
+      List<int> curr = [];
+      for (int i = 0; i < prev.length - 1; i++) {
+        curr.add(prev[i] + prev[i + 1]);
       }
-      pyramid.add(nextRow);
+      pyramid.add(curr);
     }
-    pyramid = pyramid.reversed.toList();
+    // Top-down order for display
+    _fullPyramid = pyramid.reversed.toList();
 
-    // Ensure at least one non-null value per row to avoid invalid pyramids
-    int blanks =
-        widget.difficulty == 'Beginner'
-            ? baseSize
-            : widget.difficulty == 'Intermediate'
-            ? baseSize + 1
-            : baseSize + 2;
-    int placedBlanks = 0;
-    Set<String> blankedPositions = {};
-
-    while (placedBlanks < blanks) {
-      int row = random.nextInt(pyramid.length);
-      int col = random.nextInt(pyramid[row].length);
-      String pos = '$row-$col';
-
-      if (pyramid[row][col] != null && !blankedPositions.contains(pos)) {
-        // Ensure row doesn't become entirely null
-        int nonNullCount = pyramid[row].where((val) => val != null).length;
-        if (nonNullCount > 1) {
-          // Keep at least one non-null value per row
-          pyramid[row][col] = null;
-          blankedPositions.add(pos);
-          placedBlanks++;
+    // Initialize display and blanks
+    _pyramidDisplay = List.generate(
+      _levels,
+      (r) => List<String?>.generate(
+        _fullPyramid[r].length,
+        (c) => _fullPyramid[r][c].toString(),
+      ),
+    );
+    _blankPositions = [];
+    _optionsPerBlank = {};
+    while (_blankPositions.length < _numBlanks) {
+      int r = rand.nextInt(_levels);
+      int c = rand.nextInt(_fullPyramid[r].length);
+      final pos = Offset(r.toDouble(), c.toDouble());
+      if (!_blankPositions.contains(pos)) {
+        _blankPositions.add(pos);
+        _pyramidDisplay[r][c] = null;
+        // Generate options: correct + 9 wrong (total 10 options)
+        int correct = _fullPyramid[r][c];
+        Set<int> opts = {correct};
+        while (opts.length < 10) {
+          int wrong = rand.nextInt(_maxRange * 2) + 1;
+          if (wrong != correct) opts.add(wrong);
         }
+        final list = opts.toList()..shuffle();
+        _optionsPerBlank[pos] = list;
       }
     }
-
-    // Populate controllers
-    for (var row in pyramid) {
-      for (var val in row) {
-        controllers.add(TextEditingController(text: val?.toString() ?? ""));
-      }
-    }
+    setState(() {});
   }
 
-  Widget _buildPyramid() {
-    int i = 0;
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children:
-          pyramid.asMap().entries.map((entry) {
-            int rowIndex = entry.key;
-            var row = entry.value;
-            double offset = (pyramid.length - rowIndex - 1) * 30.0;
-            return Padding(
-              padding: EdgeInsets.only(left: offset, right: offset),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children:
-                    row.asMap().entries.map((cell) {
-                      int colIndex = cell.key;
-                      final index = i;
-                      final controller = controllers[i++];
-                      return GestureDetector(
-                        onTap: () {
-                          if (pyramid[rowIndex][colIndex] == null) {
-                            _showNumberPicker(index, rowIndex, colIndex);
-                          }
-                        },
-                        child: Container(
-                          width: 60,
-                          height: 50,
-                          margin: const EdgeInsets.all(6),
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color:
-                                pyramid[rowIndex][colIndex] == null
-                                    ? Colors.white
-                                    : Colors.grey[300],
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color:
-                                  pyramid[rowIndex][colIndex] == null
-                                      ? Colors.blue
-                                      : Colors.grey,
-                              width: 1.5,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.3),
-                                spreadRadius: 1,
-                                blurRadius: 3,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Text(
-                            controller.text,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-              ),
-            );
-          }).toList(),
-    );
-  }
-
-  void _showNumberPicker(int index, int row, int col) {
-    int min = widget.difficulty == 'Advanced' ? -30 : 1;
-    int max =
-        widget.difficulty == 'Advanced'
-            ? 60
-            : widget.difficulty == 'Intermediate'
-            ? 25
-            : 10;
-    List<int> numberOptions = List.generate(max - min + 1, (i) => min + i);
-
+  void _showOptionsDialog(int r, int c, double cellSize, double fontSize) {
+    final pos = Offset(r.toDouble(), c.toDouble());
+    final options = _optionsPerBlank[pos]!;
+    final double dialogFont = fontSize * 0.7; // Smaller font for more options
+    final double dialogSpacing = cellSize * 0.1; // Tighter spacing
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text("Select a number"),
-            content: SizedBox(
-              width: double.maxFinite,
-              height: screenHeight * 0.4,
-              child: GridView.count(
-                crossAxisCount: 5,
-                childAspectRatio: 1.5,
-                children:
-                    numberOptions.map((num) {
-                      return Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue[100],
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          onPressed: () {
-                            controllers[index].text = num.toString();
-                            Navigator.pop(context);
-                            setState(() {});
-                          },
-                          child: Text(
-                            num.toString(),
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("Cancel"),
-              ),
-            ],
+      builder: (context) {
+        return AlertDialog(
+          title: Text(
+            'Choose the correct number',
+            style: TextStyle(fontSize: dialogFont),
           ),
+          content: SizedBox(
+            width: cellSize * 3, // Wider dialog to accommodate more options
+            child: Wrap(
+              spacing: dialogSpacing,
+              runSpacing: dialogSpacing,
+              alignment: WrapAlignment.center,
+              children:
+                  options.map((val) {
+                    return SizedBox(
+                      width: cellSize * 0.8, // Smaller buttons for 10 options
+                      height: cellSize * 0.5,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          setState(() {
+                            _pyramidDisplay[r][c] = val.toString();
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                        ),
+                        child: Text(
+                          val.toString(),
+                          style: TextStyle(fontSize: dialogFont * 0.9),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+            ),
+          ),
+        );
+      },
     );
   }
 
-  void _checkAnswer() {
-    try {
-      int i = 0;
-      List<List<int?>> userPyramid =
-          pyramid.map((row) {
-            return row.map((val) {
-              final text = controllers[i++].text;
-              if (text.isEmpty && val == null) {
-                throw Exception("Please complete all blanks.");
-              }
-              final parsed = int.tryParse(text);
-              if (parsed == null && val == null) {
-                throw Exception("Invalid number entered in a blank cell.");
-              }
-              return parsed ?? val; // Use original value if not a blank
-            }).toList();
-          }).toList();
-
-      bool valid = true;
-      for (int row = 0; row < pyramid.length - 1; row++) {
-        for (
-          int col = 0;
-          col < pyramid[row].length && col + 1 < pyramid[row + 1].length;
-          col++
-        ) {
-          if (userPyramid[row][col] != null &&
-              userPyramid[row + 1][col] != null &&
-              userPyramid[row + 1][col + 1] != null) {
-            valid &=
-                userPyramid[row][col] ==
-                userPyramid[row + 1][col]! + userPyramid[row + 1][col + 1]!;
-          } else {
-            valid = false; // Invalidate if required values are missing
-          }
-        }
-      }
-
-      if (valid) {
-        pyramidCount++;
-        streak++;
-        score += _getScorePerPyramid();
-        audioPlayer.play(AssetSource('sounds/win.wav'));
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Correct! Streak: $streak"),
-            backgroundColor: Colors.green,
-          ),
-        );
-        _generateNewPyramid();
-        if (widget.difficulty != 'Beginner' && pyramidCount % 3 == 0) {
-          timeRemaining += 10; // Bonus time for progress
-        }
-        setState(() {});
-      } else {
-        streak = 0;
-        audioPlayer.play(AssetSource('sounds/wrong.wav'));
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Wrong pyramid structure."),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      audioPlayer.play(AssetSource('sounds/wrong.wav'));
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString().replaceFirst("Exception: ", ""))),
-      );
+  void _handleSubmit() {
+    int correct = 0;
+    for (final pos in _blankPositions) {
+      final r = pos.dx.toInt();
+      final c = pos.dy.toInt();
+      final expected = _fullPyramid[r][c];
+      final input = int.tryParse(_pyramidDisplay[r][c] ?? '') ?? -999999;
+      if (input == expected) correct++;
     }
+    if (correct > 0) {
+      setState(() {
+        _score += correct * _pointsPer;
+        _streak++; // Increment streak for correct submission
+        if (_streak % 3 == 0) {
+          _remainingTime += 10; // Add 10 seconds every 3 pyramids
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                "🔥 3-Streak! +10s Bonus!",
+                style: TextStyle(
+                  fontSize: MediaQuery.of(context).size.width * 0.04,
+                ),
+              ),
+              duration: const Duration(seconds: 2),
+              backgroundColor: Colors.orangeAccent,
+            ),
+          );
+          _audioPlayer.play(
+            AssetSource('sounds/coin.wav'),
+          ); // Optional: Play bonus sound
+        }
+      });
+      _audioPlayer.play(AssetSource('sounds/right.wav'));
+    } else {
+      setState(() {
+        _streak = 0; // Reset streak on incorrect submission
+      });
+      _audioPlayer.play(AssetSource('sounds/wrong.wav'));
+    }
+    _generateNewPuzzle();
   }
 
-  int _getScorePerPyramid() {
-    int baseScore =
-        widget.difficulty == 'Intermediate'
-            ? 4
-            : widget.difficulty == 'Advanced'
-            ? 8
-            : 2;
-    return baseScore + (streak ~/ 3); // Bonus for streaks
+  void _endGame() async {
+    _timer.cancel();
+    await _updateCoin();
+    await Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder:
+            (_) => ResultfScreen(
+              user: widget.user,
+              score: _score,
+              difficulty: widget.difficulty,
+            ),
+      ),
+    );
   }
 
-  Future<void> _updateCoin() async {
-    try {
-      final response = await http.post(
-        Uri.parse("https://slumberjer.com/mathwizard/api/update_coin.php"),
-        body: {
-          'userid': widget.user.userId.toString(),
-          'coin': score.toString(),
-        },
-      );
-      if (response.statusCode == 200) {
-        final res = json.decode(response.body);
-        if (res['status'] == 'success') {
-          widget.user.coin =
-              (int.parse(widget.user.coin.toString()) + score).toString();
-        }
-      }
-    } catch (e) {
-      // Optional error handling
-    } finally {
-      audioPlayer.play(
-        AssetSource(score > 0 ? 'sounds/win.wav' : 'sounds/lose.wav'),
-      );
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ResultfScreen(score: score, user: widget.user),
-        ),
-      );
-    }
+  @override
+  void dispose() {
+    _timer.cancel();
+    _audioPlayer.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    screenHeight = MediaQuery.of(context).size.height.toInt();
-    screenWidth = MediaQuery.of(context).size.width.toInt();
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double screenHeight = MediaQuery.of(context).size.height;
+    final bool isLarge = screenWidth > 600;
+    final double cellSize = isLarge ? 60 : screenWidth * 0.13;
+    final double fontSize = isLarge ? 18 : screenWidth * 0.04;
+    final double spacing = isLarge ? 8 : screenWidth * 0.02;
+
     return Scaffold(
-      backgroundColor: Colors.yellow[50],
       appBar: AppBar(
-        title: Text("${widget.difficulty} Pyramid Challenge"),
-        backgroundColor: Colors.orange,
+        title: const Text('🧮 Number Pyramid'),
+        backgroundColor: Colors.deepPurple,
         automaticallyImplyLeading: false,
         leading: IconButton(
-          icon: const Icon(Icons.close),
+          icon: Icon(Icons.arrow_back, size: fontSize),
           onPressed: () {
-            timer.cancel();
+            _timer.cancel();
             _updateCoin();
           },
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(spacing * 2),
         child: Column(
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "Time: $timeRemaining",
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.red,
-                  ),
+                  'Time: $_remainingTime',
+                  style: TextStyle(fontSize: fontSize),
                 ),
-                Text(
-                  "Score: $score",
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green,
-                  ),
-                ),
+                Text('Score: $_score', style: TextStyle(fontSize: fontSize)),
               ],
             ),
-            const SizedBox(height: 10),
-            Text(
-              "Streak: $streak",
-              style: const TextStyle(fontSize: 16, color: Colors.blue),
-            ),
-            const SizedBox(height: 20),
-            Expanded(child: Center(child: _buildPyramid())),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 30,
-                  vertical: 15,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
+            SizedBox(height: spacing * 2),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(_levels, (r) {
+                  return Padding(
+                    padding: EdgeInsets.symmetric(vertical: spacing),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(_pyramidDisplay[r].length, (c) {
+                        final val = _pyramidDisplay[r][c];
+                        if (val == null) {
+                          return GestureDetector(
+                            onTap:
+                                () => _showOptionsDialog(
+                                  r,
+                                  c,
+                                  cellSize,
+                                  fontSize,
+                                ),
+                            child: Container(
+                              width: cellSize,
+                              height: cellSize,
+                              margin: EdgeInsets.all(spacing),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey),
+                                borderRadius: BorderRadius.circular(spacing),
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                '?',
+                                style: TextStyle(fontSize: fontSize),
+                              ),
+                            ),
+                          );
+                        } else {
+                          return Container(
+                            width: cellSize,
+                            height: cellSize,
+                            margin: EdgeInsets.all(spacing),
+                            decoration: BoxDecoration(
+                              color: Colors.blueAccent,
+                              borderRadius: BorderRadius.circular(spacing),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              val,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: fontSize,
+                              ),
+                            ),
+                          );
+                        }
+                      }),
+                    ),
+                  );
+                }),
               ),
-              onPressed: _checkAnswer,
-              child: const Text(
-                "Submit",
-                style: TextStyle(fontSize: 18, color: Colors.white),
+            ),
+            SizedBox(
+              width: cellSize * 3,
+              height: cellSize * 0.7,
+              child: ElevatedButton(
+                onPressed: _handleSubmit,
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: spacing),
+                  textStyle: TextStyle(fontSize: fontSize),
+                ),
+                child: const Text(
+                  'Submit Answer',
+                  style: TextStyle(fontFamily: 'ComicSans'),
+                ),
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _updateCoin() async {
+    try {
+      final url = Uri.parse(
+        "https://slumberjer.com/mathwizard/api/update_coin.php",
+      );
+
+      final response = await http.post(
+        url,
+        body: {
+          'userid': widget.user.userId.toString(),
+          'coin': _score.toString(),
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final body = json.decode(response.body);
+        if (body['status'] == 'success') {
+          setState(() {
+            widget.user.coin =
+                (int.parse(widget.user.coin.toString()) + _score).toString();
+          });
+        }
+      }
+    } catch (e) {
+      // handle error silently
+    } finally {
+      if (_score > 0) {
+        _audioPlayer.play(AssetSource('sounds/win.wav'));
+      } else {
+        _audioPlayer.play(AssetSource('sounds/lose.wav'));
+      }
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder:
+              (_) => ResultfScreen(
+                user: widget.user,
+                score: _score,
+                difficulty: widget.difficulty,
+              ),
+        ),
+      );
+    }
   }
 }
