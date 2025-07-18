@@ -3,9 +3,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:mathwizard/models/audioservice.dart';
 import 'package:mathwizard/models/user.dart';
 import 'package:mathwizard/gamed/resultdscreen.dart'; // Updated import
 
@@ -32,7 +32,6 @@ class _GameDScreenState extends State<GameDScreen> {
   int timeRemaining = 60;
   int score = 0;
   int tries = 0;
-  final AudioPlayer audioPlayer = AudioPlayer();
 
   @override
   void initState() {
@@ -124,11 +123,11 @@ class _GameDScreenState extends State<GameDScreen> {
     final win = evaluateEquation();
 
     if (win) {
-      audioPlayer.play(AssetSource('sounds/win.wav'));
+      AudioService.playSfx('sounds/win.wav');
       score += _getCoinReward();
       _showResultDialog(true);
     } else {
-      audioPlayer.play(AssetSource('sounds/wrong.wav'));
+      AudioService.playSfx('sounds/wrong.wav');
       _showResultDialog(false);
     }
   }
@@ -335,9 +334,9 @@ class _GameDScreenState extends State<GameDScreen> {
       }
     } finally {
       if (score > 0) {
-        audioPlayer.play(AssetSource('sounds/win.wav'));
+        AudioService.playSfx('sounds/win.wav');
       } else {
-        audioPlayer.play(AssetSource('sounds/lose.wav'));
+        AudioService.playSfx('sounds/lose.wav');
       }
       // Navigator.of(context).pop();
       Navigator.pushReplacement(

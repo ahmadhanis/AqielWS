@@ -1,9 +1,9 @@
 // ignore_for_file: must_be_immutable, use_build_context_synchronously
 
 import 'dart:convert';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:mathwizard/models/audioservice.dart';
 import 'package:mathwizard/models/user.dart';
 import 'gamefscreen.dart'; // Replace with actual gameplay screen
 
@@ -23,7 +23,6 @@ class _GameFMainScreenState extends State<GameFMainScreen> {
     'Intermediate': 6,
     'Advanced': 9,
   };
-  final AudioPlayer audioPlayer = AudioPlayer();
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +123,7 @@ class _GameFMainScreenState extends State<GameFMainScreen> {
                   ),
                   SizedBox(height: 10),
                   Text(
-                    "✔️ Fill in missing blocks using addition or subtraction.",
+                    "✔️ Fill in missing numbers from numbers of its adjacent two numbers from its bottom row.",
                   ),
                   Text(
                     "✔️ Complete as many pyramids as possible in 60 seconds.",
@@ -133,9 +132,7 @@ class _GameFMainScreenState extends State<GameFMainScreen> {
                 ],
               ),
             ),
-
-            const Spacer(),
-
+            const SizedBox(height: 25),
             // Start Game Button
             ElevatedButton.icon(
               onPressed: () async {
@@ -144,7 +141,7 @@ class _GameFMainScreenState extends State<GameFMainScreen> {
                   if (shouldProceed) {
                     final success = await _deductDailyTry();
                     if (success) {
-                      await audioPlayer.play(AssetSource('sounds/start.mp3'));
+                      AudioService.playSfx('sounds/start.mp3');
                       await Navigator.push(
                         context,
                         MaterialPageRoute(

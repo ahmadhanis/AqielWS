@@ -1,9 +1,9 @@
 // ignore_for_file: must_be_immutable, use_build_context_synchronously
 
 import 'dart:convert';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:mathwizard/models/audioservice.dart';
 import 'package:mathwizard/models/user.dart';
 import 'gameescreen.dart'; // Placeholder for the actual game screen
 
@@ -23,7 +23,6 @@ class _GameEMainScreenState extends State<GameEMainScreen> {
     'Intermediate': 2,
     'Advanced': 3,
   };
-  final AudioPlayer audioPlayer = AudioPlayer();
 
   @override
   Widget build(BuildContext context) {
@@ -130,7 +129,7 @@ class _GameEMainScreenState extends State<GameEMainScreen> {
               ),
             ),
 
-            const Spacer(),
+            SizedBox(height: 25),
 
             // Start Game Button
             ElevatedButton.icon(
@@ -140,7 +139,7 @@ class _GameEMainScreenState extends State<GameEMainScreen> {
                   if (shouldProceed) {
                     final success = await _deductDailyTry();
                     if (success) {
-                      audioPlayer.play(AssetSource('sounds/start.mp3'));
+                      AudioService.playSfx('sounds/start.mp3');
                       await Navigator.push(
                         context,
                         MaterialPageRoute(

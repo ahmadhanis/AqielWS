@@ -4,10 +4,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:mathwizard/gamea/gameascreen.dart';
+import 'package:mathwizard/models/audioservice.dart';
 import 'package:mathwizard/models/user.dart';
 // ignore: unused_import
 import 'package:http/http.dart' as http;
-import 'package:audioplayers/audioplayers.dart';
 
 class GameAMainScreen extends StatefulWidget {
   User user;
@@ -20,7 +20,6 @@ class GameAMainScreen extends StatefulWidget {
 
 class _GameAMainScreenState extends State<GameAMainScreen> {
   String selectedDifficulty = 'Beginner'; // Default difficulty
-  final AudioPlayer _audioPlayer = AudioPlayer();
   final Map<String, int> difficultyPoints = {
     'Beginner': 1,
     'Intermediate': 2,
@@ -212,7 +211,7 @@ class _GameAMainScreenState extends State<GameAMainScreen> {
           if (shouldDeduct) {
             final success = await _deductDailyTry();
             if (success) {
-              _audioPlayer.play(AssetSource('sounds/start.mp3'));
+              AudioService.playSfx('sounds/start.mp3');
               await Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -305,41 +304,6 @@ class _GameAMainScreenState extends State<GameAMainScreen> {
         ) ??
         false;
   }
-
-  // Future<bool> _deductDailyTry() async {
-  //   try {
-  //     // Temp solution to bypass SSL certificate error
-  //     HttpClient _createHttpClient() {
-  //       final HttpClient httpClient = HttpClient();
-  //       httpClient.badCertificateCallback =
-  //           (X509Certificate cert, String host, int port) => true;
-  //       return httpClient;
-  //     }
-
-  //     final ioClient = IOClient(_createHttpClient());
-  //     final url = Uri.parse(
-  //       "https://slumberjer.com/mathwizard/api/update_tries.php",
-  //     );
-  //     final response = await ioClient.post(
-  //       url,
-  //       body: {'userid': widget.user.userId},
-  //     );
-  //     if (response.statusCode == 200) {
-  //       final responseBody = json.decode(response.body);
-  //       if (responseBody['status'] == 'success') {
-  //         setState(() {
-  //           widget.user.dailyTries =
-  //               (int.parse(widget.user.dailyTries.toString()) - 1)
-  //                   .toString(); // Update UI after successful deduction
-  //         });
-  //         return true;
-  //       }
-  //     }
-  //   } catch (e) {
-  //     print("Error deducting daily try: $e");
-  //   }
-  //   return false;
-  // }
 
   Future<bool> _deductDailyTry() async {
     try {

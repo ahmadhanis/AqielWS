@@ -3,9 +3,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:mathwizard/gamec/resultcscreen.dart';
+import 'package:mathwizard/models/audioservice.dart';
 import 'package:mathwizard/models/user.dart';
 import 'package:http/http.dart' as http;
 
@@ -35,7 +35,6 @@ class _GameCScreenState extends State<GameCScreen> {
   int score = 0;
   int tries = 0;
   int streak = 0; // Track consecutive wins
-  final AudioPlayer _audioPlayer = AudioPlayer();
   @override
   void initState() {
     super.initState();
@@ -46,7 +45,6 @@ class _GameCScreenState extends State<GameCScreen> {
   @override
   void dispose() {
     timer.cancel();
-    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -97,11 +95,11 @@ class _GameCScreenState extends State<GameCScreen> {
       });
 
       if (currentSum == widget.target) {
-        _audioPlayer.play(AssetSource('sounds/right.wav'));
+        AudioService.playSfx('sounds/right.wav');
         score = score + _getCoinReward();
         streak++;
         if (streak >= 3) {
-          _audioPlayer.play(AssetSource('sounds/coin.wav'));
+          AudioService.playSfx('sounds/coin.wav');
           timeRemaining += 5; // Add 5 seconds for 3 consecutive wins
           streak = 0; // Reset streak
           ScaffoldMessenger.of(context).showSnackBar(
@@ -122,7 +120,7 @@ class _GameCScreenState extends State<GameCScreen> {
       } else if (currentSum > widget.target) {
         if (score > 0) {
           score--; // Deduct 1 coin for wrong answer
-          _audioPlayer.play(AssetSource('sounds/wrong.wav'));
+          AudioService.playSfx('sounds/wrong.wav');
         }
         streak = 0; // Reset streak
         _showResultDialog(false);
@@ -384,9 +382,9 @@ class _GameCScreenState extends State<GameCScreen> {
       }
     } finally {
       if (score > 0) {
-        _audioPlayer.play(AssetSource('sounds/win.wav'));
+        AudioService.playSfx('sounds/win.wav');
       } else {
-        _audioPlayer.play(AssetSource('sounds/lose.wav'));
+        AudioService.playSfx('sounds/lose.wav');
       }
       Navigator.of(context).pop();
       Navigator.pushReplacement(

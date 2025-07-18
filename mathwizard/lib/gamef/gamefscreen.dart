@@ -3,9 +3,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:mathwizard/gamef/resultfscreen.dart';
+import 'package:mathwizard/models/audioservice.dart';
 import 'package:mathwizard/models/user.dart';
 import 'package:http/http.dart' as http;
 
@@ -20,7 +20,6 @@ class GameFScreen extends StatefulWidget {
 }
 
 class _GameFScreenState extends State<GameFScreen> {
-  final AudioPlayer _audioPlayer = AudioPlayer();
   late Timer _timer;
   int _streak = 0; // New variable to track streak
   int _remainingTime = 60;
@@ -203,17 +202,15 @@ class _GameFScreenState extends State<GameFScreen> {
               backgroundColor: Colors.orangeAccent,
             ),
           );
-          _audioPlayer.play(
-            AssetSource('sounds/coin.wav'),
-          ); // Optional: Play bonus sound
+          AudioService.playSfx('sounds/coin.wav'); // Optional: Play bonus sound
         }
       });
-      _audioPlayer.play(AssetSource('sounds/right.wav'));
+      AudioService.playSfx('sounds/right.wav');
     } else {
       setState(() {
         _streak = 0; // Reset streak on incorrect submission
       });
-      _audioPlayer.play(AssetSource('sounds/wrong.wav'));
+      AudioService.playSfx('sounds/wrong.wav');
     }
     _generateNewPuzzle();
   }
@@ -221,6 +218,12 @@ class _GameFScreenState extends State<GameFScreen> {
   void _endGame() async {
     _timer.cancel();
     await _updateCoin();
+    if (_score <= 0) {
+      AudioService.playSfx('sounds/lose.wav');
+    } else {
+      AudioService.playSfx('sounds/win.wav');
+    }
+    Navigator.pop(context);
     await Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -237,7 +240,7 @@ class _GameFScreenState extends State<GameFScreen> {
   @override
   void dispose() {
     _timer.cancel();
-    _audioPlayer.dispose();
+
     super.dispose();
   }
 
@@ -259,7 +262,7 @@ class _GameFScreenState extends State<GameFScreen> {
           icon: Icon(Icons.arrow_back, size: fontSize),
           onPressed: () {
             _timer.cancel();
-            _updateCoin();
+            _endGame();
           },
         ),
       ),
@@ -278,65 +281,60 @@ class _GameFScreenState extends State<GameFScreen> {
               ],
             ),
             SizedBox(height: spacing * 2),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(_levels, (r) {
-                  return Padding(
-                    padding: EdgeInsets.symmetric(vertical: spacing),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(_pyramidDisplay[r].length, (c) {
-                        final val = _pyramidDisplay[r][c];
-                        if (val == null) {
-                          return GestureDetector(
-                            onTap:
-                                () => _showOptionsDialog(
-                                  r,
-                                  c,
-                                  cellSize,
-                                  fontSize,
-                                ),
-                            child: Container(
-                              width: cellSize,
-                              height: cellSize,
-                              margin: EdgeInsets.all(spacing),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey),
-                                borderRadius: BorderRadius.circular(spacing),
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                '?',
-                                style: TextStyle(fontSize: fontSize),
-                              ),
-                            ),
-                          );
-                        } else {
-                          return Container(
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(_levels, (r) {
+                return Padding(
+                  padding: EdgeInsets.symmetric(vertical: spacing),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(_pyramidDisplay[r].length, (c) {
+                      final val = _pyramidDisplay[r][c];
+                      if (val == null) {
+                        return GestureDetector(
+                          onTap:
+                              () =>
+                                  _showOptionsDialog(r, c, cellSize, fontSize),
+                          child: Container(
                             width: cellSize,
                             height: cellSize,
                             margin: EdgeInsets.all(spacing),
                             decoration: BoxDecoration(
-                              color: Colors.blueAccent,
+                              border: Border.all(color: Colors.grey),
                               borderRadius: BorderRadius.circular(spacing),
                             ),
                             alignment: Alignment.center,
                             child: Text(
-                              val,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: fontSize,
-                              ),
+                              '?',
+                              style: TextStyle(fontSize: fontSize),
                             ),
-                          );
-                        }
-                      }),
-                    ),
-                  );
-                }),
-              ),
+                          ),
+                        );
+                      } else {
+                        return Container(
+                          width: cellSize,
+                          height: cellSize,
+                          margin: EdgeInsets.all(spacing),
+                          decoration: BoxDecoration(
+                            color: Colors.blueAccent,
+                            borderRadius: BorderRadius.circular(spacing),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            val,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: fontSize,
+                            ),
+                          ),
+                        );
+                      }
+                    }),
+                  ),
+                );
+              }),
             ),
+            SizedBox(height: spacing * 2),
             SizedBox(
               width: cellSize * 3,
               height: cellSize * 0.7,
@@ -384,11 +382,6 @@ class _GameFScreenState extends State<GameFScreen> {
     } catch (e) {
       // handle error silently
     } finally {
-      if (_score > 0) {
-        _audioPlayer.play(AssetSource('sounds/win.wav'));
-      } else {
-        _audioPlayer.play(AssetSource('sounds/lose.wav'));
-      }
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(

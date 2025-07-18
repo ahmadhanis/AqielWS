@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
 import 'package:mathwizard/gamea/resultascreen.dart';
+import 'package:mathwizard/models/audioservice.dart';
 import 'package:mathwizard/models/user.dart';
 
 class GameAScreen extends StatefulWidget {
@@ -31,7 +32,6 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
   int timeRemaining = 60;
   int streak = 0;
   late Timer timer;
-  final AudioPlayer _audioPlayer = AudioPlayer();
   String question = "";
   int correctAnswer = 0;
   List<int> answers = [];
@@ -114,9 +114,9 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
       }
     } finally {
       if (score > 0) {
-        _audioPlayer.play(AssetSource('sounds/win.wav'));
+        AudioService.playSfx('sounds/win.wav');
       } else {
-        _audioPlayer.play(AssetSource('sounds/lose.wav'));
+        AudioService.playSfx('sounds/lose.wav');
       }
       Navigator.pushReplacement(
         context,
@@ -215,10 +215,10 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
       if (answer == correctAnswer) {
         correctAnswerIndex = index; // Highlight correct answer in green
         streak++;
-        _audioPlayer.play(AssetSource('sounds/right.wav'));
+        AudioService.playSfx('sounds/right.wav');
 
         if (streak >= 5) {
-          _audioPlayer.play(AssetSource('sounds/coin.wav'));
+          AudioService.playSfx('sounds/coin.wav');
           timeRemaining += 2;
           streak = 0;
           ScaffoldMessenger.of(context).showSnackBar(
@@ -233,7 +233,7 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
               backgroundColor: Colors.orangeAccent,
             ),
           );
-          _audioPlayer.play(AssetSource('sounds/coin.wav'));
+          AudioService.playSfx('sounds/coin.wav');
         }
         switch (widget.difficulty) {
           case 'Beginner':
@@ -246,10 +246,10 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
             score += 3;
             break;
         }
-        _audioPlayer.play(AssetSource('sounds/right.wav'));
+        AudioService.playSfx('sounds/right.wav');
         generateQuestion();
       } else {
-        _audioPlayer.play(AssetSource('sounds/wrong.wav'));
+        AudioService.playSfx('sounds/wrong.wav');
         streak = 0;
         wrongAnswerIndex = index;
         if (score > 0) {
@@ -382,7 +382,6 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
   @override
   void dispose() {
     timer.cancel();
-    _audioPlayer.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }

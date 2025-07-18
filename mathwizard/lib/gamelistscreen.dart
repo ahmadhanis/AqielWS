@@ -3,11 +3,8 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
-
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:http/io_client.dart';
-
 import 'package:http/http.dart' as http;
 import 'package:mathwizard/gamea/gameamainscreen.dart';
 import 'package:mathwizard/gameb/gamebmainscreen.dart';
@@ -15,6 +12,7 @@ import 'package:mathwizard/gamec/gamecmainscreen.dart';
 import 'package:mathwizard/gamed/gamedmainscreen.dart';
 import 'package:mathwizard/gamee/gameemainscreen.dart';
 import 'package:mathwizard/gamef/gamefmainscreen.dart';
+import 'package:mathwizard/models/audioservice.dart';
 import 'package:mathwizard/models/user.dart';
 import 'package:mathwizard/profilescreen.dart';
 import 'package:mathwizard/rankscreen.dart';
@@ -31,7 +29,6 @@ class GameListScreen extends StatefulWidget {
 }
 
 class _GameListScreenState extends State<GameListScreen> {
-  final AudioPlayer audioPlayer = AudioPlayer();
   @override
   Widget build(BuildContext context) {
     // List of games
@@ -428,49 +425,49 @@ class _GameListScreenState extends State<GameListScreen> {
   void _handleGameTap(String gameName) async {
     if (gameName == "Quik Math") {
       // Play game audio
-      audioPlayer.play(AssetSource('sounds/start.wav'));
+      AudioService.playSfx('sounds/start.wav');
       await Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => GameAMainScreen(user: widget.user)),
       );
       await _reloadUser();
     } else if (gameName == "Sequence Hunter") {
-      audioPlayer.play(AssetSource('sounds/start.wav'));
+      AudioService.playSfx('sounds/start.wav');
       await Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => GameBMainScreen(user: widget.user)),
       );
       await _reloadUser();
     } else if (gameName == "Math Maze") {
-      audioPlayer.play(AssetSource('sounds/start.wav'));
+      AudioService.playSfx('sounds/start.wav');
       await Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => GameCMainScreen(user: widget.user)),
       );
       await _reloadUser();
     } else if (gameName == "Equation Builder") {
-      audioPlayer.play(AssetSource('sounds/start.wav'));
+      AudioService.playSfx('sounds/start.wav');
       await Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => GameDMainScreen(user: widget.user)),
       );
       await _reloadUser();
     } else if (gameName == "Math Runner") {
-      audioPlayer.play(AssetSource('sounds/start.wav'));
+      AudioService.playSfx('sounds/start.wav');
       await Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => GameEMainScreen(user: widget.user)),
       );
       await _reloadUser();
     } else if (gameName == "Number Pyramid") {
-      audioPlayer.play(AssetSource('sounds/start.wav'));
+      AudioService.playSfx('sounds/start.wav');
       await Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => GameFMainScreen(user: widget.user)),
       );
       await _reloadUser();
     } else {
-      audioPlayer.play(AssetSource('sounds/wrong.wav'));
+      AudioService.playSfx('sounds/wrong.wav');
       showDialog(
         context: context,
         builder:

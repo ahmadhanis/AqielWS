@@ -3,9 +3,9 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:mathwizard/gameb/resultbscreen.dart';
+import 'package:mathwizard/models/audioservice.dart';
 import 'package:mathwizard/models/user.dart';
 import 'package:http/http.dart' as http;
 
@@ -30,7 +30,6 @@ class _GameBScreenState extends State<GameBScreen> {
   final Random random = Random();
   bool isProcessing = false;
   int comboStreak = 0;
-  final AudioPlayer _audioPlayer = AudioPlayer();
 
   @override
   void initState() {
@@ -41,7 +40,7 @@ class _GameBScreenState extends State<GameBScreen> {
   @override
   void dispose() {
     timer.cancel();
-    _audioPlayer.dispose();
+
     super.dispose();
   }
 
@@ -130,7 +129,7 @@ class _GameBScreenState extends State<GameBScreen> {
       int? expectedAnswer = answersequence[blankIndex];
 
       if (selectedAnswer == expectedAnswer) {
-        _audioPlayer.play(AssetSource('sounds/right.wav'));
+        AudioService.playSfx('sounds/right.wav');
         switch (widget.difficulty) {
           case 'Beginner':
             score += 1;
@@ -148,13 +147,15 @@ class _GameBScreenState extends State<GameBScreen> {
         missingIndexes.remove(blankIndex);
         comboStreak++;
         if (comboStreak % 6 == 0) {
-          _audioPlayer.play(AssetSource('sounds/coin.wav'));
+          AudioService.playSfx('sounds/coin.wav');
           timeRemaining += 5;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
                 "🎉 Combo x3! +5s bonus time!",
-                style: TextStyle(fontSize: MediaQuery.of(context).size.width * 0.04),
+                style: TextStyle(
+                  fontSize: MediaQuery.of(context).size.width * 0.04,
+                ),
               ),
               duration: const Duration(seconds: 2),
               backgroundColor: Colors.deepPurpleAccent,
@@ -162,7 +163,7 @@ class _GameBScreenState extends State<GameBScreen> {
           );
         }
       } else {
-        _audioPlayer.play(AssetSource('sounds/wrong.wav'));
+        AudioService.playSfx('sounds/wrong.wav');
         switch (widget.difficulty) {
           case 'Beginner':
             score -= 0;
@@ -210,9 +211,9 @@ class _GameBScreenState extends State<GameBScreen> {
     } finally {
       Navigator.of(context).pop();
       if (score > 0) {
-        await _audioPlayer.play(AssetSource('sounds/win.wav'));
+        await AudioService.playSfx('sounds/win.wav');
       } else {
-        await _audioPlayer.play(AssetSource('sounds/lose.wav'));
+        await AudioService.playSfx('sounds/lose.wav');
       }
       Navigator.pushReplacement(
         context,
@@ -291,52 +292,57 @@ class _GameBScreenState extends State<GameBScreen> {
                       spacing: spacing,
                       runSpacing: spacing,
                       alignment: WrapAlignment.center,
-                      children: sequence.asMap().entries.map((entry) {
-                        final double boxSize = screenWidth * 0.12;
-                        return entry.value == null
-                            ? SizedBox(
-                                width: boxSize,
-                                height: boxSize,
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    padding: EdgeInsets.zero,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(spacing * 0.5),
+                      children:
+                          sequence.asMap().entries.map((entry) {
+                            final double boxSize = screenWidth * 0.12;
+                            return entry.value == null
+                                ? SizedBox(
+                                  width: boxSize,
+                                  height: boxSize,
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      padding: EdgeInsets.zero,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          spacing * 0.5,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                  onPressed: () {
-                                    _showAnswerOptions(entry.key);
-                                  },
-                                  child: Text(
-                                    "?",
-                                    style: TextStyle(
-                                      fontSize: baseFontSize * 0.8,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              )
-                            : SizedBox(
-                                width: boxSize,
-                                height: boxSize,
-                                child: DecoratedBox(
-                                  decoration: BoxDecoration(
-                                    color: Colors.blueAccent,
-                                    borderRadius: BorderRadius.circular(spacing * 0.5),
-                                  ),
-                                  child: Center(
+                                    onPressed: () {
+                                      _showAnswerOptions(entry.key);
+                                    },
                                     child: Text(
-                                      "${entry.value}",
+                                      "?",
                                       style: TextStyle(
                                         fontSize: baseFontSize * 0.8,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.white,
                                       ),
                                     ),
                                   ),
-                                ),
-                              );
-                      }).toList(),
+                                )
+                                : SizedBox(
+                                  width: boxSize,
+                                  height: boxSize,
+                                  child: DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      color: Colors.blueAccent,
+                                      borderRadius: BorderRadius.circular(
+                                        spacing * 0.5,
+                                      ),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        "${entry.value}",
+                                        style: TextStyle(
+                                          fontSize: baseFontSize * 0.8,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                          }).toList(),
                     ),
                   ),
                 ),
@@ -356,52 +362,56 @@ class _GameBScreenState extends State<GameBScreen> {
 
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text(
-          "Select the Missing Number",
-          style: TextStyle(fontSize: baseFontSize * 0.9),
-        ),
-        content: SingleChildScrollView(
-          child: Wrap(
-            spacing: spacing,
-            runSpacing: spacing,
-            alignment: WrapAlignment.center,
-            children: answerOptions.map((option) {
-              return SizedBox(
-                width: screenWidth * 0.2,
-                height: screenWidth * 0.12,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(spacing * 0.5),
-                    ),
-                  ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _handleAnswer(option, blankIndex);
-                  },
-                  child: FittedBox(
-                    child: Text(
-                      "$option",
-                      style: TextStyle(fontSize: baseFontSize * 0.7),
-                    ),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              "Cancel",
-              style: TextStyle(fontSize: baseFontSize * 0.7),
+      builder:
+          (_) => AlertDialog(
+            title: Text(
+              "Select the Missing Number",
+              style: TextStyle(fontSize: baseFontSize * 0.9),
             ),
+            content: SingleChildScrollView(
+              child: Wrap(
+                spacing: spacing,
+                runSpacing: spacing,
+                alignment: WrapAlignment.center,
+                children:
+                    answerOptions.map((option) {
+                      return SizedBox(
+                        width: screenWidth * 0.2,
+                        height: screenWidth * 0.12,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                spacing * 0.5,
+                              ),
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.pop(context);
+                            _handleAnswer(option, blankIndex);
+                          },
+                          child: FittedBox(
+                            child: Text(
+                              "$option",
+                              style: TextStyle(fontSize: baseFontSize * 0.7),
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  "Cancel",
+                  style: TextStyle(fontSize: baseFontSize * 0.7),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 }

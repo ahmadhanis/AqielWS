@@ -1,10 +1,10 @@
 // ignore_for_file: library_private_types_in_public_api, empty_catches, use_build_context_synchronously, must_be_immutable
 
 import 'dart:convert';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
+import 'package:mathwizard/models/audioservice.dart';
 import 'gamebscreen.dart'; // Replace with the screen where the game logic will be implemented
 import 'package:mathwizard/models/user.dart';
 
@@ -19,7 +19,7 @@ class GameBMainScreen extends StatefulWidget {
 
 class _GameBMainScreenState extends State<GameBMainScreen> {
   String selectedDifficulty = 'Beginner'; // Default difficulty
-  final AudioPlayer _audioPlayer = AudioPlayer();
+
   final Map<String, int> difficultyPoints = {
     'Beginner': 1,
     'Intermediate': 2,
@@ -320,7 +320,7 @@ class _GameBMainScreenState extends State<GameBMainScreen> {
                     if (shouldDeduct) {
                       final success = await _deductDailyTry();
                       if (success) {
-                        _audioPlayer.play(AssetSource('sounds/start.mp3'));
+                        AudioService.playSfx('sounds/start.mp3');
                         await Navigator.push(
                           context,
                           MaterialPageRoute(

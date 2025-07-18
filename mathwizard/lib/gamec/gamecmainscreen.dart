@@ -4,10 +4,10 @@ import 'dart:convert';
 // ignore: unused_import
 import 'dart:io';
 import 'dart:math';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
+import 'package:mathwizard/models/audioservice.dart';
 import 'package:mathwizard/models/user.dart';
 import 'gamecscreen.dart'; // Replace with the actual game screen for Math Maze
 
@@ -22,7 +22,6 @@ class GameCMainScreen extends StatefulWidget {
 
 class _GameCMainScreenState extends State<GameCMainScreen> {
   String selectedDifficulty = 'Beginner';
-  final AudioPlayer _audioPlayer = AudioPlayer();
 
   final Map<String, List<int>> difficultyTargetRanges = {
     'Beginner': [10, 20],
@@ -225,7 +224,7 @@ class _GameCMainScreenState extends State<GameCMainScreen> {
                     if (shouldDeduct) {
                       final success = await _deductDailyTry();
                       if (success) {
-                        _audioPlayer.play(AssetSource('sounds/start.mp3'));
+                        AudioService.playSfx('sounds/start.mp3');
                         await Navigator.push(
                           context,
                           MaterialPageRoute(

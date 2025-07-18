@@ -2,9 +2,9 @@
 
 import 'dart:convert';
 import 'dart:math';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:mathwizard/models/audioservice.dart';
 import 'package:mathwizard/models/user.dart';
 import 'gamedscreen.dart'; // Replace with actual Game D screen when ready
 
@@ -19,7 +19,6 @@ class GameDMainScreen extends StatefulWidget {
 
 class _GameDMainScreenState extends State<GameDMainScreen> {
   String selectedDifficulty = 'Beginner';
-  final AudioPlayer audioPlayer = AudioPlayer();
 
   final Map<String, List<int>> difficultyTargetRanges = {
     'Beginner': [10, 20],
@@ -221,7 +220,7 @@ class _GameDMainScreenState extends State<GameDMainScreen> {
                     if (confirm) {
                       final success = await _deductDailyTry();
                       if (success) {
-                        audioPlayer.play(AssetSource('sounds/start.mp3'));
+                        AudioService.playSfx('sounds/start.mp3');
                         await Navigator.push(
                           context,
                           MaterialPageRoute(

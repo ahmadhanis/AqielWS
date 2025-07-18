@@ -3,10 +3,10 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:mathwizard/gamee/resultescreen.dart';
+import 'package:mathwizard/models/audioservice.dart';
 import 'package:mathwizard/models/user.dart';
 
 class GameEScreen extends StatefulWidget {
@@ -30,7 +30,6 @@ class _GameEScreenState extends State<GameEScreen> {
   List<int> flashRedIndices = [];
   int? flashGreenIndex;
   int comboStreak = 0;
-  final AudioPlayer audioPlayer = AudioPlayer();
   final rand = Random();
 
   @override
@@ -43,7 +42,6 @@ class _GameEScreenState extends State<GameEScreen> {
   @override
   void dispose() {
     timer.cancel();
-    audioPlayer.dispose();
     super.dispose();
   }
 
@@ -140,14 +138,14 @@ class _GameEScreenState extends State<GameEScreen> {
 
     setState(() {
       if (isCorrect) {
-        audioPlayer.play(AssetSource('sounds/right.wav'));
+        AudioService.playSfx('sounds/right.wav');
         score += _getCoinReward();
         comboStreak++;
         flashGreenIndex = selectedIndex;
 
         if (comboStreak % 5 == 0) {
           timeRemaining += 5;
-          audioPlayer.play(AssetSource('sounds/coin.wav'));
+          AudioService.playSfx('sounds/coin.wav');
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
@@ -162,7 +160,7 @@ class _GameEScreenState extends State<GameEScreen> {
           );
         }
       } else {
-        audioPlayer.play(AssetSource('sounds/wrong.wav'));
+        AudioService.playSfx('sounds/wrong.wav');
         score -= _getPenalty();
         if (score < 0) score = 0;
         comboStreak = 0;
@@ -403,9 +401,9 @@ class _GameEScreenState extends State<GameEScreen> {
       // handle error silently
     } finally {
       if (score > 0) {
-        audioPlayer.play(AssetSource('sounds/win.wav'));
+        AudioService.playSfx('sounds/win.wav');
       } else {
-        audioPlayer.play(AssetSource('sounds/lose.wav'));
+        AudioService.playSfx('sounds/lose.wav');
       }
       Navigator.pushReplacement(
         context,
