@@ -87,6 +87,7 @@ class _GameAScreenState extends State<GameAScreen> with WidgetsBindingObserver {
         body: {
           'userid': widget.user.userId.toString(),
           'coin': score.toString(),
+          'game': 'Quik Math',
         },
       );
 

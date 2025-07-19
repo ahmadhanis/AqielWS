@@ -319,6 +319,7 @@ class _GameDScreenState extends State<GameDScreen> {
         body: {
           'userid': widget.user.userId.toString(),
           'coin': score.toString(),
+          'game': 'Equation Builder',
         },
       );
 

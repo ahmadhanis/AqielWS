@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:mathwizard/models/audioservice.dart';
+import 'package:mathwizard/models/leaderboard.dart';
 import 'package:mathwizard/models/user.dart';
 import 'gameescreen.dart'; // Placeholder for the actual game screen
 
@@ -23,15 +24,115 @@ class _GameEMainScreenState extends State<GameEMainScreen> {
     'Intermediate': 2,
     'Advanced': 3,
   };
+  List<Leaderboard> leaderboard = [];
+  late double screenWidth, screenHeight;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    loadLeader("Math Runner");
+  }
+
+  loadLeader(String gameName) async {
+    try {
+      final url = Uri.parse(
+        "https://slumberjer.com/mathwizard/api/leaderboard.php?game=${Uri.encodeComponent(gameName)}",
+      );
+
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final responseBody = json.decode(response.body);
+        // Debug output
+        print("Leaderboard response: $responseBody");
+        if (responseBody['status'] == 'success') {
+          setState(() {
+            // Assuming you have a leaderboard list in your state
+            leaderboard =
+                (responseBody['data'] as List)
+                    .map((item) => Leaderboard.fromJson(item))
+                    .toList();
+          });
+          // Optional UI feedback:
+          // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          //   content: Text("Leaderboard loaded successfully."),
+          // ));
+        }
+      }
+    } catch (e) {}
+  }
+
+  void _showLeaderboardDialog() {
+    if (leaderboard.isNotEmpty) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Leaderboard for Quik Math"),
+            content: SizedBox(
+              width: 600, // Fixed width for dialog
+              height: screenHeight / 2, // Fixed height for dialog
+              child: ListView.builder(
+                shrinkWrap: true,
+                physics: const BouncingScrollPhysics(),
+                itemCount: leaderboard.length,
+                itemBuilder: (context, index) {
+                  final entry = leaderboard[index];
+                  return ListTile(
+                    leading: Text(
+                      (index + 1).toString(),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    title: Text(entry.fullName),
+                    subtitle: Text(
+                      'School: ${entry.schoolCode} | Standard: ${entry.standard}',
+                    ),
+                    trailing: Text('${entry.coins} coins'),
+                    tileColor:
+                        int.parse(entry.rankId) <= 3
+                            ? Colors.amber.withOpacity(
+                              0.2 * (4 - int.parse(entry.rankId)),
+                            )
+                            : null,
+                  );
+                },
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Close'),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Leaderboard is empty or still loading.")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    screenWidth = MediaQuery.of(context).size.width;
+    screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       backgroundColor: Colors.lightBlue[50],
       appBar: AppBar(
         backgroundColor: Colors.deepPurple,
         title: const Text("🏃‍♂️ Math Runner"),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.leaderboard, color: Colors.amber),
+            onPressed: () {
+              _showLeaderboardDialog();
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),

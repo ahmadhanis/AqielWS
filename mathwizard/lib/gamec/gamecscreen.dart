@@ -35,6 +35,10 @@ class _GameCScreenState extends State<GameCScreen> {
   int score = 0;
   int tries = 0;
   int streak = 0; // Track consecutive wins
+  late double screenWidth,
+      // Store screen width for responsive design
+      screenHeight;
+
   @override
   void initState() {
     super.initState();
@@ -218,7 +222,8 @@ class _GameCScreenState extends State<GameCScreen> {
   @override
   Widget build(BuildContext context) {
     // final screenWidth = MediaQuery.of(context).size.width;
-
+    screenWidth = MediaQuery.of(context).size.width;
+    screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       backgroundColor: Colors.lightBlue[50],
       appBar: AppBar(
@@ -354,6 +359,7 @@ class _GameCScreenState extends State<GameCScreen> {
         body: {
           'userid': widget.user.userId.toString(),
           'coin': score.toString(),
+          'game': 'Math Maze',
         },
       );
 

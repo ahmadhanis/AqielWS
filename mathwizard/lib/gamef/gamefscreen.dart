@@ -367,6 +367,7 @@ class _GameFScreenState extends State<GameFScreen> {
         body: {
           'userid': widget.user.userId.toString(),
           'coin': _score.toString(),
+          'game': 'Number Pyramid',
         },
       );
 

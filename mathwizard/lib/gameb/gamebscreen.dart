@@ -196,6 +196,7 @@ class _GameBScreenState extends State<GameBScreen> {
         body: {
           'userid': widget.user.userId.toString(),
           'coin': score.toString(),
+          'game': 'Sequence Hunter',
         },
       );
 

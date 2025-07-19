@@ -385,6 +385,7 @@ class _GameEScreenState extends State<GameEScreen> {
         body: {
           'userid': widget.user.userId.toString(),
           'coin': score.toString(),
+          'game': 'Math Runner',
         },
       );
 
