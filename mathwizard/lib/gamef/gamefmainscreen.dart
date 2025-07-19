@@ -68,7 +68,7 @@ class _GameFMainScreenState extends State<GameFMainScreen> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text("Leaderboard for Quik Math"),
+            title: Text("Leaderboard for Number Pyramid"),
             content: SizedBox(
               width: 600, // Fixed width for dialog
               height: screenHeight / 2, // Fixed height for dialog
@@ -253,6 +253,7 @@ class _GameFMainScreenState extends State<GameFMainScreen> {
                         ),
                       );
                       await _reloadUser();
+                      loadLeader("Number Pyramid");
                     }
                   }
                 } else {

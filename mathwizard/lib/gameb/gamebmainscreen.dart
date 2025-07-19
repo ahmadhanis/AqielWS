@@ -85,7 +85,7 @@ class _GameBMainScreenState extends State<GameBMainScreen> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text("Leaderboard for Quik Math"),
+            title: Text("Leaderboard for Sequence Hunter"),
             content: SizedBox(
               width: 600, // Fixed width for dialog
               height: screenHeight / 2, // Fixed height for dialog
@@ -389,6 +389,7 @@ class _GameBMainScreenState extends State<GameBMainScreen> {
                           ),
                         );
                         _reloadUser();
+                        loadLeader("Sequence Hunter");
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(

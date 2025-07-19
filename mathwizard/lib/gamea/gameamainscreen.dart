@@ -297,6 +297,7 @@ class _GameAMainScreenState extends State<GameAMainScreen> {
               );
               // Update UI after successful deduction
               _reloadUser();
+              loadLeader("Quik Math");
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(

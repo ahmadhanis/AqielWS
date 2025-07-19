@@ -69,7 +69,7 @@ class _GameEMainScreenState extends State<GameEMainScreen> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text("Leaderboard for Quik Math"),
+            title: Text("Leaderboard for Math Runner"),
             content: SizedBox(
               width: 600, // Fixed width for dialog
               height: screenHeight / 2, // Fixed height for dialog
@@ -252,6 +252,7 @@ class _GameEMainScreenState extends State<GameEMainScreen> {
                         ),
                       );
                       await _reloadUser();
+                      loadLeader("Math Runner");
                     }
                   }
                 } else {

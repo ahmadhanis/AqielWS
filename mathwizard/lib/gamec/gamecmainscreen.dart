@@ -249,6 +249,7 @@ class _GameCMainScreenState extends State<GameCMainScreen> {
                           ),
                         );
                         _reloadUser();
+                        loadLeader("Math Maze");
                       }
                     }
                   } else {
@@ -288,7 +289,7 @@ class _GameCMainScreenState extends State<GameCMainScreen> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text("Leaderboard for Quik Math"),
+            title: Text("Leaderboard for Math Maze"),
             content: SizedBox(
               width: 600, // Fixed width for dialog
               height: screenHeight / 2, // Fixed height for dialog
