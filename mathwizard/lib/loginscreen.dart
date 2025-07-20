@@ -53,77 +53,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // Future<void> login() async {
-  //   if (!_formKey.currentState!.validate()) return;
-
-  //   // Temp solution to bypass SSL certificate error
-  //   HttpClient _createHttpClient() {
-  //     final HttpClient httpClient = HttpClient();
-  //     httpClient.badCertificateCallback =
-  //         (X509Certificate cert, String host, int port) => true;
-  //     return httpClient;
-  //   }
-
-  //   final ioClient = IOClient(_createHttpClient());
-
-  //   setState(() {
-  //     isLoading = true;
-  //   });
-  //   try {
-  //     final url = Uri.parse("https://slumberjer.com/mathwizard/api/login.php");
-  //     final response = await ioClient
-  //         .post(
-  //           url,
-  //           body: {
-  //             'email': emailController.text.trim(),
-  //             'password': passwordController.text.trim(),
-  //           },
-  //         )
-  //         .timeout(const Duration(seconds: 10));
-
-  //     if (response.statusCode == 200) {
-  //       final responseBody = json.decode(response.body);
-  //       if (responseBody['status'] == 'success') {
-  //         // Save credentials if Remember Me is checked
-  //         await _saveCredentials();
-  //         print(responseBody.data);
-  //         // Parse user object
-  //         User user = User.fromJson(responseBody['data']);
-  //         // print(user.fullName);
-  //         // Navigate to GameListScreen and pass the User object
-  //         Navigator.pushReplacement(
-  //           context,
-  //           MaterialPageRoute(builder: (_) => GameListScreen(user: user)),
-  //         );
-  //       } else {
-  //         // Show error message
-  //         ScaffoldMessenger.of(
-  //           context,
-  //         ).showSnackBar(SnackBar(content: Text(responseBody['message'])));
-  //       }
-  //     } else {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(content: Text("Failed to connect to server.")),
-  //       );
-  //     }
-  //   } on TimeoutException catch (_) {
-  //     // Handle timeout
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text("Request timed out. Please try again.")),
-  //     );
-  //   } catch (e) {
-  //     // Handle other exceptions
-  //     ScaffoldMessenger.of(
-  //       context,
-  //     ).showSnackBar(SnackBar(content: Text("An error occurred: $e")));
-
-  //     print("$e");
-  //   }
-  //   setState(() {
-  //     isLoading = false;
-  //   });
-  // }
-
   Future<void> login() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -253,13 +182,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       // App Icon or Friendly Wizard Image
-                      Image.asset('assets/images/mathwizard.png', width: 120),
+                      Image.asset('assets/images/mathwizard.png', width: 160),
                       const SizedBox(height: 20),
 
                       const Text(
                         "Let’s Start Learning!",
                         style: TextStyle(
-                          fontSize: 28,
+                          fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: Colors.deepPurple,
                         ),
@@ -405,60 +334,6 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-
-  // Future<void> resetPassword(String emailreset) async {
-  //   HttpClient createHttpClient() {
-  //     final HttpClient httpClient = HttpClient();
-  //     httpClient.badCertificateCallback =
-  //         (X509Certificate cert, String host, int port) => true;
-  //     return httpClient;
-  //   }
-
-  //   final ioClient = IOClient(createHttpClient());
-
-  //   try {
-  //     final url = Uri.parse("https://slumberjer.com/mathwizard/api/reset.php");
-  //     final response = await ioClient
-  //         .post(url, body: {'email': emailreset})
-  //         .timeout(const Duration(seconds: 5));
-  //     print(response.body);
-  //     if (response.statusCode == 200) {
-  //       final responseBody = json.decode(response.body);
-  //       print(response.body);
-  //       if (responseBody['status'] == 'success') {
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           const SnackBar(
-  //             content: const Text("Success. Please check your email"),
-  //             duration: Duration(seconds: 3),
-  //           ),
-  //         );
-  //       } else {
-  //         // Show error message
-  //         ScaffoldMessenger.of(
-  //           context,
-  //         ).showSnackBar(const SnackBar(content: Text("Error")));
-  //       }
-  //     } else {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(content: Text("Failed to connect to server.")),
-  //       );
-  //     }
-  //   } on TimeoutException catch (_) {
-  //     // Handle timeout
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text("Request timed out. Please try again.")),
-  //     );
-  //   } catch (e) {
-  //     // Handle other exceptions
-  //     // ScaffoldMessenger.of(context).showSnackBar(
-  //     //   SnackBar(
-  //     //     content: Text("An error occurred: $e"),
-  //     //   ),
-  //     // );
-
-  //     print("$e");
-  //   }
-  // }
 
   Future<void> resetPassword(String emailreset) async {
     try {

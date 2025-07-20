@@ -1,4 +1,4 @@
-// ignore_for_file: must_be_immutable, use_build_context_synchronously
+// ignore_for_file: must_be_immutable, use_build_context_synchronously, deprecated_member_use
 
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -47,6 +47,7 @@ class _GameEMainScreenState extends State<GameEMainScreen> {
         if (responseBody['status'] == 'success') {
           setState(() {
             // Assuming you have a leaderboard list in your state
+            leaderboard.clear();
             leaderboard =
                 (responseBody['data'] as List)
                     .map((item) => Leaderboard.fromJson(item))
@@ -90,11 +91,8 @@ class _GameEMainScreenState extends State<GameEMainScreen> {
                     ),
                     trailing: Text('${entry.coins} coins'),
                     tileColor:
-                        int.parse(entry.rankId) <= 3
-                            // ignore: deprecated_member_use
-                            ? Colors.amber.withOpacity(
-                              0.2 * (4 - int.parse(entry.rankId)),
-                            )
+                        (index + 1) <= 3
+                            ? Colors.amber.withOpacity(0.2 * (4 - (index + 1)))
                             : null,
                   );
                 },

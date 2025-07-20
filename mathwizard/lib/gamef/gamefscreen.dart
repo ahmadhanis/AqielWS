@@ -247,7 +247,6 @@ class _GameFScreenState extends State<GameFScreen> {
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
-    final double screenHeight = MediaQuery.of(context).size.height;
     final bool isLarge = screenWidth > 600;
     final double cellSize = isLarge ? 60 : screenWidth * 0.13;
     final double fontSize = isLarge ? 18 : screenWidth * 0.04;

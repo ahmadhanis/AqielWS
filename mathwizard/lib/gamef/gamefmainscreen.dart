@@ -28,7 +28,6 @@ class _GameFMainScreenState extends State<GameFMainScreen> {
   late double screenWidth, screenHeight;
   @override
   void initState() {
-
     super.initState();
     loadLeader("Number Pyramid");
   }
@@ -47,6 +46,7 @@ class _GameFMainScreenState extends State<GameFMainScreen> {
         if (responseBody['status'] == 'success') {
           setState(() {
             // Assuming you have a leaderboard list in your state
+            leaderboard.clear();
             leaderboard =
                 (responseBody['data'] as List)
                     .map((item) => Leaderboard.fromJson(item))
@@ -90,10 +90,8 @@ class _GameFMainScreenState extends State<GameFMainScreen> {
                     ),
                     trailing: Text('${entry.coins} coins'),
                     tileColor:
-                        int.parse(entry.rankId) <= 3
-                            ? Colors.amber.withOpacity(
-                              0.2 * (4 - int.parse(entry.rankId)),
-                            )
+                        (index + 1) <= 3
+                            ? Colors.amber.withOpacity(0.2 * (4 - (index + 1)))
                             : null,
                   );
                 },
