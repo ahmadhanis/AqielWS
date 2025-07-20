@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously, library_private_types_in_public_api, empty_catches, must_be_immutable
+// ignore_for_file: use_build_context_synchronously, library_private_types_in_public_api, empty_catches, must_be_immutable, deprecated_member_use
 
 import 'dart:convert';
 
@@ -31,7 +31,6 @@ class _GameAMainScreenState extends State<GameAMainScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     loadLeader("Quik Math");
   }
@@ -349,7 +348,6 @@ class _GameAMainScreenState extends State<GameAMainScreen> {
       }
     } catch (e) {
       // Handle error silently
-      print("Error reloading user: $e");
     }
   }
 
@@ -415,7 +413,6 @@ class _GameAMainScreenState extends State<GameAMainScreen> {
       if (response.statusCode == 200) {
         final responseBody = json.decode(response.body);
         // Debug output
-        print("Leaderboard response: $responseBody");
         if (responseBody['status'] == 'success') {
           setState(() {
             // Assuming you have a leaderboard list in your state

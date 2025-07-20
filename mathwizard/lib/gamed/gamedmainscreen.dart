@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously, empty_catches, must_be_immutable
+// ignore_for_file: use_build_context_synchronously, empty_catches, must_be_immutable, deprecated_member_use
 
 import 'dart:convert';
 import 'dart:math';
@@ -55,7 +55,6 @@ class _GameDMainScreenState extends State<GameDMainScreen> {
       if (response.statusCode == 200) {
         final responseBody = json.decode(response.body);
         // Debug output
-        print("Leaderboard response: $responseBody");
         if (responseBody['status'] == 'success') {
           setState(() {
             // Assuming you have a leaderboard list in your state

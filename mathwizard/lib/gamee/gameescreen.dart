@@ -327,6 +327,7 @@ class _GameEScreenState extends State<GameEScreen> {
                                       ),
                                       boxShadow: [
                                         BoxShadow(
+                                          // ignore: deprecated_member_use
                                           color: Colors.black.withOpacity(
                                             isHovered ? 0.3 : 0.2,
                                           ),

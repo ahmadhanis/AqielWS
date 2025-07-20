@@ -29,7 +29,6 @@ class _GameEMainScreenState extends State<GameEMainScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     loadLeader("Math Runner");
   }
@@ -45,7 +44,6 @@ class _GameEMainScreenState extends State<GameEMainScreen> {
       if (response.statusCode == 200) {
         final responseBody = json.decode(response.body);
         // Debug output
-        print("Leaderboard response: $responseBody");
         if (responseBody['status'] == 'success') {
           setState(() {
             // Assuming you have a leaderboard list in your state
@@ -60,7 +58,9 @@ class _GameEMainScreenState extends State<GameEMainScreen> {
           // ));
         }
       }
-    } catch (e) {}
+    } catch (e) {
+      // Optionally handle error
+    }
   }
 
   void _showLeaderboardDialog() {
@@ -91,6 +91,7 @@ class _GameEMainScreenState extends State<GameEMainScreen> {
                     trailing: Text('${entry.coins} coins'),
                     tileColor:
                         int.parse(entry.rankId) <= 3
+                            // ignore: deprecated_member_use
                             ? Colors.amber.withOpacity(
                               0.2 * (4 - int.parse(entry.rankId)),
                             )

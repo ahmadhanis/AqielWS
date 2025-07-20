@@ -1,4 +1,4 @@
-// ignore_for_file: use_build_context_synchronously, empty_catches
+// ignore_for_file: use_build_context_synchronously, empty_catches, deprecated_member_use
 
 import 'dart:convert';
 // ignore: unused_import
@@ -393,7 +393,6 @@ class _GameCMainScreenState extends State<GameCMainScreen> {
       if (response.statusCode == 200) {
         final responseBody = json.decode(response.body);
         // Debug output
-        print("Leaderboard response: $responseBody");
         if (responseBody['status'] == 'success') {
           setState(() {
             // Assuming you have a leaderboard list in your state

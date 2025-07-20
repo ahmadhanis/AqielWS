@@ -32,16 +32,43 @@ class _GameListScreenState extends State<GameListScreen> {
   @override
   Widget build(BuildContext context) {
     // List of games
-    final List<String> games = [
-      "Quik Math",
-      "Sequence Hunter",
-      "Math Maze",
-      "Equation Builder",
-      "Math Runner",
-      "Number Pyramid",
-      "Budget Hero",
-      "Prime Time",
-      "Fraction Frenzy",
+    final List<Map<String, String>> games = [
+      {
+        "title": "Quik Math",
+        "desc": "Solve rapid-fire arithmetic before time runs out.",
+      },
+      {
+        "title": "Sequence Hunter",
+        "desc": "Find and fill missing numbers in number sequences.",
+      },
+      {
+        "title": "Math Maze",
+        "desc": "Navigate a maze by solving sum targets to proceed.",
+      },
+      {
+        "title": "Equation Builder",
+        "desc": "Build valid equations that hit the given target.",
+      },
+      {
+        "title": "Math Runner",
+        "desc": "Choose the correct math gates while running against time.",
+      },
+      {
+        "title": "Number Pyramid",
+        "desc": "Fill in pyramid blocks using addition logic.",
+      },
+      {
+        "title": "Budget Hero",
+        "desc": "Manage your budget and reach savings goals.",
+      },
+      {
+        "title": "Prime Time",
+        "desc": "Quickly identify prime numbers in a grid.",
+      },
+      {
+        "title": "Fraction Frenzy",
+        "desc": "Simplify and compare fractions under pressure.",
+      },
     ];
 
     final mediaQuery = MediaQuery.of(context);
@@ -324,8 +351,11 @@ class _GameListScreenState extends State<GameListScreen> {
                           ),
                       itemCount: games.length,
                       itemBuilder: (context, index) {
+                        final game = games[index];
+                        final title = game['title']!;
+                        final desc = game['desc']!;
                         return InkWell(
-                          onTap: () => _handleGameTap(games[index]),
+                          onTap: () => _handleGameTap(title),
                           borderRadius: BorderRadius.circular(15),
                           child: Card(
                             elevation: 4,
@@ -352,14 +382,32 @@ class _GameListScreenState extends State<GameListScreen> {
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
-                                    child: Text(
-                                      games[index],
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black87,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          title,
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.black87,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          desc,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey[600],
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
                                     ),
                                   ),
                                   const Icon(
@@ -378,8 +426,11 @@ class _GameListScreenState extends State<GameListScreen> {
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: games.length,
                       itemBuilder: (context, index) {
+                        final game = games[index];
+                        final title = game['title']!;
+                        final desc = game['desc']!;
                         return InkWell(
-                          onTap: () => _handleGameTap(games[index]),
+                          onTap: () => _handleGameTap(title),
                           borderRadius: BorderRadius.circular(15),
                           child: Card(
                             elevation: 3,
@@ -399,11 +450,20 @@ class _GameListScreenState extends State<GameListScreen> {
                                 ),
                               ),
                               title: Text(
-                                games[index],
+                                title,
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
                                 ),
+                              ),
+                              subtitle: Text(
+                                desc,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[700],
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                               trailing: const Icon(
                                 Icons.play_arrow,

@@ -1,4 +1,4 @@
-// ignore_for_file: library_private_types_in_public_api, empty_catches, use_build_context_synchronously, must_be_immutable
+// ignore_for_file: library_private_types_in_public_api, empty_catches, use_build_context_synchronously, must_be_immutable, deprecated_member_use
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -164,7 +164,6 @@ class _GameBMainScreenState extends State<GameBMainScreen> {
       if (response.statusCode == 200) {
         final responseBody = json.decode(response.body);
         // Debug output
-        print("Leaderboard response: $responseBody");
         if (responseBody['status'] == 'success') {
           setState(() {
             // Assuming you have a leaderboard list in your state
@@ -184,13 +183,14 @@ class _GameBMainScreenState extends State<GameBMainScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     loadLeader("Sequence Hunter");
   }
 
   @override
   Widget build(BuildContext context) {
+    screenWidth = MediaQuery.of(context).size.width;
+    screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       backgroundColor: Colors.lightBlue[50],
       appBar: AppBar(

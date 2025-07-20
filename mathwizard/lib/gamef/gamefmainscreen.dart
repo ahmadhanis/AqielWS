@@ -1,4 +1,4 @@
-// ignore_for_file: must_be_immutable, use_build_context_synchronously
+// ignore_for_file: must_be_immutable, use_build_context_synchronously, deprecated_member_use
 
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -28,7 +28,7 @@ class _GameFMainScreenState extends State<GameFMainScreen> {
   late double screenWidth, screenHeight;
   @override
   void initState() {
-    // TODO: implement initState
+
     super.initState();
     loadLeader("Number Pyramid");
   }
@@ -44,7 +44,6 @@ class _GameFMainScreenState extends State<GameFMainScreen> {
       if (response.statusCode == 200) {
         final responseBody = json.decode(response.body);
         // Debug output
-        print("Leaderboard response: $responseBody");
         if (responseBody['status'] == 'success') {
           setState(() {
             // Assuming you have a leaderboard list in your state
@@ -59,7 +58,9 @@ class _GameFMainScreenState extends State<GameFMainScreen> {
           // ));
         }
       }
-    } catch (e) {}
+    } catch (e) {
+      // print("Error loading leaderboard: $e");
+    }
   }
 
   void _showLeaderboardDialog() {
