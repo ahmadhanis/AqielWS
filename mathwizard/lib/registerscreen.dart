@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:mathwizard/models/schools.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -21,43 +22,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool isPasswordVisible = false; // To toggle password visibility
   String selectedStandard = '1';
   String selectedSchool = '';
-  List<Map<String, String>> sarawakSchools = [
-    {"code": "SK001", "name": "SK St Mary, Kuching"},
-    {"code": "SK002", "name": "SK St Thomas, Kuching"},
-    {"code": "SK003", "name": "SK St Joseph, Miri"},
-    {"code": "SK004", "name": "SK Methodist, Sibu"},
-    {"code": "SK005", "name": "SK Chung Hua, Bintulu"},
-    {"code": "SK006", "name": "SK Merbau, Miri"},
-    {"code": "SK007", "name": "SK Sg Plan, Bintulu"},
-    {"code": "SK008", "name": "SK Nanga Oya, Kapit"},
-    {"code": "SK009", "name": "SK Sibu Jaya, Sibu"},
-    {"code": "SK010", "name": "SK Petra Jaya, Kuching"},
-    {"code": "SK011", "name": "SK Siol Kanan, Kuching"},
-    {"code": "SK012", "name": "SK Pujut Corner, Miri"},
-    {"code": "SK013", "name": "SK Ulu Sebuyau, Samarahan"},
-    {"code": "SK014", "name": "SK Matang Jaya, Kuching"},
-    {"code": "SK015", "name": "SK Tanjung Batu, Bintulu"},
-    {"code": "SK016", "name": "SK Lutong, Miri"},
-    {"code": "SK017", "name": "SK Kidurong, Bintulu"},
-    {"code": "SK018", "name": "SK Pujut, Miri"},
-    {"code": "SK019", "name": "SK Sebauh, Bintulu"},
-    {"code": "SK020", "name": "SK Agama Sibu, Sibu"},
-    {"code": "SK021", "name": "SK Batu Lintang, Kuching"},
-    {"code": "SK022", "name": "SK Jalan Arang, Kuching"},
-    {"code": "SK023", "name": "SK Kampung Baru, Samarahan"},
-    {"code": "SK024", "name": "SK Tabuan Jaya, Kuching"},
-    {"code": "SK025", "name": "SK Lundu, Lundu"},
-    {"code": "SK026", "name": "SK Bau, Bau"},
-    {"code": "SK027", "name": "SK Serian, Serian"},
-    {"code": "SK028", "name": "SK Padawan, Kuching"},
-    {"code": "SK029", "name": "SK Asajaya, Samarahan"},
-    {"code": "SK030", "name": "SK Sri Aman, Sri Aman"},
-  ];
+  Schools schools = Schools();
 
   @override
   void initState() {
     super.initState();
-    selectedSchool = sarawakSchools.first["code"]!;
+    selectedSchool = schools.penangSchools.first["code"]!;
   }
 
   void autoGeneratePassword() {
@@ -290,9 +260,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     // Dropdown for Schools
                     DropdownButtonFormField<String>(
+                      style: TextStyle(fontSize: 12, color: Colors.black  ),
                       value: selectedSchool,
                       items:
-                          sarawakSchools
+                          schools.penangSchools
                               .map(
                                 (school) => DropdownMenuItem(
                                   value: school["code"],
