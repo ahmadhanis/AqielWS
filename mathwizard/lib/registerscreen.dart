@@ -260,7 +260,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     // Dropdown for Schools
                     DropdownButtonFormField<String>(
-                      style: TextStyle(fontSize: 12, color: Colors.black  ),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.black,
+                        fontFamily: 'ComicSans',
+                      ),
                       value: selectedSchool,
                       items:
                           schools.penangSchools
