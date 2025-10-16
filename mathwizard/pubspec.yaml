@@ -1,7 +1,7 @@
 name: mathwizard
-description: "A new Flutter project."
+description: "Mathwizard is a math game for kids"
 publish_to: "none"
-version: 0.1.0
+version: 1.3.0
 
 environment:
   sdk: ^3.7.2

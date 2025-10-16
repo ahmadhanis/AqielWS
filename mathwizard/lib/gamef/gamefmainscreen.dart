@@ -231,58 +231,61 @@ class _GameFMainScreenState extends State<GameFMainScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 25),
+            const SizedBox(height: 10),
             // Start Game Button
-            ElevatedButton.icon(
-              onPressed: () async {
-                if (int.parse(widget.user.dailyTries.toString()) > 0) {
-                  final shouldProceed = await _showConfirmDialog();
-                  if (shouldProceed) {
-                    final success = await _deductDailyTry();
-                    if (success) {
-                      AudioService.playSfx('sounds/start.mp3');
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (_) => GameFScreen(
-                                user: widget.user,
-                                difficulty: selectedDifficulty,
-                              ),
-                        ),
-                      );
-                      await _reloadUser();
-                      loadLeader("Number Pyramid");
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  if (int.parse(widget.user.dailyTries.toString()) > 0) {
+                    final shouldProceed = await _showConfirmDialog();
+                    if (shouldProceed) {
+                      final success = await _deductDailyTry();
+                      if (success) {
+                        AudioService.playSfx('sounds/start.mp3');
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (_) => GameFScreen(
+                                  user: widget.user,
+                                  difficulty: selectedDifficulty,
+                                ),
+                          ),
+                        );
+                        await _reloadUser();
+                        loadLeader("Number Pyramid");
+                      }
                     }
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("No tries left. Try again tomorrow."),
+                      ),
+                    );
                   }
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("No tries left. Try again tomorrow."),
-                    ),
-                  );
-                }
-              },
-              icon: const Icon(Icons.play_arrow),
-              label: const Text(
-                "Start Game",
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.white,
-                  fontFamily: 'ComicSans',
+                },
+                icon: const Icon(Icons.play_arrow),
+                label: const Text(
+                  "Start Game",
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                    fontFamily: 'ComicSans',
+                  ),
                 ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 32,
-                  vertical: 14,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurple,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 14,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  textStyle: const TextStyle(fontSize: 18),
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                textStyle: const TextStyle(fontSize: 18),
               ),
             ),
           ],
